@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { ArrowLeft, Download, Edit, Save, User, Calendar, Cake } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import Header from '../components/Header'
-import { soapNotesData } from '../data/soapNotesData'
+import { soapNoteData } from '../data/soapNotesData'
 import { patientsData } from '../data/patientsData'
 
 function SoapNote() {
