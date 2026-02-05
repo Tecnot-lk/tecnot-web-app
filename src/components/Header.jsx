@@ -5,6 +5,7 @@
 
 import React from 'react'
 import { Bell } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 function Header({ title, subtitle }) {
   return (
@@ -43,33 +44,16 @@ function Header({ title, subtitle }) {
                          w-1.5 h-1.5 xs:w-2 xs:h-2 
                          bg-red-500 rounded-full"></span>
         </button>
-        
-        {/* User Avatar - Hidden on very small screens */}
-        <div className="hidden xs:flex items-center gap-2 sm:gap-3 
-                       pl-2 sm:pl-4 
-                       border-l border-gray-200">
-          
-          {/* User Info - Hidden on small screens */}
-          <div className="text-right hidden md:block">
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 
-                         truncate max-w-[120px] lg:max-w-none">
-              Dr. Ibrahim
-            </p>
-            <p className="text-[10px] sm:text-xs text-gray-500 truncate">
-              General Physician
-            </p>
-          </div>
-          
-          {/* Avatar - Responsive size */}
-          <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 
-                         rounded-full bg-tecnot-primary 
-                         flex items-center justify-center 
-                         text-white font-semibold 
-                         text-xs xs:text-sm sm:text-base
-                         flex-shrink-0">
-            IS
-          </div>
-        </div>
+          <Link to="/profile" className="hidden xs:flex items-center gap-2 xs:gap-3 hover:opacity-80 transition-smooth">
+  <div className="hidden md:block text-right">
+    <p className="text-xs xs:text-sm font-semibold text-gray-900">Dr. Ibrahim</p>
+    <p className="text-[10px] xs:text-xs text-gray-500">General Physician</p>
+  </div>
+  <div className="w-8 h-8 xs:w-10 xs:h-10 bg-tecnot-primary rounded-full flex items-center justify-center text-white font-bold text-sm xs:text-base">
+    IS
+  </div>
+</Link>
+
       </div>
     </header>
   )

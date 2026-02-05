@@ -141,28 +141,7 @@ function Home() {
                 </div>
               </Link>
               
-              {/* My Profile */}
-              <Link 
-                to="/profile"
-                className="bg-white border-2 border-blue-200 
-                         p-4 xs:p-5 sm:p-6 rounded-lg 
-                         card-hover group
-                         min-h-[120px] sm:min-h-[140px] lg:min-h-[160px]
-                         flex flex-col justify-between"
-              >
-                <CheckCircle className="w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 
-                                      mb-2 xs:mb-3 
-                                      text-blue-500 
-                                      group-hover:scale-110 transition-smooth" />
-                <div>
-                  <h3 className="text-sm xs:text-base sm:text-lg lg:text-xl font-bold text-gray-900 mb-1">
-                    My Profile
-                  </h3>
-                  <p className="text-[10px] xs:text-xs sm:text-sm text-gray-600">
-                    Update your information
-                  </p>
-                </div>
-              </Link>
+
             </div>
           </div>
 
@@ -196,17 +175,7 @@ function Home() {
               ))}
             </div>
             
-            {/* Pro Tip */}
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 
-                         rounded-lg p-4 xs:p-5 sm:p-6 mt-4 border border-blue-100">
-              <h3 className="font-bold text-gray-900 mb-2 text-xs xs:text-sm sm:text-base">
-                💡 Pro Tip
-              </h3>
-              <p className="text-[10px] xs:text-xs sm:text-sm text-gray-700">
-                You can now record consultations in Sinhala, Tamil, and English. 
-                The AI will automatically transcribe and translate!
-              </p>
-            </div>
+           
           </div>
         </div>
       </div>
