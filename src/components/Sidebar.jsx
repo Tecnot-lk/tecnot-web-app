@@ -35,7 +35,6 @@ function Sidebar() {
     { name: 'Patients', path: '/patients', icon: Users },
     { name: 'New Session', path: '/new-session', icon: Calendar },
     { name: 'Notifications', path: '/notifications', icon: Bell },
-    { name: 'My Profile', path: '/profile', icon: User },
   ]
   
   return (

@@ -14,13 +14,13 @@ function Profile() {
     firstName: 'Malik',
     lastName: 'Abdul',
     phone: '+94 77 999 9999',
-    email: 'maliksiddiha@gmail.com',
+    email: 'malik@gmail.com',
     specialty: 'General Physician',
     hospital: 'Lanka General Hospital'
   })
   
   const [securityData, setSecurityData] = useState({
-    email: 'maliksiddiha@gmail.com',
+    email: 'malik@gmail.com',
     oldPassword: '',
     newPassword: '',
     confirmPassword: ''

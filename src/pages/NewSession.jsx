@@ -49,7 +49,7 @@ function NewSession() {
     { name: 'Malik', code: '001' },
     { name: 'Shiman', code: '021' },
     { name: 'Ibrahim', code: '022' },
-    { name: 'Aaisha', code: '232' },
+    { name: 'Prajith', code: '232' },
   ])
 
   // Filter patients based on query
