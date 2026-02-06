@@ -4,9 +4,11 @@
 // ====================
 
 import React, { useState } from 'react'
-import { User, Lock, Save } from 'lucide-react'
 import Header from '../components/Header'
+import { User, Lock, Save, Eye, EyeOff } from 'lucide-react'
  
+
+
 function Profile() {
   const [activeTab, setActiveTab] = useState('info')
   
@@ -28,7 +30,11 @@ function Profile() {
 
    
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [showOldPassword, setShowOldPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  
   const handlePhotoChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -304,58 +310,115 @@ function Profile() {
                 />
               </div>
               
-              {/* Old Password */}
-              <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Old Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={securityData.oldPassword}
-                  onChange={(e) => setSecurityData({...securityData, oldPassword: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
-              </div>
+             {/* Old Password */}
+                <div>
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
+                    Old Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showOldPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={securityData.oldPassword}
+                      onChange={(e) => setSecurityData({...securityData, oldPassword: e.target.value})}
+                      className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
+                                pr-10
+                                text-sm xs:text-base
+                                border-2 border-gray-200 rounded-lg 
+                                outline-none focus:border-tecnot-primary 
+                                focus:ring-2 focus:ring-tecnot-primary/20
+                                transition-all duration-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPassword(!showOldPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2
+                                text-gray-500 hover:text-tecnot-primary
+                                transition-colors duration-200
+                                focus:outline-none"
+                    >
+                      {showOldPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               
-              {/* New Password */}
+             {/* New Password */}
               <div>
                 <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={securityData.newPassword}
-                  onChange={(e) => setSecurityData({...securityData, newPassword: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={securityData.newPassword}
+                    onChange={(e) => setSecurityData({...securityData, newPassword: e.target.value})}
+                    className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
+                              pr-10
+                              text-sm xs:text-base
+                              border-2 border-gray-200 rounded-lg 
+                              outline-none focus:border-tecnot-primary 
+                              focus:ring-2 focus:ring-tecnot-primary/20
+                              transition-all duration-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2
+                              text-gray-500 hover:text-tecnot-primary
+                              transition-colors duration-200
+                              focus:outline-none"
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
-              
-              {/* Confirm New Password */}
+
+             {/* Confirm New Password */}
               <div>
                 <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={securityData.confirmPassword}
-                  onChange={(e) => setSecurityData({...securityData, confirmPassword: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={securityData.confirmPassword}
+                    onChange={(e) => setSecurityData({...securityData, confirmPassword: e.target.value})}
+                    className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
+                              pr-10
+                              text-sm xs:text-base
+                              border-2 border-gray-200 rounded-lg 
+                              outline-none focus:border-tecnot-primary 
+                              focus:ring-2 focus:ring-tecnot-primary/20
+                              transition-all duration-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2
+                              text-gray-500 hover:text-tecnot-primary
+                              transition-colors duration-200
+                              focus:outline-none"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-            
+                          
             {/* Change Password Button */}
             <button
               onClick={() => alert('Password changed! (Demo only)')}
@@ -377,7 +440,7 @@ function Profile() {
                            bg-blue-50 border border-blue-200 
                            rounded-lg p-3 xs:p-4">
               <h4 className="font-semibold text-blue-900 mb-2 text-sm xs:text-base">
-                🔒 Password Tips:
+                 Password Tips:
               </h4>
               <ul className="text-xs xs:text-sm text-blue-800 space-y-1">
                 <li>• Use at least 8 characters</li>
