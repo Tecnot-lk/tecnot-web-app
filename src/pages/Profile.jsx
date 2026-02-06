@@ -6,7 +6,7 @@
 import React, { useState } from 'react'
 import { User, Lock, Save } from 'lucide-react'
 import Header from '../components/Header'
-
+ 
 function Profile() {
   const [activeTab, setActiveTab] = useState('info')
   
@@ -81,6 +81,35 @@ function Profile() {
             </h2>
             
             <div className="space-y-3 xs:space-y-4">
+              {/* Profile Photo */}
+                <div className="mb-6 flex flex-col items-center">
+                <div className="relative">
+                   <div className="w-24 h-24 xs:w-32 xs:h-32 rounded-full overflow-hidden 
+                    bg-gray-200 border-4 border-white shadow-lg">
+                    {photoPreview ? (
+                    <img src={photoPreview} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                <div className="w-full h-full flex items-center justify-center bg-tecnot-primary">
+                <User className="w-12 h-12 xs:w-16 xs:h-16 text-white" />
+              </div>
+            )}
+        </div>
+        <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 
+                     shadow-lg cursor-pointer hover:bg-gray-50 transition-smooth">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handlePhotoChange}
+        className="hidden"
+      />
+      <Save className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary" />
+    </label>
+    </div>
+      <p className="mt-3 text-xs xs:text-sm text-gray-600">
+    Click the icon to upload photo
+      </p>
+    </div>
+    
               {/* First Name */}
               <div>
                 <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
@@ -148,7 +177,7 @@ function Profile() {
               {/* Specialty */}
               <div>
                 <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Specialty
+                  Speciality
                 </label>
                 <input
                   type="text"
@@ -177,6 +206,8 @@ function Profile() {
                 />
               </div>
             </div>
+
+            
             
             {/* Save Button */}
             <button
