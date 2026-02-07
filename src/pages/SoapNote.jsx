@@ -71,45 +71,13 @@ function SoapNote() {
       </div>
     )
   }
-
-  const SectionTitle = ({ children, icon: Icon }) => (
-    <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-tecnot-primary">
-      {Icon && <Icon className="w-5 h-5 text-tecnot-primary" />}
-      <h3 className="font-bold text-gray-900 text-sm xs:text-base sm:text-lg">{children}</h3>
-    </div>
-  )
-
-  const ReadOnlyField = ({ label, value }) => (
-    <div className="bg-gray-50 rounded-lg p-3 xs:p-4">
-      <label className="block text-xs xs:text-sm font-semibold text-gray-700 mb-2">{label}</label>
-      <p className="text-sm xs:text-base text-gray-900 whitespace-pre-wrap">{value || 'None'}</p>
-    </div>
-  )
-
-  const EditableField = ({ label, value, field, rows = 4 }) => (
-    <div>
-      <label className="block text-xs xs:text-sm font-semibold text-gray-700 mb-2">{label}</label>
-      {isEditing ? (
-        <textarea
-          value={value}
-          onChange={(e) => handleChange(field, e.target.value)}
-          rows={rows}
-          className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                   outline-none focus:border-tecnot-primary focus:ring-4 
-                   focus:ring-tecnot-primary/20 transition-all resize-none
-                   text-sm xs:text-base"
-        />
-      ) : (
-        <div className="bg-white border-2 border-gray-200 rounded-lg p-3 xs:p-4">
-          <p className="text-sm xs:text-base text-gray-900 whitespace-pre-wrap">{value || 'None'}</p>
-        </div>
-      )}
-    </div>
-  )
-
+  
   return (
-    <div className="animate-fadeIn w-full">
-      <Header title="SOAP Note" subtitle={`${patient.first_name} ${patient.last_name}`} />
+    <div className="animate-fadeIn">
+      <Header 
+        title="SOAP Note" 
+        subtitle={`${soapData.patient} - ${soapData.date} ${soapData.time}`}
+      />
       
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
         
@@ -286,7 +254,7 @@ function SoapNote() {
                 <div className="bg-gray-50 rounded-lg p-4 whitespace-pre-line text-gray-700 text-sm sm:text-base">
                   {soapData.plan}
                 </div>
-              </div>
+              )}
             </div>
           </div>
           

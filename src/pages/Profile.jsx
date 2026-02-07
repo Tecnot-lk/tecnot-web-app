@@ -1,40 +1,41 @@
 import React, { useState } from 'react'
 import { User, Mail, Phone, Stethoscope, Save } from 'lucide-react'
 import Header from '../components/Header'
- 
+
 function Profile() {
   const [profileData, setProfileData] = useState({
-    firstName: 'Malik',
-    lastName: 'Abdul',
-    phone: '+94 77 999 9999',
-    email: 'malik@gmail.com',
+    first_name: 'Ibrahim',
+    last_name: 'Malik',
+    email: 'dr.ibrahim@clinic.lk',
+    phone: '+94 77 999 8888',
     specialty: 'General Physician',
     license_number: 'SL12345',
     clinic_name: 'Ibrahim Medical Center'
   })
-  
-  const [securityData, setSecurityData] = useState({
-    email: 'malik@gmail.com',
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
   })
 
-   
-  const [photoPreview, setPhotoPreview] = useState(null)
+  const [activeTab, setActiveTab] = useState('info')
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result)
-      }
-      reader.readAsDataURL(file)
-    }
+  const handleSaveProfile = () => {
+    console.log('Saving profile:', profileData)
+    alert('Profile updated successfully!')
   }
-  // --------------------------------
-  
+
+  const handleChangePassword = () => {
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      alert('Passwords do not match!')
+      return
+    }
+    console.log('Changing password')
+    alert('Password changed successfully!')
+    setPasswordData({ current_password: '', new_password: '', confirm_password: '' })
+  }
+
   return (
     <div className="animate-fadeIn w-full">
       <Header title="My Profile" subtitle="Manage your account settings" />
@@ -59,196 +60,32 @@ function Profile() {
             </div>
           </div>
         </div>
-        
-        {/* My Info Tab */}
-        {activeTab === 'info' && (
-          <div className="bg-white rounded-xl sm:rounded-2xl 
-                         p-5 xs:p-6 sm:p-8 
-                         shadow-sm border border-gray-100">
-            <h2 className="text-xl xs:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
-              Personal Information
-            </h2>
-            
-            <div className="space-y-3 xs:space-y-4">
-              {/* Profile Photo */}
-                <div className="mb-6 flex flex-col items-center">
-                <div className="relative">
-                   <div className="w-24 h-24 xs:w-32 xs:h-32 rounded-full overflow-hidden 
-                    bg-gray-200 border-4 border-white shadow-lg">
-                    {photoPreview ? (
-                    <img src={photoPreview} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                <div className="w-full h-full flex items-center justify-center bg-tecnot-primary">
-                <User className="w-12 h-12 xs:w-16 xs:h-16 text-white" />
-              </div>
-            )}
-        </div>
-        <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 
-                     shadow-lg cursor-pointer hover:bg-gray-50 transition-smooth">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handlePhotoChange}
-        className="hidden"
-      />
-      <Save className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary" />
-    </label>
-    </div>
-      <p className="mt-3 text-xs xs:text-sm text-gray-600">
-    Click the icon to upload photo
-      </p>
-    </div>
 
-              {/* First Name */}
-              <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={profileData.firstName}
-                  onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
-              </div>
-              
-              {/* Last Name */}
-              <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={profileData.lastName}
-                  onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
-              </div>
-
-              {/* Phone Number */}
-              <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
-              </div>
-              
-              {/* Email */}
-              <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
-              </div>
-              
-              {/* Specialty */}
-              <div className="relative">
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Speciality
-                </label>
-                <div className="relative">
-                  <select
-                    value={profileData.specialty}
-                    onChange={(e) => setProfileData({...profileData, specialty: e.target.value})}
-                    style={{
-                      colorScheme: 'light'
-                    }}
-                    className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                              text-sm xs:text-base
-                              border-2 border-gray-200 rounded-lg 
-                              outline-none focus:border-tecnot-primary 
-                              focus:ring-2 focus:ring-tecnot-primary/20
-                              transition-all duration-300 ease-in-out
-                              bg-white cursor- dot-pointer
-                              hover:border-tecnot-primary hover:shadow-md
-                              appearance-none pr-10
-                              [&>option:checked]:bg-tecnot-primary
-                              [&>option:checked]:text-white"
-                  >
-                    <option value="">Select a specialty</option>
-                    <option value="General Physician">General Physician</option>
-                    <option value="Cardiologist">Cardiologist</option>
-                    <option value="Dermatologist">Dermatologist</option>
-                    <option value="Pediatrician">Pediatrician</option>
-                    <option value="Orthopedic Surgeon">Orthopedic Surgeon</option>
-                    <option value="Neurologist">Neurologist</option>
-                    <option value="Psychiatrist">Psychiatrist</option>
-                    <option value="Gynecologist">Gynecologist</option>
-                    <option value="ENT Specialist">ENT Specialist</option>
-                    <option value="Ophthalmologist">Ophthalmologist</option>
-                    <option value="Dentist">Dentist</option>
-                    <option value="Radiologist">Radiologist</option>
-                    <option value="Anesthesiologist">Anesthesiologist</option>
-                    <option value="Surgeon">Surgeon</option>
-                    <option value="Urologist">Urologist</option>
-                    <option value="Endocrinologist">Endocrinologist</option>
-                    <option value="Oncologist">Oncologist</option>
-                    <option value="Gastroenterologist">Gastroenterologist</option>
-                  </select>
-                  {/* Custom Arrow Icon */}
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-tecnot-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              {/* Hospital */}
-              <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Hospital/Clinic
-                </label>
-                <input
-                  type="text"
-                  value={profileData.hospital}
-                  onChange={(e) => setProfileData({...profileData, hospital: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-gray-200 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
-                />
-              </div>
+        {/* Tabs */}
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100">
+          <div className="border-b border-gray-200">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('info')}
+                className={`flex-1 px-4 xs:px-6 py-3 xs:py-4 font-medium transition-smooth text-sm xs:text-base
+                          ${activeTab === 'info' 
+                            ? 'text-tecnot-primary border-b-2 border-tecnot-primary' 
+                            : 'text-gray-600 hover:text-gray-900'
+                          }`}
+              >
+                My Info
+              </button>
+              <button
+                onClick={() => setActiveTab('security')}
+                className={`flex-1 px-4 xs:px-6 py-3 xs:py-4 font-medium transition-smooth text-sm xs:text-base
+                          ${activeTab === 'security' 
+                            ? 'text-tecnot-primary border-b-2 border-tecnot-primary' 
+                            : 'text-gray-600 hover:text-gray-900'
+                          }`}
+              >
+                Security
+              </button>
             </div>
-
-            
-            
-            {/* Save Button */}
-            <button
-              onClick={() => alert('Profile updated! (Demo only)')}
-              className="mt-4 xs:mt-6 flex items-center justify-center gap-2 
-                       bg-tecnot-primary text-white 
-                       px-6 xs:px-8 py-2.5 xs:py-3 
-                       rounded-lg font-medium 
-                       hover:bg-tecnot-dark transition-smooth 
-                       shadow-lg
-                       text-sm xs:text-base
-                       w-full xs:w-auto"
-            >
-              <Save className="w-4 h-4 xs:w-5 xs:h-5" />
-              Save Changes
-            </button>
           </div>
 
           <div className="p-4 xs:p-6 sm:p-8">
