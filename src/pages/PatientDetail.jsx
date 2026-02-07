@@ -1,106 +1,184 @@
 import React from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Calendar, Eye, Plus } from 'lucide-react'
+import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft, Calendar, FileText, Phone, Mail } from 'lucide-react'
 import Header from '../components/Header'
-import { patientsData } from '../data/patientsData'
+import PatientBanner from '../components/PatientBanner'
 
 function PatientDetail() {
-  // Get patient code from URL
   const { code } = useParams()
-  
-  // Find the patient with this code
-  const patient = patientsData.find(p => p.code === code)
-  
-  // If patient not found, show error
-  if (!patient) {
-    return (
-      <div className="animate-fadeIn">
-        <Header title="Patient Not Found" subtitle="The requested patient could not be found" />
-        <div className="p-4 sm:p-6 lg:p-8">
-          <Link 
-            to="/patients"
-            className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark transition-smooth"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back to Patients</span>
-          </Link>
-          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-6">
-            <p className="text-red-800">Patient with code "{code}" not found.</p>
-          </div>
-        </div>
-      </div>
-    )
+
+  // Dummy patient data (replace with API call)
+  const patient = {
+    id: '1',
+    mrn: 'MRN001234',
+    first_name: 'Malik',
+    last_name: 'Fernando',
+    age: 38,
+    gender: 'Male',
+    blood_type: 'O+',
+    chronics: 'Diabetes Type 2',
+    allergies: 'Penicillin',
+    drug_precautions: 'Avoid NSAIDs',
+    national_id: '851234567V',
+    mobile_number: '+94 77 123 4567',
+    email: 'malik@example.com',
+    nationality: 'Sri Lankan',
+    preferred_language: 'Sinhala'
   }
-  
+
+  const sessions = [
+    { id: '1', date: '2026-02-05 14:30', chief_complaint: 'Severe headache', status: 'completed' },
+    { id: '2', date: '2026-01-15 10:20', chief_complaint: 'Follow-up diabetes', status: 'completed' },
+    { id: '3', date: '2025-12-20 16:45', chief_complaint: 'Leg pain', status: 'completed' },
+  ]
+
   return (
-    <div className="animate-fadeIn">
-      <Header 
-        title={`${patient.name}'s Folder`}
-        subtitle={`Patient Code: ${patient.code}`}
-      />
+    <div className="animate-fadeIn w-full">
+      <Header title="Patient Details" subtitle={`${patient.first_name} ${patient.last_name}`} />
       
-      <div className="p-4 sm:p-6 lg:p-8">
+      {/* Patient Banner */}
+      <PatientBanner patient={patient} />
+
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
         
         {/* Back Button */}
-        <Link 
+        <Link
           to="/patients"
-          className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark mb-6 transition-smooth"
+          className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark 
+                   transition-smooth mb-4 sm:mb-6 text-sm xs:text-base"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Patients</span>
+          <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
+          Back to Patients
         </Link>
-        
-        {/* Patient Info Card */}
-        <div className="bg-gradient-to-r from-tecnot-primary to-tecnot-dark text-white rounded-xl p-4 sm:p-6 mb-6 shadow-lg">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="w-full sm:w-auto">
-              <h2 className="text-xl sm:text-2xl font-bold mb-1 break-words">{patient.name} / {patient.code}</h2>
-              <p className="text-tecnot-light text-sm sm:text-base">Total Sessions: {patient.sessions.length}</p>
-            </div>
-            <Link
-              to="/new-session"
-              className="flex items-center justify-center gap-2 bg-white text-tecnot-primary px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:shadow-xl transition-smooth text-sm sm:text-base w-full sm:w-auto whitespace-nowrap"
-            >
-              <Plus className="w-5 h-5" />
-              Start New Session
-            </Link>
-          </div>
-        </div>
-        
-        {/* Sessions List */}
-        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Consultation History</h3>
-        
-        <div className="grid grid-cols-1 gap-4">
-          {patient.sessions.map((session) => (
-            <div
-              key={session.id}
-              className="bg-white rounded-xl p-4 sm:p-6 shadow-sm card-hover border border-gray-100"
-            >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                
-                {/* Session Info */}
-                <div className="w-full sm:w-auto flex-1">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-tecnot-primary flex-shrink-0" />
-                    <span className="font-semibold text-gray-900 text-sm sm:text-base">{session.date}</span>
-                    <span className="text-xs sm:text-sm text-gray-500">{session.time}</span>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          
+          {/* LEFT: Patient Info + Actions */}
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+            
+            {/* Patient Info Card */}
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-5 sm:p-6">
+              <h3 className="font-bold text-gray-900 mb-4 text-base xs:text-lg">Patient Information</h3>
+              
+              <div className="space-y-3 text-xs xs:text-sm">
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-600">Mobile</p>
+                    <p className="font-medium text-gray-900 truncate">{patient.mobile_number}</p>
                   </div>
-                  <p className="text-gray-700 text-sm sm:text-base break-words">
-                    Complaint: <span className="font-medium">{session.complaint}</span>
-                  </p>
                 </div>
-                
-                {/* View Button */}
-                <Link
-                  to={`/soap-note/${patient.code}/${session.id}`}
-                  className="flex items-center justify-center gap-2 bg-tecnot-light text-tecnot-primary px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-tecnot-primary hover:text-white transition-smooth text-sm sm:text-base w-full sm:w-auto whitespace-nowrap"
-                >
-                  <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
-                  View SOAP Note
-                </Link>
+
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-600">Email</p>
+                    <p className="font-medium text-gray-900 truncate">{patient.email}</p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-gray-100">
+                  <p className="text-gray-600 mb-1">Nationality</p>
+                  <p className="font-medium text-gray-900">{patient.nationality}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-600 mb-1">Preferred Language</p>
+                  <p className="font-medium text-gray-900">{patient.preferred_language}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-600 mb-1">National ID</p>
+                  <p className="font-medium text-gray-900">{patient.national_id}</p>
+                </div>
               </div>
             </div>
-          ))}
+
+            {/* Actions */}
+            <div className="space-y-3">
+              <Link
+                to="/new-session"
+                className="w-full flex items-center justify-center gap-2 bg-tecnot-primary 
+                         text-white px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
+                         hover:bg-tecnot-dark transition-smooth shadow-lg text-sm xs:text-base"
+              >
+                <Calendar className="w-5 h-5" />
+                Start New Session
+              </Link>
+
+              <button
+                className="w-full flex items-center justify-center gap-2 bg-white 
+                         border-2 border-tecnot-primary text-tecnot-primary 
+                         px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
+                         hover:bg-tecnot-light transition-smooth text-sm xs:text-base"
+              >
+                Edit Patient Info
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT: Consultation History */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-5 sm:p-6">
+              <h3 className="font-bold text-gray-900 mb-4 text-base xs:text-lg sm:text-xl">
+                Consultation History ({sessions.length} sessions)
+              </h3>
+
+              <div className="space-y-3 sm:space-y-4">
+                {sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="border border-gray-200 rounded-lg p-3 xs:p-4 sm:p-5 
+                             hover:border-tecnot-primary transition-all duration-200
+                             hover:shadow-md"
+                  >
+                    <div className="flex flex-col xs:flex-row xs:items-start xs:justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 mb-1 text-sm xs:text-base truncate">
+                          {session.chief_complaint}
+                        </h4>
+                        <p className="text-xs xs:text-sm text-gray-600">
+                          {new Date(session.date).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center px-2.5 xs:px-3 py-1 rounded-full 
+                                     text-[10px] xs:text-xs font-medium bg-green-100 text-green-800
+                                     self-start xs:self-auto">
+                        {session.status}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col xs:flex-row gap-2 xs:gap-3">
+                      <Link
+                        to={`/soap-note/${session.id}`}
+                        className="flex-1 flex items-center justify-center gap-2 
+                                 bg-tecnot-primary text-white px-3 xs:px-4 py-2 xs:py-2.5 
+                                 rounded-lg font-medium hover:bg-tecnot-dark 
+                                 transition-smooth text-xs xs:text-sm"
+                      >
+                        <FileText className="w-4 h-4" />
+                        View SOAP Note
+                      </Link>
+                      <button
+                        className="flex-1 flex items-center justify-center gap-2 
+                                 bg-white border-2 border-gray-300 text-gray-700 
+                                 px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg font-medium 
+                                 hover:bg-gray-50 transition-smooth text-xs xs:text-sm"
+                      >
+                        Continue Session
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

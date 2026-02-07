@@ -18,31 +18,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false)  // ← THIS LINE WAS MISSING!
 
   // Comment out the useEffect for now (we're using mock auth)
-   useEffect(() => {
-     const checkAuth = async () => {
-       const storedToken = localStorage.getItem('tecnot_token')
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     const storedToken = localStorage.getItem('tecnot_token')
       
-      if (storedToken) {
-        try {
-          const userData = await authService.getCurrentUser()
-          setUser(userData)
-           setToken(storedToken)
-           setIsAuthenticated(true)
-         } catch (error) {
-           console.error('Auth check failed:', error)
-           localStorage.removeItem('tecnot_token')
-           setToken(null)
-           setUser(null)
-           setIsAuthenticated(false)
-         }
-       }
+  //     if (storedToken) {
+  //       try {
+  //         const userData = await authService.getCurrentUser()
+  //         setUser(userData)
+  //         setToken(storedToken)
+  //         setIsAuthenticated(true)
+  //       } catch (error) {
+  //         console.error('Auth check failed:', error)
+  //         localStorage.removeItem('tecnot_token')
+  //         setToken(null)
+  //         setUser(null)
+  //         setIsAuthenticated(false)
+  //       }
+  //     }
       
-       setLoading(false)
-     }
+  //     setLoading(false)
+  //   }
 
-     checkAuth()
-   }, [])
-//
+  //   checkAuth()
+  // }, [])
+
   const login = async (credentials) => {
     try {
       const response = await authService.login(credentials)
