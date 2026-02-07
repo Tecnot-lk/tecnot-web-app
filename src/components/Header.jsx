@@ -1,74 +1,64 @@
-// ====================
-// HEADER COMPONENT - FULLY RESPONSIVE
-// Top bar showing page title and user info
-// ====================
-
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Bell } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 
 function Header({ title, subtitle }) {
+  const { user } = useAuth()
+
+  // Get user initials
+  const getInitials = () => {
+    if (!user) return 'U'
+    const firstName = user.first_name || user.email?.charAt(0) || 'U'
+    return firstName.charAt(0).toUpperCase()
+  }
+
   return (
-    <header className="bg-white border-b border-gray-200 
-                       px-3 xs:px-4 sm:px-6 lg:px-8 
-                       py-3 xs:py-4 lg:py-5 
-                       flex items-center justify-between 
-                       sticky top-0 z-10 shadow-sm">
-      
-      {/* Page Title - Responsive margins for mobile menu */}
-      <div className="flex-1 ml-11 xs:ml-12 lg:ml-0 min-w-0">
-        <h1 className="text-base xs:text-lg sm:text-xl lg:text-2xl 
-                       font-bold text-gray-900 truncate">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="text-xs sm:text-sm lg:text-base 
-                        text-gray-600 mt-0.5 sm:mt-1 
-                        hidden xs:block truncate">
-            {subtitle}
-          </p>
-        )}
-      </div>
-      
-      {/* Right side - Responsive spacing */}
-      <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-shrink-0">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      <div className="flex items-center justify-between px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
         
-        {/* Notification Bell */}
-        <button className="relative p-1.5 xs:p-2 
-                          hover:bg-gray-100 rounded-lg 
-                          transition-smooth
-                          active:scale-95"
-                aria-label="Notifications">
-          <Bell className="w-4 h-4 xs:w-5 xs:h-5 text-gray-700" />
-          <span className="absolute top-0.5 right-0.5 xs:top-1 xs:right-1 
-                         w-1.5 h-1.5 xs:w-2 xs:h-2 
-                         bg-red-500 rounded-full"></span>
-        </button>
+        {/* Left: Title Section */}
+        <div className="flex-1 min-w-0 ml-11 xs:ml-12 lg:ml-0">
+          <h1 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-xs xs:text-sm text-gray-600 truncate mt-0.5 sm:mt-1">
+              {subtitle}
+            </p>
+          )}
+        </div>
         
-        {/* User Avatar - Hidden on very small screens */}
-        <div className="hidden xs:flex items-center gap-2 sm:gap-3 
-                       pl-2 sm:pl-4 
-                       border-l border-gray-200">
+        {/* Right: Notification Icon + User Info */}
+        <div className="flex items-center gap-2 xs:gap-3 sm:gap-4">
           
-          {/* User Info - Hidden on small screens */}
-          <div className="text-right hidden md:block">
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 
-                         truncate max-w-[120px] lg:max-w-none">
-              Dr. Ibrahim
-            </p>
-            <p className="text-[10px] sm:text-xs text-gray-500 truncate">
-              General Physician
-            </p>
-          </div>
+          {/* Notification Icon */}
+          <Link 
+            to="/notifications" 
+            className="p-1.5 xs:p-2 hover:bg-gray-100 rounded-lg transition-smooth relative"
+          >
+            <Bell className="w-5 h-5 xs:w-6 xs:h-6 text-gray-600" />
+            {/* Notification badge */}
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          </Link>
           
-          {/* Avatar - Responsive size */}
-          <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 
-                         rounded-full bg-tecnot-primary 
-                         flex items-center justify-center 
-                         text-white font-semibold 
-                         text-xs xs:text-sm sm:text-base
-                         flex-shrink-0">
-            IS
-          </div>
+          {/* User Avatar - Links to Profile */}
+          <Link 
+            to="/profile" 
+            className="flex items-center gap-2 xs:gap-3 hover:opacity-80 transition-smooth"
+          >
+            <div className="hidden md:block text-right">
+              <p className="text-xs xs:text-sm font-semibold text-gray-900">
+                {user?.first_name ? `Dr. ${user.first_name}` : 'Doctor'}
+              </p>
+              <p className="text-[10px] xs:text-xs text-gray-500">
+                {user?.specialty || 'General Physician'}
+              </p>
+            </div>
+            <div className="w-8 h-8 xs:w-10 xs:h-10 bg-tecnot-primary rounded-full flex items-center justify-center text-white font-bold text-sm xs:text-base">
+              {getInitials()}
+            </div>
+          </Link>
         </div>
       </div>
     </header>

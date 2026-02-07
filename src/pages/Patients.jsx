@@ -1,240 +1,487 @@
-// ====================
-// PATIENTS PAGE - FULLY RESPONSIVE
-// View all patients and their session folders
-// ====================
-
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Plus, Folder, Calendar, ChevronRight, X } from 'lucide-react'
+import { Search, User, Plus, X, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import * as patientService from '../services/patientService'
 
 function Patients() {
+  const [patients, setPatients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
-  
-  const patients = [
-    { 
-      id: 1, 
-      name: 'Malik', 
-      code: '001', 
-      sessions: 4,
-      lastVisit: '25/11/2025',
-      diagnosis: 'Leg pain'
-    },
-    { 
-      id: 2, 
-      name: 'Shiman', 
-      code: '021', 
-      sessions: 2,
-      lastVisit: '30/11/2025',
-      diagnosis: 'Chest pain'
-    },
-    { 
-      id: 3, 
-      name: 'Ibrahim', 
-      code: '022', 
-      sessions: 3,
-      lastVisit: '03/01/2026',
-      diagnosis: 'Stomach pain'
-    },
-    { 
-      id: 4, 
-      name: 'Sanuka', 
-      code: '111', 
-      sessions: 1,
-      lastVisit: '10/01/2026',
-      diagnosis: 'Leg pain'
-    },
-    { 
-      id: 5, 
-      name: 'Prajith', 
-      code: '232', 
-      sessions: 5,
-      lastVisit: '15/01/2026',
-      diagnosis: 'Migraine'
-    },
-  ]
-  
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [newPatient, setNewPatient] = useState({
+    first_name: '',
+    last_name: '',
+    age: '',
+    gender: '',
+    nationality: '',
+    national_id: '',
+    mobile_number: '',
+    email: '',
+    preferred_language: 'English',
+    blood_type: '',
+    chronics: '',
+    allergies: '',
+    drug_precautions: '',
+    mrn: ''
+  })
+
+  useEffect(() => {
+    fetchPatients()
+  }, [])
+
+  const fetchPatients = async () => {
+    try {
+      setLoading(true)
+      const data = await patientService.getPatients()
+      setPatients(data.results || [])
+    } catch (error) {
+      console.error('Error fetching patients:', error)
+      // Using dummy data for development
+      setPatients([
+        { id: '1', mrn: 'MRN001234', first_name: 'Malik', last_name: 'Fernando', age: 38, gender: 'Male', mobile_number: '+94771234567' },
+        { id: '2', mrn: 'MRN005678', first_name: 'Shiman', last_name: 'Perera', age: 35, gender: 'Male', mobile_number: '+94712345678' },
+        { id: '3', mrn: 'MRN009012', first_name: 'Aisha', last_name: 'Khan', age: 42, gender: 'Female', mobile_number: '+94763456789' },
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const calculateAge = (dob) => {
+    if (!dob) return ''
+    const birth = new Date(dob)
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return age < 0 ? '' : String(age)
+  }
+
+  const handleDobChange = (date) => {
+    setSelectedDate(date)
+    const computedAge = calculateAge(date)
+    setNewPatient(prev => ({ ...prev, age: computedAge }))
+  }
+
+  const handleSavePatient = async () => {
+    if (!newPatient.first_name || !newPatient.last_name) {
+      alert('Please fill in patient name')
+      return
+    }
+
+    try {
+      const patientData = {
+        ...newPatient,
+        date_of_birth: selectedDate ? selectedDate.toISOString().split('T')[0] : null
+      }
+      await patientService.createPatient(patientData)
+      alert('Patient added successfully!')
+      setShowAddModal(false)
+      resetForm()
+      fetchPatients()
+    } catch (error) {
+      console.error('Error adding patient:', error)
+      alert('Failed to add patient. Please try again.')
+    }
+  }
+
+  const resetForm = () => {
+    setNewPatient({
+      first_name: '',
+      last_name: '',
+      age: '',
+      gender: '',
+      nationality: '',
+      national_id: '',
+      mobile_number: '',
+      email: '',
+      preferred_language: 'English',
+      blood_type: '',
+      chronics: '',
+      allergies: '',
+      drug_precautions: '',
+      mrn: ''
+    })
+    setSelectedDate(null)
+  }
+
+  const filteredPatients = patients.filter(patient => {
+    const query = searchQuery.toLowerCase()
+    return (
+      patient.first_name?.toLowerCase().includes(query) ||
+      patient.last_name?.toLowerCase().includes(query) ||
+      patient.mrn?.toLowerCase().includes(query) ||
+      patient.mobile_number?.includes(query)
+    )
+  })
+
   return (
-    <div className="animate-fadeIn">
-      <Header 
-        title="Patient Records" 
-        subtitle="Manage and view all your patient consultations"
-      />
+    <div className="animate-fadeIn w-full">
+      <Header title="Patient Records" subtitle="Manage your patients" />
       
-      {/* Main Content - Responsive padding */}
-      <div className="p-3 xs:p-4 sm:p-6 lg:p-8">
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
         
-        {/* Search and Add Patient - Responsive layout */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-          
-          {/* Search Bar - Full width on mobile */}
-          <div className="flex items-center gap-2 bg-white border border-gray-200 
-                         rounded-lg px-3 xs:px-4 py-2.5 xs:py-3 
-                         w-full sm:max-w-md shadow-sm">
-            <Search className="w-4 h-4 xs:w-5 xs:h-5 text-gray-400 flex-shrink-0" />
+        {/* Search & Add Patient */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {/* Search Bar */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by patient name or code..."
-              className="outline-none text-sm xs:text-base w-full"
+              placeholder="Search by name, MRN, or mobile..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                       focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                       transition-all text-sm xs:text-base"
             />
           </div>
-          
-          {/* Add Patient Button - Full width on mobile */}
+
+          {/* Add Patient Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center gap-2 
-                       bg-tecnot-primary text-white 
-                       px-4 xs:px-6 py-2.5 xs:py-3 
-                       rounded-lg font-medium 
-                       hover:bg-tecnot-dark transition-smooth 
-                       shadow-lg btn-glow
-                       active:scale-95
-                       text-sm xs:text-base
-                       w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 bg-tecnot-primary text-white 
+                     px-4 xs:px-6 py-3 rounded-lg font-medium hover:bg-tecnot-dark 
+                     transition-smooth shadow-lg text-sm xs:text-base whitespace-nowrap"
           >
-            <Plus className="w-4 h-4 xs:w-5 xs:h-5" />
-            <span className="hidden xs:inline">Add New Patient</span>
-            <span className="xs:hidden">Add Patient</span>
+            <Plus className="w-5 h-5" />
+            Add Patient
           </button>
         </div>
-        
-        {/* Patient List - Responsive cards */}
-        <div className="grid grid-cols-1 gap-3 xs:gap-4">
-          {patients.map((patient) => (
-            <Link
-              key={patient.id}
-              to={`/patient/${patient.code}`}
-              className="bg-white rounded-lg sm:rounded-xl 
-                       p-4 xs:p-5 sm:p-6 
-                       shadow-sm card-hover border border-gray-100 group"
-            >
-              <div className="flex items-center justify-between gap-3">
-                
-                {/* Patient Info */}
-                <div className="flex items-center gap-3 xs:gap-4 flex-1 min-w-0">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 xs:w-14 xs:h-14 
-                                rounded-full bg-tecnot-light 
-                                flex items-center justify-center
-                                flex-shrink-0">
-                    <span className="text-lg xs:text-xl font-bold text-tecnot-primary">
-                      {patient.name.charAt(0)}
-                    </span>
+
+        {/* Patient Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary" />
+          </div>
+        ) : filteredPatients.length === 0 ? (
+          <div className="text-center py-12">
+            <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-sm xs:text-base">
+              {searchQuery ? 'No patients found matching your search.' : 'No patients yet. Add your first patient to get started.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredPatients.map((patient) => (
+              <Link
+                key={patient.id}
+                to={`/patient/${patient.mrn}`}
+                className="bg-white rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm 
+                         border border-gray-100 hover:shadow-md transition-all duration-200
+                         card-hover"
+              >
+                <div className="flex items-start gap-3 xs:gap-4 mb-3">
+                  <div className={`w-12 h-12 xs:w-14 xs:h-14 rounded-full flex items-center justify-center 
+                                text-white font-bold text-lg xs:text-xl flex-shrink-0
+                                ${patient.gender === 'Female' ? 'bg-pink-500' : patient.gender === 'Male' ? 'bg-blue-500' : 'bg-gray-500'}`}>
+                    {patient.first_name?.charAt(0)}
                   </div>
-                  
-                  {/* Details */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base xs:text-lg font-bold text-gray-900 truncate">
-                      {patient.name} <span className="text-gray-400">/ {patient.code}</span>
+                    <h3 className="font-bold text-gray-900 text-base xs:text-lg truncate">
+                      {patient.first_name} {patient.last_name}
                     </h3>
-                    <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-4 mt-1 text-xs xs:text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Folder className="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" />
-                        <span className="truncate">{patient.sessions} sessions</span>
-                      </span>
-                      <span className="hidden xs:inline">•</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" />
-                        <span className="truncate">Last: {patient.lastVisit}</span>
-                      </span>
-                    </div>
-                    <p className="text-xs xs:text-sm text-gray-500 mt-1 truncate">
-                      Latest: {patient.diagnosis}
-                    </p>
+                    <p className="text-xs xs:text-sm text-gray-600">MRN: {patient.mrn}</p>
                   </div>
                 </div>
-                
-                {/* Arrow Icon */}
-                <ChevronRight className="w-5 h-5 xs:w-6 xs:h-6 
-                                       text-gray-400 
-                                       group-hover:text-tecnot-primary 
-                                       group-hover:translate-x-1 
-                                       transition-smooth
-                                       flex-shrink-0" />
-              </div>
-            </Link>
-          ))}
-        </div>
+
+                <div className="space-y-1.5 text-xs xs:text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Age:</span>
+                    <span className="font-medium text-gray-900">{patient.age} years</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Gender:</span>
+                    <span className="font-medium text-gray-900">{patient.gender}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Contact:</span>
+                    <span className="font-medium text-gray-900 truncate ml-2">{patient.mobile_number}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <span className="text-xs xs:text-sm text-tecnot-primary font-medium">
+                    View Details →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-      
-      {/* Add Patient Modal - Responsive */}
+
+      {/* Add Patient Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fadeIn p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl 
-                         p-5 xs:p-6 sm:p-8 
-                         max-w-md w-full 
-                         shadow-2xl
-                         max-h-[90vh] overflow-y-auto">
-            
-            {/* Header with close button */}
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl xs:text-2xl font-bold text-gray-900">
-                New Patient
-              </h2>
-              <button 
-                onClick={() => setShowAddModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-smooth"
-              >
-                <X className="w-5 h-5 xs:w-6 xs:h-6" />
-              </button>
-            </div>
-            
-            {/* Form */}
-            <div className="space-y-3 xs:space-y-4">
-              {/* Name Input */}
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setShowAddModal(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-2xl p-6 xs:p-8 max-w-2xl w-full 
+                     shadow-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-smooth"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-xl xs:text-2xl font-bold text-gray-900 mb-6">New Patient</h2>
+
+            <div className="space-y-4">
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter first name"
+                    value={newPatient.first_name}
+                    onChange={(e) => setNewPatient({ ...newPatient, first_name: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter last name"
+                    value={newPatient.last_name}
+                    onChange={(e) => setNewPatient({ ...newPatient, last_name: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+              </div>
+
+              {/* DOB */}
               <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter patient name"
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-tecnot-primary/30 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={handleDobChange}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select date of birth"
+                  maxDate={new Date()}
+                  showYearDropdown
+                  scrollableYearDropdown
+                  yearDropdownItemNumber={100}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                           transition-all cursor-pointer text-sm xs:text-base"
+                  wrapperClassName="w-full"
                 />
               </div>
-              
-              {/* Code Input */}
+
+              {/* Age & Gender */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                  <input
+                    type="number"
+                    placeholder="Auto-calculated from DOB"
+                    value={newPatient.age}
+                    onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <select
+                    value={newPatient.gender}
+                    onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all bg-white cursor-pointer text-sm xs:text-base"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Nationality & National ID */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                  <input
+                    type="text"
+                    placeholder="Enter nationality"
+                    value={newPatient.nationality}
+                    onChange={(e) => setNewPatient({ ...newPatient, nationality: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">National ID</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 851234567V"
+                    value={newPatient.national_id}
+                    onChange={(e) => setNewPatient({ ...newPatient, national_id: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+              </div>
+
+              {/* Mobile & Email */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                  <input
+                    type="tel"
+                    placeholder="+94 77 123 4567"
+                    value={newPatient.mobile_number}
+                    onChange={(e) => setNewPatient({ ...newPatient, mobile_number: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="patient@example.com"
+                    value={newPatient.email}
+                    onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all text-sm xs:text-base"
+                  />
+                </div>
+              </div>
+
+              {/* Language & Blood Type */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Language</label>
+                  <select
+                    value={newPatient.preferred_language}
+                    onChange={(e) => setNewPatient({ ...newPatient, preferred_language: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all bg-white cursor-pointer text-sm xs:text-base"
+                  >
+                    <option value="English">English</option>
+                    <option value="Sinhala">Sinhala</option>
+                    <option value="Tamil">Tamil</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                  <select
+                    value={newPatient.blood_type}
+                    onChange={(e) => setNewPatient({ ...newPatient, blood_type: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                             transition-all bg-white cursor-pointer text-sm xs:text-base"
+                  >
+                    <option value="">Select Blood Type</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Medical Info */}
               <div>
-                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
-                  Unique Code
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Chronic Conditions</label>
                 <input
                   type="text"
-                  placeholder="Enter unique code"
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-tecnot-primary/30 rounded-lg 
-                           outline-none focus:border-tecnot-primary transition-smooth"
+                  placeholder="e.g., Diabetes Type 2, Hypertension"
+                  value={newPatient.chronics}
+                  onChange={(e) => setNewPatient({ ...newPatient, chronics: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                           transition-all text-sm xs:text-base"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Penicillin, Peanuts"
+                  value={newPatient.allergies}
+                  onChange={(e) => setNewPatient({ ...newPatient, allergies: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                           transition-all text-sm xs:text-base"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Drug Precautions</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Avoid NSAIDs"
+                  value={newPatient.drug_precautions}
+                  onChange={(e) => setNewPatient({ ...newPatient, drug_precautions: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                           transition-all text-sm xs:text-base"
+                />
+              </div>
+
+              {/* MRN */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Patient MRN</label>
+                <input
+                  type="text"
+                  placeholder="Auto-generated (leave blank)"
+                  value={newPatient.mrn}
+                  onChange={(e) => setNewPatient({ ...newPatient, mrn: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
+                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
+                           transition-all text-sm xs:text-base"
                 />
               </div>
             </div>
-            
+
             {/* Buttons */}
-            <div className="flex flex-col xs:flex-row gap-3 mt-6">
+            <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 xs:px-6 py-2.5 xs:py-3 
-                         border-2 border-gray-300 rounded-lg 
-                         font-medium text-gray-700 
-                         hover:bg-gray-50 transition-smooth
-                         text-sm xs:text-base"
+                className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg font-medium 
+                         text-gray-700 hover:bg-gray-50 transition-smooth text-sm xs:text-base"
               >
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  alert('Patient added! (Demo only)')
-                  setShowAddModal(false)
-                }}
-                className="flex-1 px-4 xs:px-6 py-2.5 xs:py-3 
-                         bg-tecnot-primary text-white rounded-lg 
-                         font-medium hover:bg-tecnot-dark transition-smooth
-                         text-sm xs:text-base"
+                onClick={handleSavePatient}
+                className="flex-1 px-6 py-3 bg-tecnot-primary text-white rounded-lg font-medium 
+                         hover:bg-tecnot-dark transition-smooth shadow-lg hover:shadow-xl text-sm xs:text-base"
               >
-                Save
+                Add Patient
               </button>
             </div>
           </div>

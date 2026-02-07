@@ -1,241 +1,379 @@
-// ====================
-// SOAP NOTE PAGE - FULLY RESPONSIVE
-// View and edit SOAP notes
-// ====================
-
 import React, { useState } from 'react'
-import { ArrowLeft, Download, Edit, Save } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { ArrowLeft, Edit, Save, FileText, Calendar } from 'lucide-react'
 import Header from '../components/Header'
+import PatientBanner from '../components/PatientBanner'
 
 function SoapNote() {
+  const { id } = useParams()
+  const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
-  
-  const [soapData, setSoapData] = useState({
-    patient: 'Malik / 001',
-    date: '25/11/2025',
-    time: '10:17am',
-    subjective: '- Reporting leg pain\n- Duration: Long time\n- Patient mentions difficulty walking',
-    objective: '1. Acute leg pain likely due to muscle strain\n2. No swelling, redness, numbness, or red-flag symptoms observed',
-    assessment: 'Muscle strain in right leg. No signs of serious injury or fracture.',
-    plan: '1. Rest + ice for 24-48 hours; take paracetamol/ibuprofen if needed\n2. Light stretching after 48 hours\n3. Return if pain worsens or no improvement in 1 week'
-  })
-  
-  const handleExport = () => {
-    alert('PDF export feature will be added with backend integration!')
+
+  // Dummy patient data
+  const patient = {
+    id: '1',
+    mrn: 'MRN001234',
+    first_name: 'Malik',
+    last_name: 'Fernando',
+    age: 38,
+    gender: 'Male',
+    blood_type: 'O+',
+    chronics: 'Diabetes Type 2',
+    allergies: 'Penicillin',
+    drug_precautions: 'Avoid NSAIDs',
+    national_id: '851234567V'
   }
-  
-  return (
-    <div className="animate-fadeIn">
-      <Header 
-        title="SOAP Note" 
-        subtitle={`${soapData.patient} - ${soapData.date} ${soapData.time}`}
-      />
-      
-      {/* Main Content - Responsive padding */}
-      <div className="p-3 xs:p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
-        
-        {/* Top Actions - Responsive layout */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 xs:mb-6">
-          <Link 
-            to="/patients"
-            className="inline-flex items-center gap-2 
-                     text-tecnot-primary hover:text-tecnot-dark 
-                     transition-smooth
-                     text-sm xs:text-base"
-          >
-            <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
-            <span className="font-medium">Back to Patients</span>
-          </Link>
-          
-          <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 w-full sm:w-auto">
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`flex items-center justify-center gap-2 
-                       px-4 xs:px-6 py-2.5 xs:py-3 
-                       rounded-lg font-medium 
-                       transition-smooth
-                       text-sm xs:text-base
-                       ${isEditing
-                         ? 'bg-tecnot-primary text-white hover:bg-tecnot-dark'
-                         : 'border-2 border-tecnot-primary text-tecnot-primary hover:bg-tecnot-light'
-                       }`}
-            >
-              {isEditing ? <Save className="w-4 h-4 xs:w-5 xs:h-5" /> : <Edit className="w-4 h-4 xs:w-5 xs:h-5" />}
-              {isEditing ? 'Save Changes' : 'Edit Note'}
-            </button>
-            
-            <button
-              onClick={handleExport}
-              className="flex items-center justify-center gap-2 
-                       bg-gradient-to-r from-blue-500 to-purple-500 
-                       text-white 
-                       px-4 xs:px-6 py-2.5 xs:py-3 
-                       rounded-lg font-medium 
-                       hover:shadow-xl transition-smooth
-                       text-sm xs:text-base"
-            >
-              <Download className="w-4 h-4 xs:w-5 xs:h-5" />
-              <span className="hidden xs:inline">Share as PDF</span>
-              <span className="xs:hidden">PDF</span>
-            </button>
-          </div>
+
+  const session = {
+    vitals: {
+      height: '175',
+      weight: '70',
+      temperature: '37.2',
+      blood_pressure: '120/80',
+      heart_rate: '72',
+      spo2: '98'
+    }
+  }
+
+  const [soapData, setSoapData] = useState({
+    chief_complaint: 'Severe headache',
+    history_present_illness: 'Patient reports severe right-sided throbbing headache for 3 days. Pain worsens in evening. Occasional blurry vision. Paracetamol ineffective.',
+    subjective: 'Patient complains of severe headache on right side for 3 days. Describes pain as throbbing and worse in evening. Reports occasional blurry vision. Denies nausea. Tried paracetamol with minimal relief.',
+    objective: `Vitals:
+- Height: 175cm, Weight: 70kg
+- Temp: 37.2°C
+- BP: 120/80, HR: 72, SpO2: 98%
+
+Physical Examination:
+- Alert and oriented
+- No focal neurological deficits
+- Pupils equal and reactive`,
+    assessment: `Tension headache, possible migraine. 
+
+Differential diagnosis:
+1. Migraine without aura
+2. Tension-type headache
+3. Cluster headache (less likely)`,
+    plan: `1. Prescribe Sumatriptan 50mg at onset of headache
+2. Advise rest in dark room
+3. Avoid triggers (stress, bright lights)
+4. Follow-up in 1 week if no improvement
+5. Consider CT scan if symptoms worsen
+6. Patient education on migraine triggers provided`,
+    lab_orders: '',
+    radiology_orders: 'CT Brain if symptoms worsen or no improvement in 1 week',
+    medication_orders: `1. Sumatriptan 50mg tablet
+   - Take 1 tablet at onset of headache
+   - Max 2 doses in 24 hours
+   - Duration: 1 week supply`,
+    procedure_orders: '',
+    nursing_instructions: `Monitor patient for:
+- Worsening symptoms
+- Adverse medication reactions
+- Call if severe nausea/vomiting develops`
+  })
+
+  // Historical SOAP notes
+  const historicalNotes = [
+    { id: '1', date: '2026-02-05 14:30', chief_complaint: 'Severe headache' },
+    { id: '2', date: '2026-01-15 10:20', chief_complaint: 'Follow-up diabetes' },
+    { id: '3', date: '2025-12-20 16:45', chief_complaint: 'Leg pain' },
+  ]
+
+  const handleSave = () => {
+    console.log('Saving SOAP note:', soapData)
+    alert('SOAP note saved successfully!')
+    setIsEditing(false)
+  }
+
+  const handleChange = (field, value) => {
+    setSoapData({ ...soapData, [field]: value })
+  }
+
+  const SectionTitle = ({ children, icon: Icon }) => (
+    <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-tecnot-primary">
+      {Icon && <Icon className="w-5 h-5 text-tecnot-primary" />}
+      <h3 className="font-bold text-gray-900 text-sm xs:text-base sm:text-lg">{children}</h3>
+    </div>
+  )
+
+  const ReadOnlyField = ({ label, value }) => (
+    <div className="bg-gray-50 rounded-lg p-3 xs:p-4">
+      <label className="block text-xs xs:text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <p className="text-sm xs:text-base text-gray-900 whitespace-pre-wrap">{value || 'None'}</p>
+    </div>
+  )
+
+  const EditableField = ({ label, value, field, rows = 4 }) => (
+    <div>
+      <label className="block text-xs xs:text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      {isEditing ? (
+        <textarea
+          value={value}
+          onChange={(e) => handleChange(field, e.target.value)}
+          rows={rows}
+          className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
+                   outline-none focus:border-tecnot-primary focus:ring-4 
+                   focus:ring-tecnot-primary/20 transition-all resize-none
+                   text-sm xs:text-base"
+        />
+      ) : (
+        <div className="bg-white border-2 border-gray-200 rounded-lg p-3 xs:p-4">
+          <p className="text-sm xs:text-base text-gray-900 whitespace-pre-wrap">{value || 'None'}</p>
         </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="animate-fadeIn w-full">
+      <Header title="SOAP Note" subtitle={`${patient.first_name} ${patient.last_name}`} />
+      
+      {/* Patient Banner */}
+      <PatientBanner patient={patient} session={session} />
+
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1800px] mx-auto">
         
-        {/* SOAP Note Card - Responsive */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           
-          {/* Header - Responsive */}
-          <div className="bg-gradient-to-r from-tecnot-primary to-tecnot-dark text-white 
-                         p-4 xs:p-5 sm:p-6">
-            <h2 className="text-xl xs:text-2xl font-bold mb-2">
-              {soapData.patient}
-            </h2>
-            <div className="flex flex-wrap items-center gap-2 xs:gap-4 sm:gap-6 
-                           text-tecnot-light text-xs xs:text-sm">
-              <span>{soapData.date}</span>
-              <span className="hidden xs:inline">•</span>
-              <span>{soapData.time}</span>
-              <span className="hidden xs:inline">•</span>
-              <span className="bg-white/20 px-2 xs:px-3 py-1 rounded-full text-[10px] xs:text-xs">
-                Consultation completed
-              </span>
+          {/* MAIN CONTENT: SOAP Note (3 columns on desktop) */}
+          <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+            
+            {/* Header Actions */}
+            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+              <Link
+                to={`/patient/${patient.mrn}`}
+                className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark 
+                         transition-smooth text-sm xs:text-base"
+              >
+                <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
+                Back to Patient
+              </Link>
+
+              <div className="flex gap-2 xs:gap-3">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 border-2 border-gray-300 
+                               text-gray-700 rounded-lg font-medium hover:bg-gray-50 
+                               transition-smooth text-sm xs:text-base"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 bg-tecnot-primary 
+                               text-white rounded-lg font-medium hover:bg-tecnot-dark 
+                               transition-smooth shadow-lg flex items-center justify-center gap-2
+                               text-sm xs:text-base"
+                    >
+                      <Save className="w-4 h-4 xs:w-5 xs:h-5" />
+                      Save
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 bg-tecnot-primary 
+                             text-white rounded-lg font-medium hover:bg-tecnot-dark 
+                             transition-smooth shadow-lg flex items-center justify-center gap-2
+                             text-sm xs:text-base"
+                  >
+                    <Edit className="w-4 h-4 xs:w-5 xs:h-5" />
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* SOAP Note Card */}
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8 space-y-6 sm:space-y-8">
+              
+              {/* Session Info */}
+              <div className="flex items-center gap-2 text-xs xs:text-sm text-gray-600">
+                <Calendar className="w-4 h-4" />
+                <span>Session Date: 05 Feb 2026, 2:30 PM</span>
+              </div>
+
+              {/* Chief Complaint (AI-Extracted, Read-Only) */}
+              <div>
+                <SectionTitle icon={FileText}>Chief Complaint</SectionTitle>
+                <ReadOnlyField value={soapData.chief_complaint} />
+              </div>
+
+              {/* History of Present Illness (AI-Extracted, Read-Only) */}
+              <div>
+                <SectionTitle>History of Present Illness (HPI)</SectionTitle>
+                <ReadOnlyField value={soapData.history_present_illness} />
+              </div>
+
+              {/* SOAP Sections */}
+              <div className="grid grid-cols-1 gap-6">
+                
+                {/* Subjective */}
+                <div>
+                  <SectionTitle>S - SUBJECTIVE</SectionTitle>
+                  <EditableField
+                    label="Patient's Description"
+                    value={soapData.subjective}
+                    field="subjective"
+                    rows={5}
+                  />
+                </div>
+
+                {/* Objective */}
+                <div>
+                  <SectionTitle>O - OBJECTIVE</SectionTitle>
+                  <EditableField
+                    label="Clinical Findings & Vitals"
+                    value={soapData.objective}
+                    field="objective"
+                    rows={6}
+                  />
+                </div>
+
+                {/* Assessment */}
+                <div>
+                  <SectionTitle>A - ASSESSMENT</SectionTitle>
+                  <EditableField
+                    label="Diagnosis & Differential"
+                    value={soapData.assessment}
+                    field="assessment"
+                    rows={5}
+                  />
+                </div>
+
+                {/* Plan */}
+                <div>
+                  <SectionTitle>P - PLAN</SectionTitle>
+                  <EditableField
+                    label="Treatment Plan"
+                    value={soapData.plan}
+                    field="plan"
+                    rows={6}
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t-2 border-gray-200"></div>
+
+              {/* Orders Section */}
+              <div>
+                <h2 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 mb-4 xs:mb-6">
+                  Orders & Instructions
+                </h2>
+                
+                <div className="space-y-4 xs:space-y-5">
+                  
+                  {/* Lab Orders */}
+                  <div>
+                    <EditableField
+                      label="🧪 Lab Orders"
+                      value={soapData.lab_orders}
+                      field="lab_orders"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Radiology Orders */}
+                  <div>
+                    <EditableField
+                      label="🏥 Radiology Orders"
+                      value={soapData.radiology_orders}
+                      field="radiology_orders"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Medication Orders */}
+                  <div>
+                    <EditableField
+                      label="💊 Medication Orders"
+                      value={soapData.medication_orders}
+                      field="medication_orders"
+                      rows={4}
+                    />
+                  </div>
+
+                  {/* Procedure Orders */}
+                  <div>
+                    <EditableField
+                      label="🔬 Procedure Orders"
+                      value={soapData.procedure_orders}
+                      field="procedure_orders"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Nursing Instructions */}
+                  <div>
+                    <EditableField
+                      label="👩‍⚕️ Nursing Instructions"
+                      value={soapData.nursing_instructions}
+                      field="nursing_instructions"
+                      rows={4}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          
-          {/* SOAP Sections - Responsive */}
-          <div className="p-4 xs:p-6 sm:p-8 space-y-4 xs:space-y-6">
-            
-            {/* Subjective */}
-            <div>
-              <div className="flex items-center gap-2 xs:gap-3 mb-2 xs:mb-3">
-                <div className="w-8 h-8 xs:w-10 xs:h-10 
-                               rounded-lg bg-blue-100 
-                               flex items-center justify-center
-                               flex-shrink-0">
-                  <span className="text-blue-600 font-bold text-base xs:text-lg">S</span>
-                </div>
-                <h3 className="text-lg xs:text-xl font-bold text-gray-900">Subjective</h3>
+
+          {/* SIDEBAR: Historical SOAP Notes (1 column on desktop) */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-5 sm:p-6 
+                         lg:sticky lg:top-20">
+              <h3 className="font-bold text-gray-900 mb-4 text-sm xs:text-base sm:text-lg">
+                📚 Historical SOAP Notes
+              </h3>
+
+              <div className="space-y-3">
+                {historicalNotes.map((note) => (
+                  <div
+                    key={note.id}
+                    className={`p-3 rounded-lg border-2 transition-all cursor-pointer
+                              ${note.id === id 
+                                ? 'border-tecnot-primary bg-tecnot-light' 
+                                : 'border-gray-200 hover:border-tecnot-primary hover:bg-tecnot-light/50'
+                              }`}
+                    onClick={() => note.id !== id && navigate(`/soap-note/${note.id}`)}
+                  >
+                    <p className="text-xs xs:text-sm text-gray-600 mb-1">
+                      📅 {new Date(note.date).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </p>
+                    <p className="font-semibold text-gray-900 text-xs xs:text-sm truncate">
+                      {note.chief_complaint}
+                    </p>
+                    {note.id === id && (
+                      <span className="inline-block mt-2 px-2 py-0.5 bg-tecnot-primary text-white 
+                                     text-[10px] xs:text-xs rounded-full">
+                        Current
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
-              {isEditing ? (
-                <textarea
-                  value={soapData.subjective}
-                  onChange={(e) => setSoapData({...soapData, subjective: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-tecnot-primary/30 rounded-lg 
-                           outline-none focus:border-tecnot-primary 
-                           transition-smooth resize-none"
-                  rows="4"
-                />
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-3 xs:p-4 
-                               whitespace-pre-line text-gray-700
-                               text-sm xs:text-base">
-                  {soapData.subjective}
-                </div>
-              )}
-            </div>
-            
-            {/* Objective */}
-            <div>
-              <div className="flex items-center gap-2 xs:gap-3 mb-2 xs:mb-3">
-                <div className="w-8 h-8 xs:w-10 xs:h-10 
-                               rounded-lg bg-emerald-100 
-                               flex items-center justify-center
-                               flex-shrink-0">
-                  <span className="text-emerald-600 font-bold text-base xs:text-lg">O</span>
-                </div>
-                <h3 className="text-lg xs:text-xl font-bold text-gray-900">Objective</h3>
+
+              <button
+                className="w-full mt-4 px-4 py-2.5 border-2 border-tecnot-primary 
+                         text-tecnot-primary rounded-lg font-medium hover:bg-tecnot-light 
+                         transition-smooth text-xs xs:text-sm"
+              >
+                Continue This Session
+              </button>
+
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-[10px] xs:text-xs text-gray-500 mb-2">
+                  💡 <strong>Tip:</strong> Click "Continue This Session" to add more notes to this consultation.
+                </p>
               </div>
-              {isEditing ? (
-                <textarea
-                  value={soapData.objective}
-                  onChange={(e) => setSoapData({...soapData, objective: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-tecnot-primary/30 rounded-lg 
-                           outline-none focus:border-tecnot-primary 
-                           transition-smooth resize-none"
-                  rows="4"
-                />
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-3 xs:p-4 
-                               whitespace-pre-line text-gray-700
-                               text-sm xs:text-base">
-                  {soapData.objective}
-                </div>
-              )}
             </div>
-            
-            {/* Assessment */}
-            <div>
-              <div className="flex items-center gap-2 xs:gap-3 mb-2 xs:mb-3">
-                <div className="w-8 h-8 xs:w-10 xs:h-10 
-                               rounded-lg bg-purple-100 
-                               flex items-center justify-center
-                               flex-shrink-0">
-                  <span className="text-purple-600 font-bold text-base xs:text-lg">A</span>
-                </div>
-                <h3 className="text-lg xs:text-xl font-bold text-gray-900">Assessment</h3>
-              </div>
-              {isEditing ? (
-                <textarea
-                  value={soapData.assessment}
-                  onChange={(e) => setSoapData({...soapData, assessment: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-tecnot-primary/30 rounded-lg 
-                           outline-none focus:border-tecnot-primary 
-                           transition-smooth resize-none"
-                  rows="3"
-                />
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-3 xs:p-4 
-                               whitespace-pre-line text-gray-700
-                               text-sm xs:text-base">
-                  {soapData.assessment}
-                </div>
-              )}
-            </div>
-            
-            {/* Plan */}
-            <div>
-              <div className="flex items-center gap-2 xs:gap-3 mb-2 xs:mb-3">
-                <div className="w-8 h-8 xs:w-10 xs:h-10 
-                               rounded-lg bg-orange-100 
-                               flex items-center justify-center
-                               flex-shrink-0">
-                  <span className="text-orange-600 font-bold text-base xs:text-lg">P</span>
-                </div>
-                <h3 className="text-lg xs:text-xl font-bold text-gray-900">Plan</h3>
-              </div>
-              {isEditing ? (
-                <textarea
-                  value={soapData.plan}
-                  onChange={(e) => setSoapData({...soapData, plan: e.target.value})}
-                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 
-                           text-sm xs:text-base
-                           border-2 border-tecnot-primary/30 rounded-lg 
-                           outline-none focus:border-tecnot-primary 
-                           transition-smooth resize-none"
-                  rows="5"
-                />
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-3 xs:p-4 
-                               whitespace-pre-line text-gray-700
-                               text-sm xs:text-base">
-                  {soapData.plan}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Footer - Responsive */}
-          <div className="bg-gray-50 border-t border-gray-200 p-4 xs:p-6">
-            <p className="text-xs xs:text-sm text-gray-600 text-center">
-              Generated by TECNOT AI Clinical Scribe • Review carefully before sharing with patients
-            </p>
           </div>
         </div>
       </div>
