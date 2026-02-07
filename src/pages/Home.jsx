@@ -42,7 +42,7 @@ function Home() {
 
   const handleApplyFilters = () => {
     console.log('Applying filters:', filters)
-    alert('Filters applied! (Backend integration pending)')
+    alert('Filters applied! (This will filter patient data when backend is connected)')
     setShowFilters(false)
   }
 
@@ -58,12 +58,12 @@ function Home() {
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* LEFT: Quick Actions (takes 2 columns on desktop) */}
+          {/* LEFT: Quick Actions (takes 2 columns) */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             
             {/* Quick Actions Section */}
             <div>
-              <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-3 sm:mb-4">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                   Quick Actions
                 </h2>
@@ -71,11 +71,11 @@ function Home() {
                 {/* Filter Button */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center justify-center gap-2 px-3 xs:px-4 py-2 
+                  className="flex items-center gap-2 px-3 xs:px-4 py-2 
                            bg-white border-2 border-tecnot-primary 
                            text-tecnot-primary rounded-lg font-medium 
                            hover:bg-tecnot-light transition-smooth
-                           text-xs xs:text-sm w-full xs:w-auto"
+                           text-xs xs:text-sm"
                 >
                   <Filter className="w-4 h-4" />
                   Filters
@@ -136,7 +136,7 @@ function Home() {
                     {/* Age */}
                     <div>
                       <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5">
-                        Age (Y/M/D)
+                        Age
                       </label>
                       <input
                         type="text"
@@ -165,10 +165,10 @@ function Home() {
                       />
                     </div>
 
-                    {/* Patient ID */}
+                    {/* Patient ID - MRN */}
                     <div>
                       <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5">
-                        Patient ID
+                        MRN - (Medical Record Number)
                       </label>
                       <input
                         type="text"
@@ -339,22 +339,11 @@ function Home() {
                   </div>
                 ))}
               </div>
-
-              {/* Pro Tip */}
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 
-                           rounded-lg p-4 xs:p-5 sm:p-6 mt-4 border border-blue-100">
-                <h3 className="font-bold text-gray-900 mb-2 text-xs xs:text-sm sm:text-base">
-                  💡 Pro Tip
-                </h3>
-                <p className="text-[10px] xs:text-xs sm:text-sm text-gray-700">
-                  You can now record consultations in Sinhala, Tamil, and English. 
-                  The AI will automatically transcribe and translate!
-                </p>
-              </div>
+              
             </div>
           </div>
 
-          {/* RIGHT SIDEBAR: Statistics (takes 1 column on desktop) */}
+          {/* RIGHT SIDEBAR: Statistics (takes 1 column) */}
           <div className="lg:col-span-1">
             <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
               Statistics

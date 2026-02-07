@@ -2,30 +2,34 @@ import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Calendar, FileText, Phone, Mail } from 'lucide-react'
 import Header from '../components/Header'
-import PatientBanner from '../components/PatientBanner'
+import { patientsData } from '../data/patientsData'
 
 function PatientDetail() {
+  // Get patient code from URL
   const { code } = useParams()
-
-  // Dummy patient data (replace with API call)
-  const patient = {
-    id: '1',
-    mrn: code,
-    first_name: 'Malik',
-    last_name: 'Fernando',
-    age: 38,
-    gender: 'Male',
-    date_of_birth: '1985-03-15',
-    nationality: 'Sri Lankan',
-    national_id: '851234567V',
-    mobile_number: '+94771234567',
-    email: 'malik@example.com',
-    preferred_language: 'Sinhala',
-    blood_type: 'O+',
-    chronics: 'Diabetes Type 2',
-    allergies: 'Penicillin',
-    drug_precautions: 'Avoid NSAIDs',
-    is_active: true
+  
+  // Find the patient with this code
+  const patient = patientsData.find(p => p.code === code)
+  
+  // If patient not found, show error
+  if (!patient) {
+    return (
+      <div className="animate-fadeIn">
+        <Header title="Patient Not Found" subtitle="The requested patient could not be found" />
+        <div className="p-4 sm:p-6 lg:p-8">
+          <Link 
+            to="/patients"
+            className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark transition-smooth"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Patients</span>
+          </Link>
+          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-6">
+            <p className="text-red-800">Patient with code "{code}" not found.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const sessions = [
@@ -41,138 +45,65 @@ function PatientDetail() {
       {/* Patient Banner */}
       <PatientBanner patient={patient} />
       
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8">
         
         {/* Back Button */}
         <Link 
           to="/patients"
-          className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark 
-                   transition-smooth mb-4 sm:mb-6 text-sm xs:text-base"
+          className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark mb-6 transition-smooth"
         >
-          <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
-          Back to Patients
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back to Patients</span>
         </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          
-          {/* Left: Patient Info Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 
-                         p-4 xs:p-5 sm:p-6 space-y-4">
-              <h2 className="text-lg xs:text-xl font-bold text-gray-900 mb-4">Patient Information</h2>
-              
-              <div className="space-y-3 text-xs xs:text-sm">
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 xs:w-5 xs:h-5 text-gray-400" />
-                  <div>
-                    <p className="text-gray-600">Mobile</p>
-                    <p className="font-medium text-gray-900">{patient.mobile_number}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 xs:w-5 xs:h-5 text-gray-400" />
-                  <div>
-                    <p className="text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900 break-all">{patient.email}</p>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-gray-100">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-gray-600">Date of Birth</p>
-                      <p className="font-medium text-gray-900">{patient.date_of_birth}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Nationality</p>
-                      <p className="font-medium text-gray-900">{patient.nationality}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-gray-100">
-                  <p className="text-gray-600 mb-1">National ID</p>
-                  <p className="font-medium text-gray-900">{patient.national_id}</p>
-                </div>
-
-                <div className="pt-3 border-t border-gray-100">
-                  <p className="text-gray-600 mb-1">Preferred Language</p>
-                  <p className="font-medium text-gray-900">{patient.preferred_language}</p>
-                </div>
-              </div>
-
-              <Link
-                to="/new-session"
-                state={{ patient }}
-                className="w-full flex items-center justify-center gap-2 bg-tecnot-primary 
-                         text-white px-4 py-3 rounded-lg font-medium hover:bg-tecnot-dark 
-                         transition-smooth shadow-lg mt-6 text-sm xs:text-base"
-              >
-                <Calendar className="w-5 h-5" />
-                Start New Session
-              </Link>
+        
+        {/* Patient Info Card */}
+        <div className="bg-gradient-to-r from-tecnot-primary to-tecnot-dark text-white rounded-xl p-4 sm:p-6 mb-6 shadow-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="w-full sm:w-auto">
+              <h2 className="text-xl sm:text-2xl font-bold mb-1 break-words">{patient.name} / {patient.code}</h2>
+              <p className="text-tecnot-light text-sm sm:text-base">Total Sessions: {patient.sessions.length}</p>
             </div>
+            <Link
+              to="/new-session"
+              className="flex items-center justify-center gap-2 bg-white text-tecnot-primary px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:shadow-xl transition-smooth text-sm sm:text-base w-full sm:w-auto whitespace-nowrap"
+            >
+              <Plus className="w-5 h-5" />
+              Start New Session
+            </Link>
           </div>
-
-          {/* Right: Consultation History */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 
-                         p-4 xs:p-5 sm:p-6">
-              <h2 className="text-lg xs:text-xl font-bold text-gray-900 mb-4">
-                Consultation History ({sessions.length})
-              </h2>
-
-              <div className="space-y-3 sm:space-y-4">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="border border-gray-200 rounded-lg p-3 xs:p-4 
-                             hover:border-tecnot-primary transition-smooth"
-                  >
-                    <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-2 mb-2">
-                          <FileText className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary mt-0.5 flex-shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-bold text-gray-900 text-sm xs:text-base truncate">
-                              {session.complaint}
-                            </h3>
-                            <p className="text-xs xs:text-sm text-gray-600">
-                              {new Date(session.date).toLocaleDateString('en-GB', { 
-                                day: '2-digit', 
-                                month: 'short', 
-                                year: 'numeric' 
-                              })} • {session.time}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="inline-block px-2 py-1 bg-green-100 text-green-700 
-                                      rounded text-xs font-medium">
-                          {session.status}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/soap-note/${session.id}`}
-                          className="flex-1 xs:flex-initial px-3 xs:px-4 py-2 bg-tecnot-primary 
-                                   text-white rounded-lg text-xs xs:text-sm font-medium 
-                                   hover:bg-tecnot-dark transition-smooth text-center"
-                        >
-                          View SOAP
-                        </Link>
-                        <button
-                          className="flex-1 xs:flex-initial px-3 xs:px-4 py-2 border-2 border-tecnot-primary 
-                                   text-tecnot-primary rounded-lg text-xs xs:text-sm font-medium 
-                                   hover:bg-tecnot-light transition-smooth"
-                        >
-                          Continue
-                        </button>
-                      </div>
-                    </div>
+        </div>
+        
+        {/* Sessions List */}
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Consultation History</h3>
+        
+        <div className="grid grid-cols-1 gap-4">
+          {patient.sessions.map((session) => (
+            <div
+              key={session.id}
+              className="bg-white rounded-xl p-4 sm:p-6 shadow-sm card-hover border border-gray-100"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                
+                {/* Session Info */}
+                <div className="w-full sm:w-auto flex-1">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-tecnot-primary flex-shrink-0" />
+                    <span className="font-semibold text-gray-900 text-sm sm:text-base">{session.date}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">{session.time}</span>
                   </div>
-                ))}
+                  <p className="text-gray-700 text-sm sm:text-base break-words">
+                    Complaint: <span className="font-medium">{session.complaint}</span>
+                  </p>
+                </div>
+                
+                {/* View Button */}
+                <Link
+                  to={`/soap-note/${patient.code}/${session.id}`}
+                  className="flex items-center justify-center gap-2 bg-tecnot-light text-tecnot-primary px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-tecnot-primary hover:text-white transition-smooth text-sm sm:text-base w-full sm:w-auto whitespace-nowrap"
+                >
+                  <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                  View SOAP Note
+                </Link>
               </div>
 
               {sessions.length === 0 && (

@@ -1,3 +1,8 @@
+// ====================
+// MAIN APP COMPONENT
+// This sets up all the routes and layout
+// ====================
+
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
@@ -6,9 +11,7 @@ import { useAuth } from './contexts/AuthContext'
 import Sidebar from './components/Sidebar'
 import PrivateRoute from './components/PrivateRoute'
 
-// Pages
-//import Login from './pages/Login'
-//import Signup from './pages/Signup'
+// Import all page components
 import Home from './pages/Home'
 import Patients from './pages/Patients'
 import PatientDetail from './pages/PatientDetail'
@@ -17,6 +20,9 @@ import SoapNote from './pages/SoapNote'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Notifications from './pages/Notifications'
+
+// Import Sidebar component
+import Sidebar from './components/Sidebar'
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
@@ -39,90 +45,35 @@ function App() {
         {/* Sidebar - Only show when authenticated */}
         {isAuthenticated && <Sidebar />}
         
-        {/* Main Content Area */}
-        <div className={`flex-1 flex flex-col min-h-screen w-full ${isAuthenticated ? 'lg:ml-64 xl:ml-72' : ''}`}>
+        {/* Sidebar - shows on all pages */}
+        <Sidebar />
+        
+        {/* Main Content Area - Responsive margin */}
+        <div className="flex-1 w-full lg:ml-64">
           <Routes>
-            {/* Public Routes */}
-            <Route 
-              path="/login" 
-              element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />} 
-            />
-            <Route 
-              path="/signup" 
-              element={!isAuthenticated ? <Signup /> : <Navigate to="/" replace />} 
-            />
-
-            {/* Protected Routes */}
-            <Route 
-              path="/" 
-              element={
-                <PrivateRoute>
-                  <Home />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/patients" 
-              element={
-                <PrivateRoute>
-                  <Patients />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/patient/:code" 
-              element={
-                <PrivateRoute>
-                  <PatientDetail />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/new-session" 
-              element={
-                <PrivateRoute>
-                  <NewSession />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/soap-note/:id" 
-              element={
-                <PrivateRoute>
-                  <SoapNote />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/notifications" 
-              element={
-                <PrivateRoute>
-                  <Notifications />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/profile" 
-              element={
-                <PrivateRoute>
-                  <Profile />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/settings" 
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              } 
-            />
-
-            {/* Fallback - Redirect to login or home */}
-            <Route 
-              path="*" 
-              element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} 
-            />
+            {/* Home/Dashboard page */}
+            <Route path="/" element={<Home />} />
+            
+            {/* Patients list page */}
+            <Route path="/patients" element={<Patients />} />
+            
+            {/* Individual patient folder page */}
+            <Route path="/patient/:code" element={<PatientDetail />} />
+            
+            {/* Start new recording session */}
+            <Route path="/new-session" element={<NewSession />} />
+            
+            {/* View/Edit SOAP note */}
+            <Route path="/soap-note/:code/:sessionId" element={<SoapNote />} />
+            
+            {/* Notifications */}
+            <Route path="/notifications" element={<Notifications />} />
+            
+            {/* User profile */}
+            <Route path="/profile" element={<Profile />} />
+            
+            {/* Settings */}
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
       </div>

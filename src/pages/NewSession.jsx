@@ -1,346 +1,323 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Search, Mic, Square, Loader2, Play } from 'lucide-react'
+// ====================
+// NEW SESSION PAGE (UPGRADED + FULLY RESPONSIVE + PATIENT MODAL SAME AS PATIENTS PAGE)
+// Uses real microphone via MediaRecorder + Audio Preview + Transcript Preview + Add New Patient (DatePicker modal)
+// ====================
+
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Mic, Square, FileText, Search, User, Loader2, Wand2, X } from 'lucide-react'
 import Header from '../components/Header'
-import PatientBanner from '../components/PatientBanner'
+import { useNavigate } from 'react-router-dom'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 function NewSession() {
   const navigate = useNavigate()
-  const [selectedPatient, setSelectedPatient] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [vitals, setVitals] = useState({
-    height: '',
-    weight: '',
-    temperature: '',
-    blood_pressure: '',
-    heart_rate: '',
-    spo2: ''
-  })
-  const [isRecording, setIsRecording] = useState(false)
+
+  // UI state machine: idle → recording → processing → done
+  const [status, setStatus] = useState('idle') // 'idle' | 'recording' | 'processing' | 'done'
   const [recordingTime, setRecordingTime] = useState(0)
-  const [audioBlob, setAudioBlob] = useState(null)
-  const [processing, setProcessing] = useState(false)
-  const [mediaRecorder, setMediaRecorder] = useState(null)
-  const [recordingInterval, setRecordingInterval] = useState(null)
+  const timerRef = useRef(null)
 
-  // Dummy patients for search
-  const patients = [
-    { id: '1', mrn: 'MRN001234', first_name: 'Malik', last_name: 'Fernando', age: 38, gender: 'Male', blood_type: 'O+', chronics: 'Diabetes Type 2', allergies: 'Penicillin', drug_precautions: 'Avoid NSAIDs', national_id: '851234567V' },
-    { id: '2', mrn: 'MRN005678', first_name: 'Shiman', last_name: 'Perera', age: 35, gender: 'Male', blood_type: 'A+', chronics: '', allergies: '', drug_precautions: '', national_id: '871234567V' },
-  ]
+  const [showPatientSearch, setShowPatientSearch] = useState(false)
+  const [selectedPatient, setSelectedPatient] = useState(null)
 
-  const filteredPatients = patients.filter(p =>
-    p.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.mrn.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // ✅ Add patient modal states
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [newPatient, setNewPatient] = useState({
+    name: '',
+    age: '',
+    gender: '',
+    nationality: '',
+    mrn: '',
+  })
 
-  const handleStartRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const recorder = new MediaRecorder(stream)
-      const chunks = []
+  // Search filter
+  const [patientQuery, setPatientQuery] = useState('')
 
-      recorder.ondataavailable = (e) => chunks.push(e.data)
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' })
-        setAudioBlob(blob)
-      }
+  // Transcript + audio
+  const [transcript, setTranscript] = useState('')
+  const [audioUrl, setAudioUrl] = useState(null)
 
-      recorder.start()
-      setMediaRecorder(recorder)
-      setIsRecording(true)
+  // MediaRecorder refs
+  const mediaRecorderRef = useRef(null)
+  const chunksRef = useRef([])
+  const streamRef = useRef(null)
 
-      const interval = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
-      }, 1000)
-      setRecordingInterval(interval)
+  // Patients list (so new patients can be added)
+  const [patients, setPatients] = useState([
+    { name: 'Malik', code: '001' },
+    { name: 'Shiman', code: '021' },
+    { name: 'Ibrahim', code: '022' },
+    { name: 'Prajith', code: '232' },
+  ])
 
-    } catch (error) {
-      alert('Microphone access denied. Please enable microphone permissions.')
-      console.error('Recording error:', error)
-    }
-  }
+  // Filter patients based on query
+  const filteredPatients = useMemo(() => {
+    const q = patientQuery.trim().toLowerCase()
+    if (!q) return patients
+    return patients.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q)
+    )
+  }, [patientQuery, patients])
 
-  const handleStopRecording = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop()
-      mediaRecorder.stream.getTracks().forEach(track => track.stop())
-      setIsRecording(false)
-      clearInterval(recordingInterval)
-    }
-  }
-
-  const handleGenerateSOAP = async () => {
-    if (!audioBlob) {
-      alert('No recording found!')
-      return
-    }
-
-    setProcessing(true)
-    
-    // Simulate AI processing
-    setTimeout(() => {
-      setProcessing(false)
-      navigate('/soap-note/new')
-    }, 3000)
-  }
-
+  // Format time MM:SS
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Timer helpers
+  const startTimer = () => {
+    if (timerRef.current) return
+    timerRef.current = setInterval(() => {
+      setRecordingTime((t) => t + 1)
+    }, 1000)
+  }
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopTimer()
+      if (audioUrl) URL.revokeObjectURL(audioUrl)
+      if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Age helper
+  const calculateAge = (dob) => {
+    if (!dob) return ''
+    const birth = new Date(dob)
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return age < 0 ? '' : String(age)
+  }
+
+  const handleDobChange = (date) => {
+    setSelectedDate(date)
+    const computedAge = calculateAge(date)
+    setNewPatient((prev) => ({ ...prev, age: computedAge }))
+  }
+
+  // Start recording
+  const startRecording = async () => {
+    if (!selectedPatient) {
+      alert('Please select a patient first!')
+      return
+    }
+
+    // Reset outputs
+    setTranscript('')
+    if (audioUrl) URL.revokeObjectURL(audioUrl)
+    setAudioUrl(null)
+    setRecordingTime(0)
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
+
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      chunksRef.current = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunksRef.current.push(e.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const url = URL.createObjectURL(blob)
+        setAudioUrl(url)
+
+        setStatus('processing')
+
+        // Demo transcript (replace with backend later)
+        setTimeout(() => {
+          setTranscript(
+            `Doctor: Hi ${selectedPatient.name}, what brings you in today?\n` +
+              `Patient: I've been having discomfort and would like to check.\n` +
+              `Doctor: Okay, we'll go through symptoms and history, then plan next steps.`
+          )
+          setStatus('done')
+        }, 1200)
+      }
+
+      mediaRecorder.start()
+      setStatus('recording')
+      startTimer()
+    } catch (err) {
+      console.error(err)
+      alert('Microphone access denied or not available. Please allow mic permission and try again.')
+      setStatus('idle')
+    }
+  }
+
+  // Stop recording
+  const stopRecording = () => {
+    try {
+      stopTimer()
+      setStatus('processing')
+
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+      }
+    } catch (err) {
+      console.error(err)
+      setStatus('idle')
+    }
+  }
+
+  const canStart = status === 'idle' || status === 'done'
+  const canStop = status === 'recording'
+
+  const goToSoapNote = () => {
+    navigate('/soap-note/1')
+  }
+
+  // Save new patient
+  const handleSaveNewPatient = () => {
+    const name = newPatient.name.trim()
+    const mrn = newPatient.mrn.trim()
+
+    if (!name || !mrn) {
+      alert('Please fill Patient Name and Patient MRN')
+      return
+    }
+
+    const exists = patients.some((p) => p.code?.toLowerCase() === mrn.toLowerCase())
+    if (exists) {
+      alert('This Patient MRN already exists. Please use a unique MRN.')
+      return
+    }
+
+    const created = {
+      name,
+      code: mrn, // MRN acts as code for now
+      dob: selectedDate ? selectedDate.toISOString() : null,
+      age: newPatient.age,
+      gender: newPatient.gender,
+      nationality: newPatient.nationality,
+      mrn: mrn,
+    }
+
+    setPatients((prev) => [created, ...prev])
+    setSelectedPatient(created)
+
+    setNewPatient({ name: '', age: '', gender: '', nationality: '', mrn: '' })
+    setSelectedDate(null)
+    setShowAddPatientModal(false)
+    setShowPatientSearch(false)
+    setPatientQuery('')
+  }
+
   return (
-    <div className="animate-fadeIn w-full">
-      <Header title="New Consultation Session" subtitle="Record patient consultation" />
-      
-      {selectedPatient && (
-        <PatientBanner 
-          patient={selectedPatient} 
-          session={{ vitals }}
-        />
-      )}
+    <div className="animate-fadeIn">
+      <Header title="New Consultation Session" subtitle="Record and transcribe patient consultation" />
 
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl mx-auto">
-        
-        {/* Step 1: Select Patient */}
-        {!selectedPatient ? (
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
-              Select Patient
-            </h2>
+      {/* Main Content - Responsive padding */}
+      <div className="p-3 xs:p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+        {/* Patient Selection */}
+        <div className="bg-white rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm border border-gray-100 mb-4 xs:mb-6">
+          <h3 className="text-base xs:text-lg font-bold text-gray-900 mb-3 xs:mb-4">
+            Select Patient
+          </h3>
 
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name or MRN..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg 
-                         outline-none focus:border-tecnot-primary focus:ring-4 
-                         focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-              />
-            </div>
-
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {filteredPatients.map(patient => (
-                <button
-                  key={patient.id}
-                  onClick={() => setSelectedPatient(patient)}
-                  className="w-full text-left p-3 xs:p-4 border border-gray-200 rounded-lg 
-                           hover:border-tecnot-primary hover:bg-tecnot-light/50 
-                           transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 xs:w-12 xs:h-12 rounded-full flex items-center justify-center 
-                                  text-white font-bold text-base xs:text-lg
-                                  ${patient.gender === 'Male' ? 'bg-blue-500' : 'bg-pink-500'}`}>
-                      {patient.first_name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm xs:text-base truncate">
-                        {patient.first_name} {patient.last_name}
-                      </p>
-                      <p className="text-xs xs:text-sm text-gray-600">
-                        MRN: {patient.mrn} • {patient.age}Y {patient.gender}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4 sm:space-y-6">
-            
-            {/* Step 2: Enter Vitals */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-              <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
-                Patient Vitals
-              </h2>
-
-              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 xs:gap-4">
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
-                    Height (cm) *
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="175"
-                    value={vitals.height}
-                    onChange={(e) => setVitals({...vitals, height: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-                  />
+          {selectedPatient ? (
+            <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between bg-tecnot-light rounded-lg p-3 xs:p-4 gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-full bg-tecnot-primary flex items-center justify-center text-white font-bold text-sm xs:text-base flex-shrink-0">
+                  {selectedPatient.name.charAt(0)}
                 </div>
-
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
-                    Weight (kg) *
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="70"
-                    value={vitals.weight}
-                    onChange={(e) => setVitals({...vitals, weight: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
-                    Temperature (°C)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    placeholder="37.2"
-                    value={vitals.temperature}
-                    onChange={(e) => setVitals({...vitals, temperature: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
-                    Blood Pressure
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="120/80"
-                    value={vitals.blood_pressure}
-                    onChange={(e) => setVitals({...vitals, blood_pressure: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
-                    Heart Rate (bpm)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="72"
-                    value={vitals.heart_rate}
-                    onChange={(e) => setVitals({...vitals, heart_rate: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
-                    SpO2 (%)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="98"
-                    value={vitals.spo2}
-                    onChange={(e) => setVitals({...vitals, spo2: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
-                  />
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm xs:text-base truncate">
+                    {selectedPatient.name}
+                  </p>
+                  <p className="text-xs xs:text-sm text-gray-600">MRN: {selectedPatient.code}</p>
                 </div>
               </div>
+
+              <button
+                onClick={() => setSelectedPatient(null)}
+                className="text-xs xs:text-sm text-tecnot-primary hover:underline font-medium"
+                disabled={status === 'recording' || status === 'processing'}
+              >
+                Change Patient
+              </button>
             </div>
+          ) : (
+            <div>
+              {/* Search + Add New (Responsive) */}
+              <div className="flex flex-col xs:flex-row gap-3 flex-wrap">
+                <button
+                  onClick={() => setShowPatientSearch(!showPatientSearch)}
+                  className="w-full xs:flex-1 flex items-center gap-2 justify-center bg-tecnot-light text-tecnot-primary px-4 xs:px-6 py-2.5 xs:py-3 rounded-lg font-medium hover:bg-tecnot-primary hover:text-white transition-smooth text-sm xs:text-base"
+                  disabled={status === 'recording' || status === 'processing'}
+                >
+                  <Search className="w-4 h-4 xs:w-5 xs:h-5" />
+                  Search Patient
+                </button>
 
-            {/* Step 3: Recording Interface */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-              <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
-                Record Consultation
-              </h2>
+                <button
+                  onClick={() => setShowAddPatientModal(true)}
+                  className="w-full xs:w-auto flex items-center justify-center gap-2 bg-tecnot-primary text-white px-4 xs:px-6 py-2.5 xs:py-3 rounded-lg font-medium hover:bg-tecnot-dark transition-smooth shadow-lg text-sm xs:text-base"
+                  disabled={status === 'recording' || status === 'processing'}
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Add New Patient
+                </button>
+              </div>
 
-              <div className="text-center py-6 xs:py-8 sm:py-12">
-                <div className={`w-24 h-24 xs:w-32 xs:h-32 sm:w-40 sm:h-40 mx-auto mb-6 xs:mb-8 
-                              rounded-full flex items-center justify-center transition-all duration-300
-                              ${isRecording ? 'bg-red-100 animate-pulse-slow' : 'bg-gray-100'}`}>
-                  <Mic className={`w-12 h-12 xs:w-16 xs:h-16 sm:w-20 sm:h-20 
-                                ${isRecording ? 'text-red-500' : 'text-gray-400'}`} />
-                </div>
+              {/* Dropdown */}
+              {showPatientSearch && (
+                <div className="mt-3 xs:mt-4">
+                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <input
+                      value={patientQuery}
+                      onChange={(e) => setPatientQuery(e.target.value)}
+                      placeholder="Type name or MRN..."
+                      className="bg-transparent outline-none text-sm w-full"
+                    />
+                  </div>
 
-                <div className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 mb-3 xs:mb-4">
-                  {formatTime(recordingTime)}
-                </div>
-
-                <p className="text-sm xs:text-base text-gray-600 mb-6 xs:mb-8">
-                  {isRecording ? '🔴 Recording in Progress...' : 
-                   audioBlob ? '✅ Recording Complete' : 
-                   'Ready to Record'}
-                </p>
-
-                <div className="flex flex-col xs:flex-row justify-center gap-3 xs:gap-4">
-                  {!isRecording && !audioBlob && (
-                    <button
-                      onClick={handleStartRecording}
-                      disabled={!vitals.height || !vitals.weight}
-                      className="px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary text-white rounded-lg 
-                               font-semibold hover:bg-tecnot-dark transition-smooth shadow-lg 
-                               disabled:opacity-50 disabled:cursor-not-allowed
-                               flex items-center justify-center gap-2 text-sm xs:text-base"
-                    >
-                      <Mic className="w-5 h-5" />
-                      Start Recording
-                    </button>
-                  )}
-
-                  {isRecording && (
-                    <button
-                      onClick={handleStopRecording}
-                      className="px-6 xs:px-8 py-3 xs:py-4 bg-red-500 text-white rounded-lg 
-                               font-semibold hover:bg-red-600 transition-smooth shadow-lg
-                               flex items-center justify-center gap-2 text-sm xs:text-base"
-                    >
-                      <Square className="w-5 h-5" />
-                      Stop Recording
-                    </button>
-                  )}
-
-                  {audioBlob && !processing && (
-                    <>
+                  <div className="mt-3 space-y-2 max-h-56 overflow-auto pr-1">
+                    {filteredPatients.map((patient) => (
                       <button
+                        key={patient.code}
                         onClick={() => {
-                          setAudioBlob(null)
-                          setRecordingTime(0)
+                          setSelectedPatient(patient)
+                          setShowPatientSearch(false)
+                          setPatientQuery('')
                         }}
-                        className="px-6 xs:px-8 py-3 xs:py-4 bg-gray-500 text-white rounded-lg 
-                                 font-semibold hover:bg-gray-600 transition-smooth
-                                 flex items-center justify-center gap-2 text-sm xs:text-base"
+                        className="w-full flex items-center gap-3 p-3 xs:p-3.5 bg-gray-50 hover:bg-tecnot-light rounded-lg transition-smooth text-left"
                       >
-                        Re-record
+                        <User className="w-4 h-4 xs:w-5 xs:h-5 text-gray-600 flex-shrink-0" />
+                        <span className="font-medium text-gray-900 text-sm xs:text-base">
+                          {patient.name} / {patient.code}
+                        </span>
                       </button>
+                    ))}
 
-                      <button
-                        onClick={handleGenerateSOAP}
-                        className="px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary text-white rounded-lg 
-                                 font-semibold hover:bg-tecnot-dark transition-smooth shadow-lg
-                                 flex items-center justify-center gap-2 text-sm xs:text-base"
-                      >
-                        <Play className="w-5 h-5" />
-                        Generate SOAP Note
-                      </button>
-                    </>
-                  )}
-
-                  {processing && (
-                    <div className="text-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary mx-auto mb-3" />
-                      <p className="text-sm xs:text-base text-gray-600">
-                        Processing audio... This may take a minute.
-                      </p>
-                    </div>
-                  )}
+                    {filteredPatients.length === 0 && (
+                      <div className="text-sm text-gray-500 p-3">No matches found.</div>
+                    )}
+                  </div>
                 </div>
 
                 {!vitals.height || !vitals.weight ? (
@@ -350,9 +327,283 @@ function NewSession() {
                 ) : null}
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Recording Area */}
+        <div className="bg-gradient-to-br from-tecnot-light to-white rounded-xl sm:rounded-2xl p-6 xs:p-8 sm:p-10 lg:p-12 shadow-lg border border-tecnot-primary/20 text-center">
+          <div
+            className={`mx-auto w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center mb-4 xs:mb-5 sm:mb-6 ${
+              status === 'recording'
+                ? 'bg-red-500 animate-pulse-slow shadow-2xl shadow-red-500/50'
+                : 'bg-tecnot-primary shadow-xl'
+            }`}
+          >
+            <Mic className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 text-white" />
+          </div>
+
+          <h2 className="text-xl xs:text-2xl font-bold text-gray-900 mb-2">
+            {status === 'recording'
+              ? 'Recording in Progress...'
+              : status === 'processing'
+              ? 'Processing audio...'
+              : status === 'done'
+              ? 'Transcript Ready'
+              : 'Ready to Record'}
+          </h2>
+
+          <p className="text-gray-600 mb-4 xs:mb-6 text-sm xs:text-base px-2">
+            {status === 'recording'
+              ? 'Speak clearly. AI will transcribe after you stop.'
+              : status === 'processing'
+              ? 'Please wait while we generate the transcript...'
+              : 'Click "Start Recording" to begin the consultation'}
+          </p>
+
+          <div className="text-3xl xs:text-4xl sm:text-5xl font-bold text-tecnot-primary mb-6 xs:mb-8">
+            {formatTime(recordingTime)}
+          </div>
+
+          <div className="flex flex-col xs:flex-row gap-3 xs:gap-4 justify-center flex-wrap">
+            <button
+              onClick={startRecording}
+              disabled={!canStart || status === 'processing'}
+              className={`flex items-center justify-center gap-2 xs:gap-3 px-6 xs:px-8 py-3 xs:py-4 rounded-lg sm:rounded-xl font-semibold text-base xs:text-lg transition-smooth shadow-lg active:scale-95 w-full xs:w-auto ${
+                canStart && status !== 'processing'
+                  ? 'bg-tecnot-primary text-white hover:bg-tecnot-dark btn-glow'
+                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <Mic className="w-5 h-5 xs:w-6 xs:h-6" />
+              Start Recording
+            </button>
+
+            <button
+              onClick={stopRecording}
+              disabled={!canStop}
+              className={`flex items-center justify-center gap-2 xs:gap-3 px-6 xs:px-8 py-3 xs:py-4 rounded-lg sm:rounded-xl font-semibold text-base xs:text-lg transition-smooth shadow-lg active:scale-95 w-full xs:w-auto ${
+                canStop ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <Square className="w-5 h-5 xs:w-6 xs:h-6" />
+              Stop Recording
+            </button>
+          </div>
+
+          <div className="mt-6 xs:mt-8 pt-4 xs:pt-6 border-t border-gray-200">
+            <p className="text-xs xs:text-sm text-gray-600 mb-2">
+              <span className="font-semibold">Language Support:</span> Sinhala • Tamil • English
+            </p>
+            <p className="text-[10px] xs:text-xs text-gray-500">Microphone: Browser default device</p>
+          </div>
+        </div>
+
+        {/* Transcript + Audio Preview */}
+        {(audioUrl || transcript) && (
+          <div className="mt-4 xs:mt-6 bg-white rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm border border-gray-100">
+            <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2 text-sm xs:text-base">
+              <FileText className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary" />
+              Transcript Preview
+            </h4>
+
+            {audioUrl && (
+              <div className="mb-4">
+                <audio controls src={audioUrl} className="w-full" />
+                <p className="text-[10px] xs:text-xs text-gray-500 mt-2">
+                  Tip: This audio will later be uploaded to the backend for Whisper transcription.
+                </p>
+              </div>
+            )}
+
+            <div className="bg-gray-50 rounded-lg p-4 whitespace-pre-line text-gray-700 text-xs xs:text-sm min-h-[90px]">
+              {status === 'processing' ? (
+                <span className="inline-flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating transcript...
+                </span>
+              ) : transcript ? (
+                transcript
+              ) : (
+                'No transcript yet.'
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-4 flex-wrap justify-end">
+              <button
+                onClick={goToSoapNote}
+                disabled={!transcript || status === 'processing'}
+                className={`flex items-center gap-2 px-5 xs:px-6 py-2.5 xs:py-3 rounded-lg font-medium transition-smooth text-sm xs:text-base ${
+                  transcript && status !== 'processing'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:shadow-xl'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <Wand2 className="w-5 h-5" />
+                Generate SOAP Note
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Quick Tip */}
+        <div className="mt-4 xs:mt-6 bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6">
+          <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2 text-sm xs:text-base">
+            <FileText className="w-4 h-4 xs:w-5 xs:h-5" />
+            What happens next?
+          </h4>
+          <ol className="text-xs xs:text-sm text-blue-800 space-y-1 ml-5 xs:ml-6 list-decimal">
+            <li>Record the consultation using the microphone</li>
+            <li>Audio is transcribed (Whisper) and speaker labels are added</li>
+            <li>SOAP notes are generated (Mistral) automatically</li>
+            <li>You review and edit before saving or sharing</li>
+          </ol>
+        </div>
       </div>
+
+      {/* Add Patient Modal (Same UI as Patients page) */}
+      {showAddPatientModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn"
+          onClick={() => {
+            setShowAddPatientModal(false)
+            setNewPatient({ name: '', age: '', gender: '', nationality: '', mrn: '' })
+            setSelectedDate(null)
+          }}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 scale-100 hover:scale-[1.02]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setShowAddPatientModal(false)
+                setNewPatient({ name: '', age: '', gender: '', nationality: '', mrn: '' })
+                setSelectedDate(null)
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-smooth"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">New Patient</h2>
+
+            {/* Name */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Patient Name</label>
+              <input
+                type="text"
+                placeholder="Enter patient name"
+                value={newPatient.name}
+                onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all"
+                autoFocus
+              />
+            </div>
+
+            {/* DOB */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+              <DatePicker
+                selected={selectedDate}
+                onChange={handleDobChange}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Select date of birth"
+                maxDate={new Date()}
+                showYearDropdown
+                scrollableYearDropdown
+                yearDropdownItemNumber={100}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all cursor-pointer"
+                wrapperClassName="w-full"
+              />
+            </div>
+
+            {/* Age */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+              <input
+                type="number"
+                placeholder="Enter Age"
+                min="0"
+                max="150"
+                value={newPatient.age}
+                onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all"
+              />
+            </div>
+
+            {/* Gender */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+              <select
+                value={newPatient.gender}
+                onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all bg-white cursor-pointer"
+              >
+                <option value="" disabled>
+                  Select Gender
+                </option>
+                <option value="Male" className="text-gray-900">
+                  Male
+                </option>
+                <option value="Female" className="text-gray-900">
+                  Female
+                </option>
+                <option value="Prefer not to say" className="text-gray-900">
+                  Prefer not to say
+                </option>
+              </select>
+            </div>
+
+            {/* Nationality */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+              <input
+                type="text"
+                placeholder="Enter Nationality"
+                value={newPatient.nationality}
+                onChange={(e) => setNewPatient({ ...newPatient, nationality: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all"
+              />
+            </div>
+
+            {/* MRN */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Patient MRN</label>
+              <input
+                type="text"
+                placeholder="e.g., 001, 002"
+                value={newPatient.mrn}
+                onChange={(e) => setNewPatient({ ...newPatient, mrn: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowAddPatientModal(false)
+                  setNewPatient({ name: '', age: '', gender: '', nationality: '', mrn: '' })
+                  setSelectedDate(null)
+                }}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-smooth"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNewPatient}
+                className="flex-1 px-6 py-3 bg-tecnot-primary text-white rounded-lg font-medium hover:bg-tecnot-dark transition-smooth shadow-lg hover:shadow-xl"
+              >
+                Add Patient
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
