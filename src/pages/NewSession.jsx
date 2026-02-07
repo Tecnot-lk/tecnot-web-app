@@ -319,7 +319,13 @@ function NewSession() {
                     )}
                   </div>
                 </div>
-              )}
+
+                {!vitals.height || !vitals.weight ? (
+                  <p className="text-xs xs:text-sm text-red-500 mt-4">
+                    Please enter at least Height and Weight to start recording
+                  </p>
+                ) : null}
+              </div>
             </div>
           )}
         </div>

@@ -10,6 +10,8 @@ import tecnotLogo from '../assets/logos.png'
 
 function Sidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   // Close mobile menu when route changes
@@ -36,7 +38,15 @@ function Sidebar() {
     { name: 'New Session', path: '/new-session', icon: Calendar },
     { name: 'Notifications', path: '/notifications', icon: Bell },
   ]
-  
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout()
+      navigate('/login')
+      setIsMobileMenuOpen(false)
+    }
+  }
+
   return (
     <>
       {/* Mobile Menu Button - Only visible on mobile/tablet */}
@@ -84,12 +94,12 @@ function Sidebar() {
         {/* Navigation Links */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path
             const Icon = item.icon
-            
+            const isActive = location.pathname === item.path
+
             return (
               <Link
-                key={item.name}
+                key={item.path}
                 to={item.path}
                 className={`
                   flex items-center gap-3 
@@ -131,7 +141,7 @@ function Sidebar() {
             <Settings className="w-5 h-5 flex-shrink-0" />
             <span>Settings</span>
           </Link>
-          
+
           <button
             onClick={() => {
               if (confirm('Are you sure you want to logout?')) {

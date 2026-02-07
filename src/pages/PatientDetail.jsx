@@ -1,6 +1,6 @@
 import React from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Calendar, Eye, Plus } from 'lucide-react'
+import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft, Calendar, FileText, Phone, Mail } from 'lucide-react'
 import Header from '../components/Header'
 import { patientsData } from '../data/patientsData'
 
@@ -31,13 +31,19 @@ function PatientDetail() {
       </div>
     )
   }
-  
+
+  const sessions = [
+    { id: '1', date: '2026-02-05', time: '14:30', complaint: 'Severe headache', status: 'Completed' },
+    { id: '2', date: '2026-01-25', time: '10:15', complaint: 'Fever', status: 'Completed' },
+    { id: '3', date: '2026-01-10', time: '16:45', complaint: 'Stomach pain', status: 'Completed' },
+  ]
+
   return (
-    <div className="animate-fadeIn">
-      <Header 
-        title={`${patient.name}'s Folder`}
-        subtitle={`Patient Code: ${patient.code}`}
-      />
+    <div className="animate-fadeIn w-full">
+      <Header title="Patient Details" subtitle={`MRN: ${code}`} />
+      
+      {/* Patient Banner */}
+      <PatientBanner patient={patient} />
       
       <div className="p-4 sm:p-6 lg:p-8">
         
@@ -99,8 +105,15 @@ function PatientDetail() {
                   View SOAP Note
                 </Link>
               </div>
+
+              {sessions.length === 0 && (
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 xs:w-16 xs:h-16 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm xs:text-base">No consultations yet</p>
+                </div>
+              )}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>

@@ -7,6 +7,9 @@ import Header from '../components/Header'
 import { patientsData } from '../data/patientsData'
 
 function Patients() {
+  const [patients, setPatients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
@@ -41,11 +44,8 @@ function Patients() {
   }
   
   return (
-    <div className="animate-fadeIn">
-      <Header 
-        title="Patient Records" 
-        subtitle="Manage and view all your patient consultations"
-      />
+    <div className="animate-fadeIn w-full">
+      <Header title="Patient Records" subtitle="Manage your patients" />
       
       <div className="p-4 sm:p-6 lg:p-8">
         
@@ -288,7 +288,7 @@ function Patients() {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all text-sm sm:text-base"
               />
             </div>
-            
+
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               <button

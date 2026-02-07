@@ -4,7 +4,12 @@
 // ====================
 
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
+
+// Components
+import Sidebar from './components/Sidebar'
+import PrivateRoute from './components/PrivateRoute'
 
 // Import all page components
 import Home from './pages/Home'
@@ -20,9 +25,25 @@ import Notifications from './pages/Notifications'
 import Sidebar from './components/Sidebar'
 
 function App() {
+  const { isAuthenticated, loading } = useAuth()
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tecnot-primary mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Router>
       <div className="flex min-h-screen bg-gray-50">
+        {/* Sidebar - Only show when authenticated */}
+        {isAuthenticated && <Sidebar />}
         
         {/* Sidebar - shows on all pages */}
         <Sidebar />
