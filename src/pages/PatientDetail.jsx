@@ -33,7 +33,7 @@ function PatientDetail() {
   ]
 
   return (
-    <div className="animate-fadeIn w-full">
+    <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="Patient Details" subtitle={`${patient.first_name} ${patient.last_name}`} />
       
       {/* Patient Banner */}
@@ -44,7 +44,7 @@ function PatientDetail() {
         {/* Back Button */}
         <Link
           to="/patients"
-          className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark 
+          className="inline-flex items-center gap-2 text-tecnot-primary dark:text-tecnot-light hover:text-tecnot-dark dark:hover:text-tecnot-primary
                    transition-smooth mb-4 sm:mb-6 text-sm xs:text-base"
         >
           <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
@@ -57,39 +57,39 @@ function PatientDetail() {
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             
             {/* Patient Info Card */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-5 sm:p-6">
-              <h3 className="font-bold text-gray-900 mb-4 text-base xs:text-lg">Patient Information</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-base xs:text-lg">Patient Information</h3>
               
               <div className="space-y-3 text-xs xs:text-sm">
                 <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-600">Mobile</p>
-                    <p className="font-medium text-gray-900 truncate">{patient.mobile_number}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Mobile</p>
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{patient.mobile_number}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900 truncate">{patient.email}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Email</p>
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{patient.email}</p>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100">
-                  <p className="text-gray-600 mb-1">Nationality</p>
-                  <p className="font-medium text-gray-900">{patient.nationality}</p>
+                <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Nationality</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{patient.nationality}</p>
                 </div>
 
                 <div>
-                  <p className="text-gray-600 mb-1">Preferred Language</p>
-                  <p className="font-medium text-gray-900">{patient.preferred_language}</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Preferred Language</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{patient.preferred_language}</p>
                 </div>
 
                 <div>
-                  <p className="text-gray-600 mb-1">National ID</p>
-                  <p className="font-medium text-gray-900">{patient.national_id}</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">National ID</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{patient.national_id}</p>
                 </div>
               </div>
             </div>
@@ -98,19 +98,19 @@ function PatientDetail() {
             <div className="space-y-3">
               <Link
                 to="/new-session"
-                className="w-full flex items-center justify-center gap-2 bg-tecnot-primary 
-                         text-white px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
-                         hover:bg-tecnot-dark transition-smooth shadow-lg text-sm xs:text-base"
+                className="w-full flex items-center justify-center gap-2 bg-tecnot-primary dark:bg-tecnot-light
+                         text-white dark:text-gray-900 px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
+                         hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg text-sm xs:text-base"
               >
                 <Calendar className="w-5 h-5" />
                 Start New Session
               </Link>
 
               <button
-                className="w-full flex items-center justify-center gap-2 bg-white 
-                         border-2 border-tecnot-primary text-tecnot-primary 
+                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800
+                         border-2 border-tecnot-primary dark:border-tecnot-light text-tecnot-primary dark:text-tecnot-light
                          px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
-                         hover:bg-tecnot-light transition-smooth text-sm xs:text-base"
+                         hover:bg-tecnot-light dark:hover:bg-gray-700 transition-smooth text-sm xs:text-base"
               >
                 Edit Patient Info
               </button>
@@ -119,8 +119,8 @@ function PatientDetail() {
 
           {/* RIGHT: Consultation History */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-5 sm:p-6">
-              <h3 className="font-bold text-gray-900 mb-4 text-base xs:text-lg sm:text-xl">
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-base xs:text-lg sm:text-xl">
                 Consultation History ({sessions.length} sessions)
               </h3>
 
@@ -128,16 +128,16 @@ function PatientDetail() {
                 {sessions.map((session) => (
                   <div
                     key={session.id}
-                    className="border border-gray-200 rounded-lg p-3 xs:p-4 sm:p-5 
-                             hover:border-tecnot-primary transition-all duration-200
+                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 xs:p-4 sm:p-5 
+                             hover:border-tecnot-primary dark:hover:border-tecnot-light transition-all duration-200
                              hover:shadow-md"
                   >
                     <div className="flex flex-col xs:flex-row xs:items-start xs:justify-between gap-3 mb-3">
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 mb-1 text-sm xs:text-base truncate">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm xs:text-base truncate">
                           {session.chief_complaint}
                         </h4>
-                        <p className="text-xs xs:text-sm text-gray-600">
+                        <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">
                           {new Date(session.date).toLocaleDateString('en-GB', {
                             day: '2-digit',
                             month: 'short',
@@ -148,7 +148,7 @@ function PatientDetail() {
                         </p>
                       </div>
                       <span className="inline-flex items-center px-2.5 xs:px-3 py-1 rounded-full 
-                                     text-[10px] xs:text-xs font-medium bg-green-100 text-green-800
+                                     text-[10px] xs:text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400
                                      self-start xs:self-auto">
                         {session.status}
                       </span>
@@ -158,8 +158,8 @@ function PatientDetail() {
                       <Link
                         to={`/soap-note/${session.id}`}
                         className="flex-1 flex items-center justify-center gap-2 
-                                 bg-tecnot-primary text-white px-3 xs:px-4 py-2 xs:py-2.5 
-                                 rounded-lg font-medium hover:bg-tecnot-dark 
+                                 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 px-3 xs:px-4 py-2 xs:py-2.5 
+                                 rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
                                  transition-smooth text-xs xs:text-sm"
                       >
                         <FileText className="w-4 h-4" />
@@ -167,9 +167,9 @@ function PatientDetail() {
                       </Link>
                       <button
                         className="flex-1 flex items-center justify-center gap-2 
-                                 bg-white border-2 border-gray-300 text-gray-700 
+                                 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300
                                  px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg font-medium 
-                                 hover:bg-gray-50 transition-smooth text-xs xs:text-sm"
+                                 hover:bg-gray-50 dark:hover:bg-gray-600 transition-smooth text-xs xs:text-sm"
                       >
                         Continue Session
                       </button>

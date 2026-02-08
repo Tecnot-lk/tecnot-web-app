@@ -15,7 +15,34 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState({ first_name: 'Ibrahim', specialty: 'General Physician' })
   const [token, setToken] = useState('mock-token')
   const [isAuthenticated, setIsAuthenticated] = useState(true)
-  const [loading, setLoading] = useState(false)  // ← THIS LINE WAS MISSING!
+  const [loading, setLoading] = useState(false)
+  
+  // ============================================
+  // THEME FUNCTIONALITY - ADDED
+  // ============================================
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('tecnot_theme') || 'light'
+  })
+
+  // Theme effect - applies theme to document
+  useEffect(() => {
+    localStorage.setItem('tecnot_theme', theme)
+    const root = document.documentElement
+    
+    if (theme === 'dark') {
+      root.classList.add('dark')
+    } else if (theme === 'light') {
+      root.classList.remove('dark')
+    } else if (theme === 'system') {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (systemPrefersDark) {
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+      }
+    }
+  }, [theme])
+  // ============================================
 
   // Comment out the useEffect for now (we're using mock auth)
   // useEffect(() => {
@@ -107,6 +134,8 @@ export const AuthProvider = ({ children }) => {
     register,
     googleLogin,
     logout,
+    theme,      // ADDED
+    setTheme,   // ADDED
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

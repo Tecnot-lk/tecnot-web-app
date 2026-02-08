@@ -91,42 +91,46 @@ Differential diagnosis:
   }
 
   const SectionTitle = ({ children, icon: Icon }) => (
-    <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-tecnot-primary">
-      {Icon && <Icon className="w-5 h-5 text-tecnot-primary" />}
-      <h3 className="font-bold text-gray-900 text-sm xs:text-base sm:text-lg">{children}</h3>
+    <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-tecnot-primary dark:border-tecnot-light">
+      {Icon && <Icon className="w-5 h-5 text-tecnot-primary dark:text-tecnot-light" />}
+      <h3 className="font-bold text-gray-900 dark:text-white text-sm xs:text-base sm:text-lg">{children}</h3>
     </div>
   )
 
   const ReadOnlyField = ({ label, value }) => (
-    <div className="bg-gray-50 rounded-lg p-3 xs:p-4">
-      <label className="block text-xs xs:text-sm font-semibold text-gray-700 mb-2">{label}</label>
-      <p className="text-sm xs:text-base text-gray-900 whitespace-pre-wrap">{value || 'None'}</p>
+    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 xs:p-4 transition-colors">
+      <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label>
+      <p className="text-sm xs:text-base text-gray-900 dark:text-white whitespace-pre-wrap">{value || 'None'}</p>
     </div>
   )
 
   const EditableField = ({ label, value, field, rows = 4 }) => (
     <div>
-      <label className="block text-xs xs:text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label>
       {isEditing ? (
         <textarea
           value={value}
           onChange={(e) => handleChange(field, e.target.value)}
           rows={rows}
-          className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                   outline-none focus:border-tecnot-primary focus:ring-4 
-                   focus:ring-tecnot-primary/20 transition-all resize-none
-                   text-sm xs:text-base"
+          className="w-full px-3 xs:px-4 py-2 xs:py-3 
+                   border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                   outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
+                   focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                   bg-white dark:bg-gray-700 
+                   text-gray-900 dark:text-white
+                   placeholder-gray-400 dark:placeholder-gray-500
+                   transition-all resize-none text-sm xs:text-base"
         />
       ) : (
-        <div className="bg-white border-2 border-gray-200 rounded-lg p-3 xs:p-4">
-          <p className="text-sm xs:text-base text-gray-900 whitespace-pre-wrap">{value || 'None'}</p>
+        <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg p-3 xs:p-4 transition-colors">
+          <p className="text-sm xs:text-base text-gray-900 dark:text-white whitespace-pre-wrap">{value || 'None'}</p>
         </div>
       )}
     </div>
   )
 
   return (
-    <div className="animate-fadeIn w-full">
+    <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="SOAP Note" subtitle={`${patient.first_name} ${patient.last_name}`} />
       
       {/* Patient Banner */}
@@ -143,7 +147,8 @@ Differential diagnosis:
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
               <Link
                 to={`/patient/${patient.mrn}`}
-                className="inline-flex items-center gap-2 text-tecnot-primary hover:text-tecnot-dark 
+                className="inline-flex items-center gap-2 text-tecnot-primary dark:text-tecnot-light 
+                         hover:text-tecnot-dark dark:hover:text-tecnot-primary
                          transition-smooth text-sm xs:text-base"
               >
                 <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
@@ -155,16 +160,20 @@ Differential diagnosis:
                   <>
                     <button
                       onClick={() => setIsEditing(false)}
-                      className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 border-2 border-gray-300 
-                               text-gray-700 rounded-lg font-medium hover:bg-gray-50 
+                      className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 
+                               border-2 border-gray-300 dark:border-gray-600
+                               text-gray-700 dark:text-gray-300 rounded-lg font-medium 
+                               hover:bg-gray-50 dark:hover:bg-gray-700
                                transition-smooth text-sm xs:text-base"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
-                      className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 bg-tecnot-primary 
-                               text-white rounded-lg font-medium hover:bg-tecnot-dark 
+                      className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 
+                               bg-tecnot-primary dark:bg-tecnot-light
+                               text-white dark:text-gray-900 rounded-lg font-medium 
+                               hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
                                transition-smooth shadow-lg flex items-center justify-center gap-2
                                text-sm xs:text-base"
                     >
@@ -175,8 +184,10 @@ Differential diagnosis:
                 ) : (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 bg-tecnot-primary 
-                             text-white rounded-lg font-medium hover:bg-tecnot-dark 
+                    className="flex-1 xs:flex-none px-4 xs:px-6 py-2 xs:py-3 
+                             bg-tecnot-primary dark:bg-tecnot-light
+                             text-white dark:text-gray-900 rounded-lg font-medium 
+                             hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
                              transition-smooth shadow-lg flex items-center justify-center gap-2
                              text-sm xs:text-base"
                   >
@@ -188,10 +199,12 @@ Differential diagnosis:
             </div>
 
             {/* SOAP Note Card */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8 space-y-6 sm:space-y-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm 
+                         border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 
+                         space-y-6 sm:space-y-8 transition-colors">
               
               {/* Session Info */}
-              <div className="flex items-center gap-2 text-xs xs:text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-xs xs:text-sm text-gray-600 dark:text-gray-400">
                 <Calendar className="w-4 h-4" />
                 <span>Session Date: 05 Feb 2026, 2:30 PM</span>
               </div>
@@ -257,11 +270,11 @@ Differential diagnosis:
               </div>
 
               {/* Divider */}
-              <div className="border-t-2 border-gray-200"></div>
+              <div className="border-t-2 border-gray-200 dark:border-gray-700"></div>
 
               {/* Orders Section */}
               <div>
-                <h2 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 mb-4 xs:mb-6">
+                <h2 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
                   Orders & Instructions
                 </h2>
                 
@@ -323,9 +336,10 @@ Differential diagnosis:
 
           {/* SIDEBAR: Historical SOAP Notes (1 column on desktop) */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-5 sm:p-6 
-                         lg:sticky lg:top-20">
-              <h3 className="font-bold text-gray-900 mb-4 text-sm xs:text-base sm:text-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm 
+                         border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 
+                         lg:sticky lg:top-20 transition-colors">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-sm xs:text-base sm:text-lg">
                 📚 Historical SOAP Notes
               </h3>
 
@@ -335,23 +349,25 @@ Differential diagnosis:
                     key={note.id}
                     className={`p-3 rounded-lg border-2 transition-all cursor-pointer
                               ${note.id === id 
-                                ? 'border-tecnot-primary bg-tecnot-light' 
-                                : 'border-gray-200 hover:border-tecnot-primary hover:bg-tecnot-light/50'
+                                ? 'border-tecnot-primary dark:border-tecnot-light bg-tecnot-light dark:bg-tecnot-primary/20' 
+                                : 'border-gray-200 dark:border-gray-600 hover:border-tecnot-primary dark:hover:border-tecnot-light hover:bg-tecnot-light/50 dark:hover:bg-gray-700'
                               }`}
                     onClick={() => note.id !== id && navigate(`/soap-note/${note.id}`)}
                   >
-                    <p className="text-xs xs:text-sm text-gray-600 mb-1">
+                    <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 mb-1">
                       📅 {new Date(note.date).toLocaleDateString('en-GB', {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric'
                       })}
                     </p>
-                    <p className="font-semibold text-gray-900 text-xs xs:text-sm truncate">
+                    <p className="font-semibold text-gray-900 dark:text-white text-xs xs:text-sm truncate">
                       {note.chief_complaint}
                     </p>
                     {note.id === id && (
-                      <span className="inline-block mt-2 px-2 py-0.5 bg-tecnot-primary text-white 
+                      <span className="inline-block mt-2 px-2 py-0.5 
+                                     bg-tecnot-primary dark:bg-tecnot-light
+                                     text-white dark:text-gray-900
                                      text-[10px] xs:text-xs rounded-full">
                         Current
                       </span>
@@ -361,15 +377,17 @@ Differential diagnosis:
               </div>
 
               <button
-                className="w-full mt-4 px-4 py-2.5 border-2 border-tecnot-primary 
-                         text-tecnot-primary rounded-lg font-medium hover:bg-tecnot-light 
+                className="w-full mt-4 px-4 py-2.5 
+                         border-2 border-tecnot-primary dark:border-tecnot-light
+                         text-tecnot-primary dark:text-tecnot-light rounded-lg font-medium 
+                         hover:bg-tecnot-light dark:hover:bg-gray-700
                          transition-smooth text-xs xs:text-sm"
               >
                 Continue This Session
               </button>
 
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-[10px] xs:text-xs text-gray-500 mb-2">
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-[10px] xs:text-xs text-gray-500 dark:text-gray-400 mb-2">
                   💡 <strong>Tip:</strong> Click "Continue This Session" to add more notes to this consultation.
                 </p>
               </div>

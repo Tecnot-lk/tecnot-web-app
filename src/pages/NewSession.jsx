@@ -278,7 +278,7 @@ function NewSession() {
   // UI
   // =========================
   return (
-    <div className="animate-fadeIn w-full">
+    <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="New Consultation Session" subtitle="Record patient consultation" />
 
       {selectedPatient && <PatientBanner patient={selectedPatient} session={{ vitals }} />}
@@ -286,8 +286,8 @@ function NewSession() {
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl mx-auto">
         {/* STEP 1 */}
         {!selectedPatient ? (
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 transition-colors">
+            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
               Select Patient
             </h2>
 

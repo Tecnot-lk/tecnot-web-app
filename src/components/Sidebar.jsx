@@ -40,7 +40,7 @@ function Sidebar() {
       {isMobileMenuOpen && (
         <div
           onClick={() => setIsMobileMenuOpen(false)}
-          className="lg:hidden fixed inset-0 bg-black/50 z-30 backdrop-blur-sm animate-fadeIn"
+          className="lg:hidden fixed inset-0 bg-black/50 dark:bg-black/70 z-30 backdrop-blur-sm animate-fadeIn"
           aria-hidden="true"
         />
       )}
@@ -51,22 +51,23 @@ function Sidebar() {
           fixed top-0 left-0 h-screen
           w-64 sm:w-72 lg:w-64 xl:w-72
           bg-gradient-to-b from-tecnot-primary to-tecnot-dark
+          dark:from-gray-900 dark:to-gray-950
           text-white shadow-2xl z-40
-          transform transition-transform duration-300 ease-in-out
+          transform transition-all duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
           overflow-y-auto
         `}
       >
         {/* Logo & Brand */}
-        <div className="p-4 sm:p-6 border-b border-white/20">
+        <div className="p-4 sm:p-6 border-b border-white/20 dark:border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-              <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-tecnot-primary" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+              <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-tecnot-primary dark:text-tecnot-light" />
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold">TECNOT</h1>
-              <p className="text-xs sm:text-sm text-tecnot-light">AI Clinical Scribe</p>
+              <p className="text-xs sm:text-sm text-tecnot-light dark:text-gray-400">AI Clinical Scribe</p>
             </div>
           </div>
         </div>
@@ -86,8 +87,8 @@ function Sidebar() {
                   flex items-center gap-3 px-3 xs:px-4 py-2.5 xs:py-3
                   rounded-lg transition-smooth active:scale-95
                   ${isActive
-                    ? 'bg-white/20 font-semibold shadow-lg'
-                    : 'hover:bg-white/10'
+                    ? 'bg-white/20 dark:bg-white/10 font-semibold shadow-lg'
+                    : 'hover:bg-white/10 dark:hover:bg-white/5'
                   }
                 `}
               >
@@ -99,7 +100,7 @@ function Sidebar() {
         </nav>
 
         {/* Bottom Section - Settings & Logout */}
-        <div className="p-3 xs:p-4 border-t border-white/20 space-y-2">
+        <div className="p-3 xs:p-4 border-t border-white/20 dark:border-white/10 space-y-2">
           <Link
             to="/settings"
             onClick={() => setIsMobileMenuOpen(false)}
@@ -107,8 +108,8 @@ function Sidebar() {
               flex items-center gap-3 px-3 xs:px-4 py-2.5 xs:py-3
               rounded-lg transition-smooth active:scale-95
               ${location.pathname === '/settings'
-                ? 'bg-white/20 font-semibold shadow-lg'
-                : 'hover:bg-white/10'
+                ? 'bg-white/20 dark:bg-white/10 font-semibold shadow-lg'
+                : 'hover:bg-white/10 dark:hover:bg-white/5'
               }
             `}
           >
@@ -119,7 +120,7 @@ function Sidebar() {
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 xs:px-4 py-2.5 xs:py-3
-                     text-red-300 hover:bg-red-500/20 rounded-lg
+                     text-red-300 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/30 rounded-lg
                      transition-smooth active:scale-95"
           >
             <LogOut className="w-5 h-5 xs:w-6 xs:h-6" />
