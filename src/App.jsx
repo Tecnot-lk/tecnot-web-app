@@ -22,7 +22,7 @@ import Sidebar from './components/Sidebar'
 function App() {
   return (
     <Router>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
         
         {/* Sidebar - shows on all pages */}
         <Sidebar />

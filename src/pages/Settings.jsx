@@ -6,9 +6,10 @@
 import React, { useState } from 'react'
 import { Moon, Sun, Monitor, LogOut, Bell, X } from 'lucide-react'
 import Header from '../components/Header'
+import { useTheme } from '../pages/ThemeContext'
 
 function Settings() {
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState('')
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   
   const [notifications, setNotifications] = useState({
@@ -28,11 +29,11 @@ function Settings() {
       <div className="p-3 xs:p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
         
         {/* Theme Settings - Responsive */}
-        <div className="bg-white rounded-xl sm:rounded-2xl 
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl 
                        p-4 xs:p-5 sm:p-6 
-                       shadow-sm border border-gray-100 
+                       shadow-sm border border-gray-100 dark:border-gray-700 
                        mb-4 xs:mb-6">
-          <h3 className="text-base xs:text-lg font-bold text-gray-900 mb-3 xs:mb-4">
+          <h3 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-3 xs:mb-4">
             Display & Theme
           </h3>
           
@@ -58,8 +59,8 @@ function Settings() {
                   <Sun className="w-4 h-4 xs:w-5 xs:h-5 text-yellow-500" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900 text-sm xs:text-base">Light Mode</p>
-                  <p className="text-xs xs:text-sm text-gray-600">Default theme</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Light Mode</p>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Default theme</p>
                 </div>
               </div>
               {theme === 'light' && (
@@ -94,8 +95,8 @@ function Settings() {
                   <Moon className="w-4 h-4 xs:w-5 xs:h-5 text-blue-400" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900 text-sm xs:text-base">Dark Mode</p>
-                  <p className="text-xs xs:text-sm text-gray-600">Easy on the eyes</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Dark Mode</p>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Easy on the eyes</p>
                 </div>
               </div>
               {theme === 'dark' && (
@@ -131,8 +132,8 @@ function Settings() {
                   <Monitor className="w-4 h-4 xs:w-5 xs:h-5 text-gray-700" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900 text-sm xs:text-base">System Default</p>
-                  <p className="text-xs xs:text-sm text-gray-600">Follow device settings</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">System Default</p>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Follow device settings</p>
                 </div>
               </div>
               {theme === 'system' && (
@@ -150,11 +151,11 @@ function Settings() {
         </div>
         
         {/* Notification Settings - Responsive */}
-        <div className="bg-white rounded-xl sm:rounded-2xl 
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl 
                        p-4 xs:p-5 sm:p-6 
-                       shadow-sm border border-gray-100 
+                       shadow-sm border border-gray-100 dark:border-gray-700 
                        mb-4 xs:mb-6">
-          <h3 className="text-base xs:text-lg font-bold text-gray-900 mb-3 xs:mb-4 flex items-center gap-2">
+          <h3 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-3 xs:mb-4 flex items-center gap-2">
             <Bell className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary" />
             Notifications
           </h3>
@@ -163,7 +164,7 @@ function Settings() {
             {/* Email Notifications */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm xs:text-base">Email Notifications</p>
+                <p className="font-semiboldtext-gray-900 dark:text-white text-sm xs:text-base">Email Notifications</p>
                 <p className="text-xs xs:text-sm text-gray-600">Receive updates via email</p>
               </div>
               <button
@@ -174,7 +175,7 @@ function Settings() {
               >
                 <div className={`absolute top-0.5 xs:top-1 
                                w-5 h-5 xs:w-6 xs:h-6 
-                               bg-white rounded-full shadow-md 
+                               bg-white dark:bg-gray-800 rounded-full shadow-md 
                                transition-smooth
                                ${notifications.email ? 'right-0.5 xs:right-1' : 'left-0.5 xs:left-1'}`}>
                 </div>
@@ -195,7 +196,7 @@ function Settings() {
               >
                 <div className={`absolute top-0.5 xs:top-1 
                                w-5 h-5 xs:w-6 xs:h-6 
-                               bg-white rounded-full shadow-md 
+                               bg-white dark:bg-gray-800 rounded-full shadow-md 
                                transition-smooth
                                ${notifications.push ? 'right-0.5 xs:right-1' : 'left-0.5 xs:left-1'}`}>
                 </div>
@@ -216,7 +217,7 @@ function Settings() {
               >
                 <div className={`absolute top-0.5 xs:top-1 
                                w-5 h-5 xs:w-6 xs:h-6 
-                               bg-white rounded-full shadow-md 
+                               bg-white dark:bg-gray-800 rounded-full shadow-md 
                                transition-smooth
                                ${notifications.sessions ? 'right-0.5 xs:right-1' : 'left-0.5 xs:left-1'}`}>
                 </div>
@@ -226,11 +227,11 @@ function Settings() {
         </div>
         
         {/* Logout Section - Responsive */}
-        <div className="bg-red-50 rounded-xl sm:rounded-2xl 
+        <div className=" rounded-xl sm:rounded-2xl 
                        p-4 xs:p-5 sm:p-6 
-                       border border-red-200">
+                       ">
           <h3 className="text-base xs:text-lg font-bold text-red-900 mb-3 xs:mb-4">
-            Danger Zone
+            
           </h3>
           <button
             onClick={() => setShowLogoutModal(true)}
@@ -251,7 +252,7 @@ function Settings() {
       {/* Logout Confirmation Modal - Responsive */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fadeIn p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl 
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl 
                          p-5 xs:p-6 sm:p-8 
                          max-w-md w-full 
                          shadow-2xl">

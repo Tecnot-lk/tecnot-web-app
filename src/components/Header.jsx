@@ -8,6 +8,10 @@ import { Bell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function Header({ title, subtitle }) {
+  <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
+  <h1 className="text-gray-900 dark:text-white">{title}</h1>
+  <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
+</div>
   return (
     <header className="bg-white border-b border-gray-200 
                        px-3 xs:px-4 sm:px-6 lg:px-8 
