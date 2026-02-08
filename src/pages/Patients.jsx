@@ -37,15 +37,20 @@ function Patients() {
     try {
       setLoading(true)
       const data = await patientService.getPatients()
+      console.log('API Response:', data)
+      console.log('Patients from API:', data.results)
       setPatients(data.results || [])
     } catch (error) {
       console.error('Error fetching patients:', error)
+      console.log('Using dummy data fallback')
       // Using dummy data for development
-      setPatients([
-        { id: '1', mrn: 'MRN001234', first_name: 'Malik', last_name: 'Fernando', age: 38, gender: 'Male', mobile_number: '+94771234567' },
-        { id: '2', mrn: 'MRN005678', first_name: 'Shiman', last_name: 'Perera', age: 35, gender: 'Male', mobile_number: '+94712345678' },
-        { id: '3', mrn: 'MRN009012', first_name: 'Aisha', last_name: 'Khan', age: 42, gender: 'Female', mobile_number: '+94763456789' },
-      ])
+      const dummyData = [
+        { id: '1', mrn: 'MRN001234', first_name: 'Malik', last_name: 'Fernando', age: 38, gender: 'Male', mobile_number: '+94771234567', national_id: '851234567V' },
+        { id: '2', mrn: 'MRN005678', first_name: 'Shiman', last_name: 'Perera', age: 35, gender: 'Male', mobile_number: '+94712345678', national_id: '901234567V' },
+        { id: '3', mrn: 'MRN009012', first_name: 'Aisha', last_name: 'Khan', age: 42, gender: 'Female', mobile_number: '+94763456789', national_id: '821234567V' },
+      ]
+      console.log('Dummy patients loaded:', dummyData)
+      setPatients(dummyData)
     } finally {
       setLoading(false)
     }
@@ -111,11 +116,22 @@ function Patients() {
 
   const filteredPatients = patients.filter(patient => {
     const query = searchQuery.toLowerCase()
+    
+    // Debug logging - only log first patient to avoid spam
+    if (searchQuery && patient.id === patients[0]?.id) {
+      console.log('=== SEARCH DEBUG ===')
+      console.log('Search query:', query)
+      console.log('Patient national_id:', patient.national_id)
+      console.log('National ID match:', patient.national_id?.toLowerCase().includes(query))
+      console.log('==================')
+    }
+    
     return (
       patient.first_name?.toLowerCase().includes(query) ||
       patient.last_name?.toLowerCase().includes(query) ||
       patient.mrn?.toLowerCase().includes(query) ||
-      patient.mobile_number?.includes(query)
+      patient.mobile_number?.includes(query) ||
+      patient.national_id?.toLowerCase().includes(query)
     )
   })
 
@@ -132,7 +148,7 @@ function Patients() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Search by name, MRN, or mobile..."
+              placeholder="Search by name, MRN, mobile, or national ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
