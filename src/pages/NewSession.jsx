@@ -93,7 +93,7 @@ function NewSession() {
   }
 
   return (
-    <div className="animate-fadeIn w-full">
+    <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="New Consultation Session" subtitle="Record patient consultation" />
       
       {selectedPatient && (
@@ -107,21 +107,23 @@ function NewSession() {
         
         {/* Step 1: Select Patient */}
         {!selectedPatient ? (
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 transition-colors">
+            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
               Select Patient
             </h2>
 
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search by name or MRN..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg 
-                         outline-none focus:border-tecnot-primary focus:ring-4 
-                         focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                         outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                         focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
 
@@ -130,8 +132,8 @@ function NewSession() {
                 <button
                   key={patient.id}
                   onClick={() => setSelectedPatient(patient)}
-                  className="w-full text-left p-3 xs:p-4 border border-gray-200 rounded-lg 
-                           hover:border-tecnot-primary hover:bg-tecnot-light/50 
+                  className="w-full text-left p-3 xs:p-4 border border-gray-200 dark:border-gray-600 rounded-lg 
+                           hover:border-tecnot-primary dark:hover:border-tecnot-light hover:bg-tecnot-light/50 dark:hover:bg-gray-700
                            transition-all"
                 >
                   <div className="flex items-center gap-3">
@@ -141,10 +143,10 @@ function NewSession() {
                       {patient.first_name.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm xs:text-base truncate">
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base truncate">
                         {patient.first_name} {patient.last_name}
                       </p>
-                      <p className="text-xs xs:text-sm text-gray-600">
+                      <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">
                         MRN: {patient.mrn} • {patient.age}Y {patient.gender}
                       </p>
                     </div>
@@ -157,14 +159,14 @@ function NewSession() {
           <div className="space-y-4 sm:space-y-6">
             
             {/* Step 2: Enter Vitals */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-              <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 transition-colors">
+              <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
                 Patient Vitals
               </h2>
 
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 xs:gap-4">
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Height (cm) *
                   </label>
                   <input
@@ -172,14 +174,16 @@ function NewSession() {
                     placeholder="175"
                     value={vitals.height}
                     onChange={(e) => setVitals({...vitals, height: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Weight (kg) *
                   </label>
                   <input
@@ -187,14 +191,16 @@ function NewSession() {
                     placeholder="70"
                     value={vitals.weight}
                     onChange={(e) => setVitals({...vitals, weight: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Temperature (°C)
                   </label>
                   <input
@@ -203,14 +209,16 @@ function NewSession() {
                     placeholder="37.2"
                     value={vitals.temperature}
                     onChange={(e) => setVitals({...vitals, temperature: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Blood Pressure
                   </label>
                   <input
@@ -218,14 +226,16 @@ function NewSession() {
                     placeholder="120/80"
                     value={vitals.blood_pressure}
                     onChange={(e) => setVitals({...vitals, blood_pressure: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Heart Rate (bpm)
                   </label>
                   <input
@@ -233,14 +243,16 @@ function NewSession() {
                     placeholder="72"
                     value={vitals.heart_rate}
                     onChange={(e) => setVitals({...vitals, heart_rate: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     SpO2 (%)
                   </label>
                   <input
@@ -248,33 +260,35 @@ function NewSession() {
                     placeholder="98"
                     value={vitals.spo2}
                     onChange={(e) => setVitals({...vitals, spo2: e.target.value})}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 rounded-lg 
-                             outline-none focus:border-tecnot-primary focus:ring-4 
-                             focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
+                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
               </div>
             </div>
 
             {/* Step 3: Recording Interface */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 xs:p-6 sm:p-8">
-              <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-4 xs:mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 transition-colors">
+              <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
                 Record Consultation
               </h2>
 
               <div className="text-center py-6 xs:py-8 sm:py-12">
                 <div className={`w-24 h-24 xs:w-32 xs:h-32 sm:w-40 sm:h-40 mx-auto mb-6 xs:mb-8 
                               rounded-full flex items-center justify-center transition-all duration-300
-                              ${isRecording ? 'bg-red-100 animate-pulse-slow' : 'bg-gray-100'}`}>
+                              ${isRecording ? 'bg-red-100 dark:bg-red-900/30 animate-pulse-slow' : 'bg-gray-100 dark:bg-gray-700'}`}>
                   <Mic className={`w-12 h-12 xs:w-16 xs:h-16 sm:w-20 sm:h-20 
-                                ${isRecording ? 'text-red-500' : 'text-gray-400'}`} />
+                                ${isRecording ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`} />
                 </div>
 
-                <div className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 mb-3 xs:mb-4">
+                <div className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3 xs:mb-4">
                   {formatTime(recordingTime)}
                 </div>
 
-                <p className="text-sm xs:text-base text-gray-600 mb-6 xs:mb-8">
+                <p className="text-sm xs:text-base text-gray-600 dark:text-gray-400 mb-6 xs:mb-8">
                   {isRecording ? '🔴 Recording in Progress...' : 
                    audioBlob ? '✅ Recording Complete' : 
                    'Ready to Record'}
@@ -285,8 +299,8 @@ function NewSession() {
                     <button
                       onClick={handleStartRecording}
                       disabled={!vitals.height || !vitals.weight}
-                      className="px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary text-white rounded-lg 
-                               font-semibold hover:bg-tecnot-dark transition-smooth shadow-lg 
+                      className="px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg 
+                               font-semibold hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg 
                                disabled:opacity-50 disabled:cursor-not-allowed
                                flex items-center justify-center gap-2 text-sm xs:text-base"
                     >
@@ -298,8 +312,8 @@ function NewSession() {
                   {isRecording && (
                     <button
                       onClick={handleStopRecording}
-                      className="px-6 xs:px-8 py-3 xs:py-4 bg-red-500 text-white rounded-lg 
-                               font-semibold hover:bg-red-600 transition-smooth shadow-lg
+                      className="px-6 xs:px-8 py-3 xs:py-4 bg-red-500 dark:bg-red-600 text-white rounded-lg 
+                               font-semibold hover:bg-red-600 dark:hover:bg-red-700 transition-smooth shadow-lg
                                flex items-center justify-center gap-2 text-sm xs:text-base"
                     >
                       <Square className="w-5 h-5" />
@@ -314,8 +328,8 @@ function NewSession() {
                           setAudioBlob(null)
                           setRecordingTime(0)
                         }}
-                        className="px-6 xs:px-8 py-3 xs:py-4 bg-gray-500 text-white rounded-lg 
-                                 font-semibold hover:bg-gray-600 transition-smooth
+                        className="px-6 xs:px-8 py-3 xs:py-4 bg-gray-500 dark:bg-gray-600 text-white rounded-lg 
+                                 font-semibold hover:bg-gray-600 dark:hover:bg-gray-700 transition-smooth
                                  flex items-center justify-center gap-2 text-sm xs:text-base"
                       >
                         Re-record
@@ -323,8 +337,8 @@ function NewSession() {
 
                       <button
                         onClick={handleGenerateSOAP}
-                        className="px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary text-white rounded-lg 
-                                 font-semibold hover:bg-tecnot-dark transition-smooth shadow-lg
+                        className="px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg 
+                                 font-semibold hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg
                                  flex items-center justify-center gap-2 text-sm xs:text-base"
                       >
                         <Play className="w-5 h-5" />
@@ -335,8 +349,8 @@ function NewSession() {
 
                   {processing && (
                     <div className="text-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary mx-auto mb-3" />
-                      <p className="text-sm xs:text-base text-gray-600">
+                      <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary dark:text-tecnot-light mx-auto mb-3" />
+                      <p className="text-sm xs:text-base text-gray-600 dark:text-gray-400">
                         Processing audio... This may take a minute.
                       </p>
                     </div>
@@ -344,7 +358,7 @@ function NewSession() {
                 </div>
 
                 {!vitals.height || !vitals.weight ? (
-                  <p className="text-xs xs:text-sm text-red-500 mt-4">
+                  <p className="text-xs xs:text-sm text-red-500 dark:text-red-400 mt-4">
                     Please enter at least Height and Weight to start recording
                   </p>
                 ) : null}

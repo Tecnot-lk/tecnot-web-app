@@ -120,7 +120,7 @@ function Patients() {
   })
 
   return (
-    <div className="animate-fadeIn w-full">
+    <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="Patient Records" subtitle="Manage your patients" />
       
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
@@ -129,23 +129,25 @@ function Patients() {
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
           {/* Search Bar */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search by name, MRN, or mobile..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                       focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                       transition-all text-sm xs:text-base"
+              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                       focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                       transition-all text-sm xs:text-base
+                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                       placeholder-gray-400 dark:placeholder-gray-500"
             />
           </div>
 
           {/* Add Patient Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center gap-2 bg-tecnot-primary text-white 
-                     px-4 xs:px-6 py-3 rounded-lg font-medium hover:bg-tecnot-dark 
+            className="flex items-center justify-center gap-2 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900
+                     px-4 xs:px-6 py-3 rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
                      transition-smooth shadow-lg text-sm xs:text-base whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
@@ -156,12 +158,12 @@ function Patients() {
         {/* Patient Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary" />
+            <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary dark:text-tecnot-light" />
           </div>
         ) : filteredPatients.length === 0 ? (
           <div className="text-center py-12">
-            <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-sm xs:text-base">
+            <User className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400 text-sm xs:text-base">
               {searchQuery ? 'No patients found matching your search.' : 'No patients yet. Add your first patient to get started.'}
             </p>
           </div>
@@ -171,8 +173,8 @@ function Patients() {
               <Link
                 key={patient.id}
                 to={`/patient/${patient.mrn}`}
-                className="bg-white rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm 
-                         border border-gray-100 hover:shadow-md transition-all duration-200
+                className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm 
+                         border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200
                          card-hover"
               >
                 <div className="flex items-start gap-3 xs:gap-4 mb-3">
@@ -182,30 +184,30 @@ function Patients() {
                     {patient.first_name?.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 text-base xs:text-lg truncate">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base xs:text-lg truncate">
                       {patient.first_name} {patient.last_name}
                     </h3>
-                    <p className="text-xs xs:text-sm text-gray-600">MRN: {patient.mrn}</p>
+                    <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">MRN: {patient.mrn}</p>
                   </div>
                 </div>
 
-                <div className="space-y-1.5 text-xs xs:text-sm text-gray-600">
+                <div className="space-y-1.5 text-xs xs:text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex justify-between">
                     <span>Age:</span>
-                    <span className="font-medium text-gray-900">{patient.age} years</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{patient.age} years</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Gender:</span>
-                    <span className="font-medium text-gray-900">{patient.gender}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{patient.gender}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Contact:</span>
-                    <span className="font-medium text-gray-900 truncate ml-2">{patient.mobile_number}</span>
+                    <span className="font-medium text-gray-900 dark:text-white truncate ml-2">{patient.mobile_number}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100">
-                  <span className="text-xs xs:text-sm text-tecnot-primary font-medium">
+                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <span className="text-xs xs:text-sm text-tecnot-primary dark:text-tecnot-light font-medium">
                     View Details →
                   </span>
                 </div>
@@ -226,51 +228,55 @@ function Patients() {
 
           {/* Modal */}
           <div
-            className="relative bg-white rounded-2xl p-6 xs:p-8 max-w-2xl w-full 
-                     shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 xs:p-8 max-w-2xl w-full 
+                     shadow-2xl max-h-[90vh] overflow-y-auto transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowAddModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-smooth"
+              className="absolute top-4 right-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-smooth"
             >
               <X className="w-6 h-6" />
             </button>
 
-            <h2 className="text-xl xs:text-2xl font-bold text-gray-900 mb-6">New Patient</h2>
+            <h2 className="text-xl xs:text-2xl font-bold text-gray-900 dark:text-white mb-6">New Patient</h2>
 
             <div className="space-y-4">
               {/* Name Fields */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
                   <input
                     type="text"
                     placeholder="Enter first name"
                     value={newPatient.first_name}
                     onChange={(e) => setNewPatient({ ...newPatient, first_name: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
                   <input
                     type="text"
                     placeholder="Enter last name"
                     value={newPatient.last_name}
                     onChange={(e) => setNewPatient({ ...newPatient, last_name: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
               </div>
 
               {/* DOB */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
                 <DatePicker
                   selected={selectedDate}
                   onChange={handleDobChange}
@@ -280,9 +286,11 @@ function Patients() {
                   showYearDropdown
                   scrollableYearDropdown
                   yearDropdownItemNumber={100}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                           transition-all cursor-pointer text-sm xs:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all cursor-pointer text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
                   wrapperClassName="w-full"
                 />
               </div>
@@ -290,25 +298,28 @@ function Patients() {
               {/* Age & Gender */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age</label>
                   <input
                     type="number"
                     placeholder="Auto-calculated from DOB"
                     value={newPatient.age}
                     onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
                   <select
                     value={newPatient.gender}
                     onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all bg-white cursor-pointer text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base
+                             text-gray-900 dark:text-white"
                   >
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
@@ -321,27 +332,31 @@ function Patients() {
               {/* Nationality & National ID */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nationality</label>
                   <input
                     type="text"
                     placeholder="Enter nationality"
                     value={newPatient.nationality}
                     onChange={(e) => setNewPatient({ ...newPatient, nationality: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">National ID</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">National ID</label>
                   <input
                     type="text"
                     placeholder="e.g., 851234567V"
                     value={newPatient.national_id}
                     onChange={(e) => setNewPatient({ ...newPatient, national_id: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
               </div>
@@ -349,27 +364,31 @@ function Patients() {
               {/* Mobile & Email */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile Number</label>
                   <input
                     type="tel"
                     placeholder="+94 77 123 4567"
                     value={newPatient.mobile_number}
                     onChange={(e) => setNewPatient({ ...newPatient, mobile_number: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
                   <input
                     type="email"
                     placeholder="patient@example.com"
                     value={newPatient.email}
                     onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
               </div>
@@ -377,13 +396,14 @@ function Patients() {
               {/* Language & Blood Type */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Language</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Language</label>
                   <select
                     value={newPatient.preferred_language}
                     onChange={(e) => setNewPatient({ ...newPatient, preferred_language: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all bg-white cursor-pointer text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base
+                             text-gray-900 dark:text-white"
                   >
                     <option value="English">English</option>
                     <option value="Sinhala">Sinhala</option>
@@ -391,13 +411,14 @@ function Patients() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Blood Type</label>
                   <select
                     value={newPatient.blood_type}
                     onChange={(e) => setNewPatient({ ...newPatient, blood_type: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                             focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                             transition-all bg-white cursor-pointer text-sm xs:text-base"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base
+                             text-gray-900 dark:text-white"
                   >
                     <option value="">Select Blood Type</option>
                     <option value="A+">A+</option>
@@ -414,55 +435,63 @@ function Patients() {
 
               {/* Medical Info */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Chronic Conditions</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chronic Conditions</label>
                 <input
                   type="text"
                   placeholder="e.g., Diabetes Type 2, Hypertension"
                   value={newPatient.chronics}
                   onChange={(e) => setNewPatient({ ...newPatient, chronics: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                           transition-all text-sm xs:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allergies</label>
                 <input
                   type="text"
                   placeholder="e.g., Penicillin, Peanuts"
                   value={newPatient.allergies}
                   onChange={(e) => setNewPatient({ ...newPatient, allergies: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                           transition-all text-sm xs:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Drug Precautions</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Drug Precautions</label>
                 <input
                   type="text"
                   placeholder="e.g., Avoid NSAIDs"
                   value={newPatient.drug_precautions}
                   onChange={(e) => setNewPatient({ ...newPatient, drug_precautions: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                           transition-all text-sm xs:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 
               {/* MRN */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Patient MRN</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient MRN</label>
                 <input
                   type="text"
                   placeholder="Auto-generated (leave blank)"
                   value={newPatient.mrn}
                   onChange={(e) => setNewPatient({ ...newPatient, mrn: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg outline-none 
-                           focus:border-tecnot-primary focus:ring-4 focus:ring-tecnot-primary/20 
-                           transition-all text-sm xs:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
@@ -471,15 +500,15 @@ function Patients() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg font-medium 
-                         text-gray-700 hover:bg-gray-50 transition-smooth text-sm xs:text-base"
+                className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-medium 
+                         text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-smooth text-sm xs:text-base"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSavePatient}
-                className="flex-1 px-6 py-3 bg-tecnot-primary text-white rounded-lg font-medium 
-                         hover:bg-tecnot-dark transition-smooth shadow-lg hover:shadow-xl text-sm xs:text-base"
+                className="flex-1 px-6 py-3 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg font-medium 
+                         hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg hover:shadow-xl text-sm xs:text-base"
               >
                 Add Patient
               </button>
