@@ -123,7 +123,7 @@ function PatientDetail() {
           id: '3',
           mrn: 'MRN009012',
           first_name: 'Shimani',
-          last_name: 'Khane1',
+          last_name: 'Khan',
           age: 42,
           gender: 'Female',
           blood_type: 'B+',
