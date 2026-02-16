@@ -1,197 +1,290 @@
-// ====================
-// SHARED SOAP NOTES DATA
-// Central source of truth for all SOAP notes
-// Each SOAP note is linked to a session ID
-// ====================
+// =============================================================================
+// DUMMY SOAP NOTES DATA
+// =============================================================================
+//
+// PURPOSE:
+// - Provide sample SOAP notes for frontend development
+// - Use this when backend is not ready yet
+// - Shows what historical SOAP notes look like
+//
+// NOTE: This file is OPTIONAL and only for testing
+// Delete this file when backend integration is complete
+//
+// =============================================================================
 
 export const soapNotesData = [
-  // Malik's SOAP Notes (Patient 001)
   {
-    sessionId: 1,
-    patientName: 'Malik',
-    patientCode: '001',
-    date: '25/11/2025',
-    time: '10:17am',
-    complaint: 'Leg pain',
-    subjective: 'Patient complains of persistent pain in the right leg for the past 3 days. Pain is described as sharp and worsens with movement. No history of trauma or injury.',
-    objective: 'Patient appears in mild distress. Right leg examination reveals tenderness in the calf muscle. No swelling or discoloration observed. Vital signs: BP 120/80, Pulse 72 bpm, Temp 98.6°F.',
-    assessment: 'Likely muscle strain in the right calf. No signs of deep vein thrombosis or fracture.',
-    plan: 'Prescribed pain relief medication (Ibuprofen 400mg TDS). Advised rest and ice application. Follow-up in 1 week if symptoms persist.'
+    id: '1',
+    patient_id: '1',
+    patient_mrn: 'MRN001234',
+    patient_name: 'Malik Fernando',
+    session_date: '2026-02-10T10:30:00Z',
+    complaint: 'General checkup and diabetes follow-up',
+    
+    soap: {
+      subjective: `Chief Complaint: Patient presents for routine diabetes follow-up and general checkup.
+
+History of Present Illness: Patient reports good compliance with medication. Blood sugar levels have been stable over the past month. No episodes of hypoglycemia or hyperglycemia. Patient monitors blood glucose at home regularly.
+
+Review of Systems:
+- Constitutional: Denies fever, fatigue, or weight changes
+- Cardiovascular: Denies chest pain or palpitations
+- Respiratory: Denies shortness of breath or cough
+- GI: Denies abdominal pain, nausea, or changes in bowel habits
+- Musculoskeletal: Denies joint pain or stiffness
+
+Past Medical History: Diabetes Type 2 (diagnosed 2018), Hypertension
+Current Medications: Metformin 500mg BD, Amlodipine 5mg OD
+Allergies: Penicillin`,
+
+      objective: `Vitals:
+- Height: 172 cm
+- Weight: 78 kg
+- BMI: 26.4
+- Blood Pressure: 128/82 mmHg
+- Heart Rate: 74 bpm
+- Temperature: 36.8°C
+- SpO2: 98%
+
+Physical Examination:
+- General: Alert, oriented, well-nourished, in no acute distress
+- HEENT: Normocephalic, atraumatic, pupils equal and reactive
+- Cardiovascular: Regular rate and rhythm, no murmurs, rubs, or gallops
+- Respiratory: Clear to auscultation bilaterally, no wheezes or crackles
+- Abdomen: Soft, non-tender, non-distended, normal bowel sounds
+- Extremities: No edema, peripheral pulses intact
+- Neurological: Alert and oriented x3, cranial nerves II-XII intact
+
+Lab Results (from last visit 1 month ago):
+- HbA1c: 6.8%
+- Fasting Blood Glucose: 118 mg/dL
+- Lipid Panel: Total Cholesterol 185, LDL 110, HDL 48, Triglycerides 135`,
+
+      assessment: `Primary Diagnoses:
+1. Diabetes Mellitus Type 2 - Well controlled (HbA1c 6.8%)
+2. Essential Hypertension - Controlled
+
+Clinical Impression:
+Patient's diabetes is well-controlled on current regimen. Blood pressure is within target range. Patient demonstrates good understanding of disease management and medication compliance. No acute concerns at this time.
+
+Risk Factors:
+- Family history of cardiovascular disease
+- Borderline BMI
+- Sedentary lifestyle`,
+
+      plan: `Treatment Plan:
+1. Continue current medications
+   - Metformin 500mg PO BD with meals
+   - Amlodipine 5mg PO OD in the morning
+
+2. Lifestyle Modifications
+   - Encourage 30 minutes of moderate exercise 5 days per week
+   - Continue diabetic diet with carbohydrate counting
+   - Weight reduction goal: 5kg over 6 months
+
+3. Monitoring
+   - Continue home blood glucose monitoring (fasting and 2hr post-prandial)
+   - Self-monitoring of blood pressure weekly
+
+4. Laboratory Orders
+   - HbA1c in 3 months
+   - Lipid panel in 6 months
+   - Annual diabetic eye exam (due in 2 months)
+   - Annual foot exam performed today - no neuropathy detected
+
+Follow-up:
+- Return in 3 months or sooner if blood sugar not controlled
+- Call if blood glucose consistently >180 mg/dL or <70 mg/dL
+- Emergency visit if chest pain, severe hypoglycemia, or DKA symptoms
+
+Patient Education:
+- Reviewed signs/symptoms of hypo/hyperglycemia
+- Discussed foot care and daily inspection
+- Reinforced medication adherence
+- Patient verbalizes understanding`
+    },
+    
+    created_at: '2026-02-10T11:15:00Z',
+    finalized: true
   },
+  
   {
-    sessionId: 2,
-    patientName: 'Malik',
-    patientCode: '001',
-    date: '30/11/2025',
-    time: '02:30pm',
-    complaint: 'Chest pain',
-    subjective: 'Patient reports mild chest discomfort that started this morning. Describes it as a dull ache, no radiation to arms. No shortness of breath. Patient is anxious about heart problems.',
-    objective: 'Patient alert and oriented. Chest examination normal, heart sounds regular. No abnormal lung sounds. ECG performed - shows normal sinus rhythm. Vital signs: BP 118/78, Pulse 76 bpm, O2 saturation 98%.',
-    assessment: 'Musculoskeletal chest pain, likely due to muscle strain. Cardiac causes ruled out based on examination and ECG.',
-    plan: 'Reassured patient. Prescribed muscle relaxant. Advised stress management techniques. Return if symptoms worsen or new symptoms develop.'
-  },
-  {
-    sessionId: 3,
-    patientName: 'Malik',
-    patientCode: '001',
-    date: '03/01/2026',
-    time: '11:45am',
-    complaint: 'Stomach pain',
-    subjective: 'Patient complains of abdominal pain in the upper abdomen for 2 days. Pain is cramping in nature, associated with mild nausea. No vomiting or diarrhea. Pain increases after meals.',
-    objective: 'Abdomen soft, mild tenderness in epigastric region. No guarding or rebound tenderness. Bowel sounds present and normal. Vital signs stable.',
-    assessment: 'Likely gastritis or dyspepsia. No signs of acute abdomen.',
-    plan: 'Prescribed antacid (Omeprazole 20mg OD before breakfast) for 2 weeks. Advised dietary modifications - avoid spicy and oily foods. Follow-up in 2 weeks.'
-  },
-  {
-    sessionId: 4,
-    patientName: 'Malik',
-    patientCode: '001',
-    date: '10/01/2026',
-    time: '09:15am',
-    complaint: 'Leg pain',
-    subjective: 'Patient returns with left leg pain this time. Started yesterday after long walk. Pain is in the shin area, described as aching.',
-    objective: 'Left shin area tender on palpation. No swelling. Good range of motion. Vital signs normal.',
-    assessment: 'Shin splints - likely overuse injury.',
-    plan: 'Advised rest, ice application, and stretching exercises. Prescribed anti-inflammatory gel for local application. Recommended proper footwear. Follow-up PRN.'
+    id: '2',
+    patient_id: '2',
+    patient_mrn: 'MRN005678',
+    patient_name: 'Shiman Perera',
+    session_date: '2026-01-15T14:00:00Z',
+    complaint: 'Seasonal allergies and nasal congestion',
+    
+    soap: {
+      subjective: `Chief Complaint: "My nose has been really congested and I've been sneezing a lot."
+
+History of Present Illness: Patient reports 1 week of nasal congestion, sneezing, and watery eyes. Symptoms worse in the morning. Denies fever, sore throat, or cough. No known sick contacts. Patient tried over-the-counter antihistamine with minimal relief.
+
+Associated Symptoms: Itchy eyes, mild headache (frontal)
+Aggravating Factors: Being outdoors, exposure to dust
+Relieving Factors: Indoor environment with AC
+
+Past Medical History: No chronic medical conditions
+Current Medications: None regular, tried Cetirizine 10mg OD for 3 days
+Allergies: Sulfa drugs`,
+
+      objective: `Vitals:
+- Height: 175 cm
+- Weight: 72 kg
+- Temperature: 36.5°C
+- Blood Pressure: 118/76 mmHg
+- Heart Rate: 68 bpm
+- Respiratory Rate: 16/min
+
+Physical Examination:
+- General: Alert, appears well, mild nasal congestion evident
+- Eyes: Mild conjunctival injection, no discharge, PERRLA
+- ENT: 
+  * Nasal mucosa edematous and erythematous bilaterally
+  * Clear nasal discharge
+  * Turbinates enlarged
+  * Throat: No erythema or exudates
+  * Tonsils: Not enlarged
+- Neck: No lymphadenopathy
+- Chest: Clear to auscultation, no wheezing
+- Cardiovascular: RRR, no murmurs`,
+
+      assessment: `Primary Diagnosis: Allergic Rhinitis (Seasonal)
+
+Differential Diagnoses Considered:
+1. Viral upper respiratory infection - Less likely due to duration and lack of fever
+2. Vasomotor rhinitis - Possible but symptoms more consistent with allergic etiology
+
+Clinical Reasoning:
+Patient presents with classic symptoms of allergic rhinitis including sneezing, nasal congestion, watery eyes, and itchy eyes. Symptoms pattern suggests environmental trigger. Physical exam consistent with allergic rhinitis.`,
+
+      plan: `Medications:
+1. Loratadine 10mg PO OD x 14 days (non-sedating antihistamine)
+2. Fluticasone nasal spray 2 sprays each nostril OD x 14 days
+3. Artificial tears PRN for eye symptoms
+
+Non-Pharmacological Management:
+- Avoid known allergen triggers when possible
+- Keep windows closed during high pollen days
+- Use air conditioning with HEPA filter
+- Shower and change clothes after outdoor activities
+- Consider allergen testing if symptoms persist
+
+Follow-up:
+- Return in 2 weeks if no improvement
+- Sooner if symptoms worsen or new symptoms develop
+- May need referral to ENT/Allergist if symptoms chronic or refractory
+
+Patient Education:
+- Proper technique for nasal spray administration demonstrated
+- Advised that nasal spray may take 3-5 days for full effect
+- Instructed to continue medications for full 14 days
+- Discussed environmental control measures
+- Patient verbalizes understanding and agrees with plan`
+    },
+    
+    created_at: '2026-01-15T14:45:00Z',
+    finalized: true
   },
 
-  // Shiman's SOAP Notes (Patient 021)
   {
-    sessionId: 5,
-    patientName: 'Shiman',
-    patientCode: '021',
-    date: '30/11/2025',
-    time: '02:30pm',
-    complaint: 'Chest pain',
-    subjective: 'Patient presents with chest pain that started 2 hours ago. Sharp, stabbing pain on left side of chest, worsens with deep breathing. No previous cardiac history.',
-    objective: 'Patient anxious but stable. Respiratory rate slightly elevated at 22/min. Chest examination shows localized tenderness over left 5th rib. Heart sounds normal. ECG normal. Vital signs: BP 125/82, Pulse 88 bpm.',
-    assessment: 'Costochondritis - inflammation of rib cartilage. Cardiac causes excluded.',
-    plan: 'Prescribed NSAIDs (Ibuprofen 400mg TDS) for pain and inflammation. Heat therapy advised. Avoid heavy lifting. Review in 5 days.'
-  },
-  {
-    sessionId: 6,
-    patientName: 'Shiman',
-    patientCode: '021',
-    date: '05/12/2025',
-    time: '03:15pm',
-    complaint: 'Chest pain follow-up',
-    subjective: 'Patient reports improvement in chest pain. Now only mild discomfort, mostly when pressing on the area. Breathing easier.',
-    objective: 'Tenderness over ribs reduced significantly. No respiratory distress. Vital signs normal.',
-    assessment: 'Costochondritis improving as expected.',
-    plan: 'Continue current medication for another week. Gradually resume normal activities. Discharge if resolved at next visit.'
-  },
+    id: '3',
+    patient_id: '3',
+    patient_mrn: 'MRN009012',
+    patient_name: 'Aisha Khan',
+    session_date: '2025-12-05T09:15:00Z',
+    complaint: 'Asthma exacerbation',
+    
+    soap: {
+      subjective: `Chief Complaint: Increased shortness of breath and wheezing for past 2 days.
 
-  // Ibrahim's SOAP Notes (Patient 022)
-  {
-    sessionId: 7,
-    patientName: 'Ibrahim',
-    patientCode: '022',
-    date: '03/01/2026',
-    time: '11:45am',
-    complaint: 'Stomach pain',
-    subjective: 'Patient complains of severe stomach pain for past 6 hours. Pain is in lower right abdomen, sharp in nature. Associated with loss of appetite and one episode of vomiting.',
-    objective: 'Patient in visible discomfort. Temperature 99.8°F. Abdomen examination shows tenderness and guarding in right iliac fossa. Positive McBurney\'s point tenderness. Rebound tenderness present.',
-    assessment: 'Suspected acute appendicitis. Requires urgent surgical evaluation.',
-    plan: 'URGENT REFERRAL to surgery department. Patient sent to emergency room for immediate evaluation. Advised NBM (nothing by mouth). IV fluids started.'
-  },
-  {
-    sessionId: 8,
-    patientName: 'Ibrahim',
-    patientCode: '022',
-    date: '10/01/2026',
-    time: '09:30am',
-    complaint: 'Stomach pain follow-up',
-    subjective: 'Post-appendectomy follow-up. Patient had surgery 5 days ago. Reports minimal pain at surgical site, well controlled with medications. No fever or discharge from wound.',
-    objective: 'Surgical wound healing well. No signs of infection. Abdomen soft, non-tender. Bowel sounds present. Vitals stable.',
-    assessment: 'Post-operative recovery progressing well.',
-    plan: 'Continue antibiotics for 2 more days. Wound care instructions given. Suture removal scheduled for day 10. Return if fever, increased pain, or wound discharge.'
-  },
-  {
-    sessionId: 9,
-    patientName: 'Ibrahim',
-    patientCode: '022',
-    date: '17/01/2026',
-    time: '02:00pm',
-    complaint: 'Digestive issues',
-    subjective: 'Patient reports bloating and irregular bowel movements since surgery. No pain, just discomfort. Appetite returning to normal.',
-    objective: 'Abdomen soft and non-tender. Surgical scar healing well. Bowel sounds normal.',
-    assessment: 'Post-surgical digestive adjustment. Normal finding after abdominal surgery.',
-    plan: 'Advised high fiber diet and adequate water intake. Prescribed probiotics. Should resolve in 1-2 weeks. Follow-up PRN.'
-  },
+History of Present Illness: Patient with known asthma reports worsening symptoms over past 48 hours. Increased use of rescue inhaler (Salbutamol) from once weekly to 4-5 times per day. Patient reports exposure to dust during home cleaning 3 days ago. Currently using controller medication (Budesonide inhaler) regularly.
 
-  // Siddiha's SOAP Notes (Patient 111)
-  {
-    sessionId: 10,
-    patientName: 'Alfred',
-    patientCode: '111',
-    date: '10/01/2026',
-    time: '09:15am',
-    complaint: 'Leg pain',
-    subjective: 'Patient complains of bilateral leg pain, particularly in thighs and calves. Pain is cramping in nature, mostly at night. Patient is elderly and has history of diabetes.',
-    objective: 'Peripheral pulses palpable but weak. Skin temperature normal. No ulcers or skin changes. Blood sugar: 165 mg/dL (fasting). BP: 140/90.',
-    assessment: 'Possible peripheral vascular disease secondary to diabetes. Also considering diabetic neuropathy.',
-    plan: 'Ordered Doppler ultrasound of lower limbs. HbA1c test requested. Prescribed pain medication and advised leg elevation. Strict diabetic diet counseling. Follow-up with test results.'
-  },
+Associated Symptoms:
+- Chest tightness
+- Nocturnal awakening due to breathing difficulty
+- Mild cough with clear sputum
+- Denies fever, chills, or sick contacts
 
-  // Aaisha's SOAP Notes (Patient 232)
-  {
-    sessionId: 11,
-    patientName: 'Sanuka',
-    patientCode: '232',
-    date: '15/01/2026',
-    time: '10:00am',
-    complaint: 'Migraine',
-    subjective: 'Patient presents with severe throbbing headache on right side, lasting for 8 hours. Associated with nausea and sensitivity to light. Patient has history of migraines, occurs 2-3 times per month.',
-    objective: 'Patient in dark room, appears distressed. Neurological examination normal. No neck stiffness. Vital signs: BP 118/75, Pulse 70 bpm.',
-    assessment: 'Acute migraine attack consistent with patient\'s history.',
-    plan: 'Prescribed Sumatriptan 50mg for acute attack. Anti-emetic given. Advised rest in dark, quiet room. Discussed trigger avoidance. Consider prophylactic medication if attacks increase.'
-  },
-  {
-    sessionId: 12,
-    patientName: 'Sanuka',
-    patientCode: '232',
-    date: '20/01/2026',
-    time: '11:30am',
-    complaint: 'Migraine follow-up',
-    subjective: 'Patient had another migraine attack 2 days ago. Sumatriptan was effective. Patient concerned about frequency of attacks. Identifies stress and lack of sleep as triggers.',
-    objective: 'Patient comfortable today. No acute symptoms. Neurological exam normal.',
-    assessment: 'Recurrent migraines. Frequency increasing - now considering prophylaxis.',
-    plan: 'Started on Propranolol 40mg OD for migraine prophylaxis. Maintain headache diary. Stress management counseling. Sleep hygiene advice. Review in 4 weeks to assess response.'
-  },
-  {
-    sessionId: 13,
-    patientName: 'Sanuka',
-    patientCode: '232',
-    date: '25/01/2026',
-    time: '01:45pm',
-    complaint: 'Headache',
-    subjective: 'Patient reports tension-type headache today. Different from usual migraines - feels like band around head. Work stress mentioned.',
-    objective: 'No focal neurological deficits. Muscle tension noted in neck and shoulders. BP normal.',
-    assessment: 'Tension-type headache, likely stress-related.',
-    plan: 'Prescribed simple analgesics. Recommended relaxation techniques and neck exercises. Continue migraine prophylaxis. Advised stress management strategies.'
-  },
-  {
-    sessionId: 14,
-    patientName: 'Sanuka',
-    patientCode: '232',
-    date: '30/01/2026',
-    time: '03:00pm',
-    complaint: 'Migraine',
-    subjective: 'Despite prophylaxis, patient had another severe migraine. Lasted 12 hours. Vomiting multiple times. Very distressed.',
-    objective: 'Patient recovering from attack. Appears fatigued. Slightly dehydrated. Vital signs stable.',
-    assessment: 'Breakthrough migraine despite prophylactic treatment. May need dose adjustment.',
-    plan: 'Increased Propranolol to 80mg OD. Prescribed anti-emetics to keep at home. IV fluids given for dehydration. Referral to neurologist for specialized management. Follow-up in 2 weeks.'
-  },
-  {
-    sessionId: 15,
-    patientName: 'Sanuka',
-    patientCode: '232',
-    date: '02/02/2026',
-    time: '09:45am',
-    complaint: 'Tension headache',
-    subjective: 'Mild headache today. Patient states it\'s tension-related from work. Taking regular breaks and practicing relaxation.',
-    objective: 'Patient appears well. No acute distress. Neck muscles less tense than previous visit.',
-    assessment: 'Tension headache, improving with lifestyle modifications.',
-    plan: 'Continue current migraine prophylaxis. Stress management working well. Neurology appointment scheduled for next week. Encouraged to maintain headache diary for neurologist review.'
+Asthma History: Diagnosed age 25, usually well-controlled with current regimen
+Peak Flow Meter: Personal best 380 L/min, current reading 280 L/min (74% of personal best)
+Allergies: Peanuts, Shellfish (food), Dust (environmental)`,
+
+      objective: `Vitals:
+- Temperature: 36.7°C
+- Blood Pressure: 125/78 mmHg
+- Heart Rate: 92 bpm (elevated)
+- Respiratory Rate: 24/min (elevated)
+- SpO2: 94% on room air
+
+Physical Examination:
+- General: Mild respiratory distress, speaking in full sentences
+- Respiratory:
+  * Bilateral expiratory wheezes throughout all lung fields
+  * Prolonged expiratory phase
+  * No use of accessory muscles
+  * Good air entry bilaterally
+  * No crackles
+- Cardiovascular: Tachycardic but regular rhythm, no murmurs
+- Peak Flow: 280 L/min (74% of personal best - moderate exacerbation)`,
+
+      assessment: `Primary Diagnosis: Acute Asthma Exacerbation - Moderate Severity
+
+Severity Assessment:
+- Peak flow 60-80% of personal best: Moderate exacerbation
+- Increased symptoms and rescue inhaler use
+- Some limitation of daily activities
+- No signs of severe or life-threatening asthma
+
+Trigger: Environmental allergen exposure (dust)
+
+Risk Factors:
+- Known allergen sensitivity
+- Previous exacerbations
+- Current controller medication use suggests persistent asthma`,
+
+      plan: `Immediate Treatment:
+1. Salbutamol nebulization 2.5mg - Given in clinic
+2. Post-nebulization assessment: SpO2 improved to 97%, decreased wheezing
+
+Medications - Acute Phase (Next 5 days):
+1. Prednisolone 40mg PO OD for 5 days (oral corticosteroid burst)
+2. Salbutamol MDI 2 puffs q4-6h PRN for symptoms
+3. Continue Budesonide 200mcg 2 puffs BD (controller medication)
+
+Long-term Controller:
+- Consider step-up therapy after acute phase if needed
+- Current: Budesonide 200mcg BD
+- May need to increase to 400mcg BD if frequent exacerbations
+
+Monitoring:
+- Peak flow monitoring TID and record
+- Watch for signs of worsening (peak flow <60%, severe symptoms)
+- Spacer device use with all inhalers
+
+Follow-up:
+- Phone check-in in 2 days
+- Office visit in 1 week to assess response
+- Emergency visit if: Peak flow <60%, severe breathlessness, no improvement with rescue inhaler
+
+Patient Education:
+- Reviewed asthma action plan
+- Proper inhaler technique demonstrated and confirmed
+- Allergen avoidance strategies discussed
+- Signs/symptoms requiring emergency care reviewed
+- Importance of controller medication compliance emphasized
+- Patient verbalizes understanding and has written action plan
+
+Referrals:
+- Consider allergist referral if frequent exacerbations continue
+- Pulmonologist consultation if not controlled on step-up therapy`
+    },
+    
+    created_at: '2025-12-05T10:30:00Z',
+    finalized: true
   }
 ]
+
+// Export default for easier importing
+export default soapNotesData

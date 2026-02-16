@@ -1,311 +1,416 @@
+// =============================================================================
+// PROFILE PAGE
+// =============================================================================
+//
+// PURPOSE:
+// - View and edit user profile information
+// - Change password
+// - Two-tab interface: Personal Info + Security
+//
+// BACKEND INTEGRATION:
+// - Line 85: handleSaveProfile() - PUT /api/auth/profile
+// - Line 110: handleChangePassword() - PUT /api/auth/change-password
+//
+// =============================================================================
+
 import React, { useState } from 'react'
-import { User, Mail, Phone, Stethoscope, Save } from 'lucide-react'
+import { User, Lock, Save } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 import Header from '../components/Header'
 
 function Profile() {
+  const { user } = useAuth()
+
+  // ==========================================================================
+  // STATE MANAGEMENT
+  // ==========================================================================
+  
+  // Active tab (personal or security)
+  const [activeTab, setActiveTab] = useState('personal')
+  
+  // Profile form data
   const [profileData, setProfileData] = useState({
-    first_name: 'Ibrahim',
-    last_name: 'Malik',
-    email: 'dr.ibrahim@clinic.lk',
-    phone: '+94 77 999 8888',
-    specialty: 'General Physician',
-    license_number: 'SL12345',
-    clinic_name: 'Ibrahim Medical Center'
+    first_name: user?.first_name || '',
+    last_name: user?.last_name || '',
+    email: user?.email || '',
+    specialty: user?.specialty || '',
+    license_number: user?.license_number || '',
+    clinic_name: user?.clinic_name || ''
   })
 
+  // Password change form data
   const [passwordData, setPasswordData] = useState({
     current_password: '',
     new_password: '',
     confirm_password: ''
   })
 
-  const [activeTab, setActiveTab] = useState('info')
+  // Loading states
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
 
-  const handleSaveProfile = () => {
-    console.log('Saving profile:', profileData)
-    alert('Profile updated successfully!')
+  // ==========================================================================
+  // FUNCTION: HANDLE PROFILE SAVE
+  // ==========================================================================
+  /**
+   * Saves updated profile information
+   * 
+   * BACKEND INTEGRATION:
+   * - Endpoint: PUT /api/auth/profile
+   * - Sends: Updated user data
+   * - Receives: Updated user object
+   */
+  const handleSaveProfile = async () => {
+    try {
+      setSavingProfile(true)
+
+      // TODO BACKEND: Replace with actual API call
+      // const response = await fetch('/api/auth/profile', {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify(profileData)
+      // })
+      // const data = await response.json()
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      alert('Profile updated successfully!')
+      
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      alert('Failed to save profile. Please try again.')
+    } finally {
+      setSavingProfile(false)
+    }
   }
 
-  const handleChangePassword = () => {
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      alert('Passwords do not match!')
+  // ==========================================================================
+  // FUNCTION: HANDLE PASSWORD CHANGE
+  // ==========================================================================
+  /**
+   * Changes user password
+   * 
+   * BACKEND INTEGRATION:
+   * - Endpoint: PUT /api/auth/change-password
+   * - Sends: { current_password, new_password }
+   * - Receives: { success: true }
+   * 
+   * VALIDATION:
+   * - Current password required
+   * - New password minimum 8 characters
+   * - New password must match confirmation
+   */
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordData.current_password || !passwordData.new_password || !passwordData.confirm_password) {
+      alert('Please fill in all password fields')
       return
     }
-    console.log('Changing password')
-    alert('Password changed successfully!')
-    setPasswordData({ current_password: '', new_password: '', confirm_password: '' })
+
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      alert('New passwords do not match')
+      return
+    }
+
+    if (passwordData.new_password.length < 8) {
+      alert('New password must be at least 8 characters')
+      return
+    }
+
+    try {
+      setChangingPassword(true)
+
+      // TODO BACKEND: Replace with actual API call
+      // const response = await fetch('/api/auth/change-password', {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({
+      //     current_password: passwordData.current_password,
+      //     new_password: passwordData.new_password
+      //   })
+      // })
+      // const data = await response.json()
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      alert('Password changed successfully!')
+      
+      // Clear password fields
+      setPasswordData({
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+      })
+      
+    } catch (error) {
+      console.error('Error changing password:', error)
+      alert('Failed to change password. Please check your current password and try again.')
+    } finally {
+      setChangingPassword(false)
+    }
   }
 
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Header title="My Profile" subtitle="Manage your account settings" />
+      <Header title="My Profile" subtitle="Manage your account information" />
       
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl mx-auto">
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-3xl mx-auto">
         
-        {/* Profile Header */}
-        <div className="bg-gradient-to-r from-tecnot-primary to-tecnot-dark dark:from-tecnot-light dark:to-tecnot-primary rounded-lg sm:rounded-xl 
-                     p-6 xs:p-8 sm:p-10 mb-6 text-white dark:text-gray-900 transition-colors">
-          <div className="flex flex-col sm:flex-row items-center gap-4 xs:gap-6">
-            <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 bg-white dark:bg-gray-800 rounded-full 
-                         flex items-center justify-center text-tecnot-primary dark:text-tecnot-light font-bold 
-                         text-3xl xs:text-4xl sm:text-5xl flex-shrink-0 transition-colors">
-              I
-            </div>
-            <div className="text-center sm:text-left">
-              <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold mb-1 xs:mb-2">
-                Dr. {profileData.first_name} {profileData.last_name}
-              </h1>
-              <p className="text-sm xs:text-base text-tecnot-light dark:text-gray-700">{profileData.specialty}</p>
-              <p className="text-xs xs:text-sm text-tecnot-light dark:text-gray-700 mt-1">{profileData.clinic_name}</p>
-            </div>
-          </div>
+        {/* ====================================================================
+            TAB NAVIGATION
+            ==================================================================== */}
+        <div className="flex gap-2 mb-4 sm:mb-6">
+          <button
+            onClick={() => setActiveTab('personal')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-smooth text-sm xs:text-base ${
+              activeTab === 'personal'
+                ? 'bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 shadow-lg'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <User className="w-4 h-4 xs:w-5 xs:h-5" />
+            Personal Info
+          </button>
+          <button
+            onClick={() => setActiveTab('security')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-smooth text-sm xs:text-base ${
+              activeTab === 'security'
+                ? 'bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 shadow-lg'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <Lock className="w-4 h-4 xs:w-5 xs:h-5" />
+            Security
+          </button>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <div className="flex">
-              <button
-                onClick={() => setActiveTab('info')}
-                className={`flex-1 px-4 xs:px-6 py-3 xs:py-4 font-medium transition-smooth text-sm xs:text-base
-                          ${activeTab === 'info' 
-                            ? 'text-tecnot-primary dark:text-tecnot-light border-b-2 border-tecnot-primary dark:border-tecnot-light' 
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                          }`}
-              >
-                My Info
-              </button>
-              <button
-                onClick={() => setActiveTab('security')}
-                className={`flex-1 px-4 xs:px-6 py-3 xs:py-4 font-medium transition-smooth text-sm xs:text-base
-                          ${activeTab === 'security' 
-                            ? 'text-tecnot-primary dark:text-tecnot-light border-b-2 border-tecnot-primary dark:border-tecnot-light' 
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                          }`}
-              >
-                Security
-              </button>
-            </div>
-          </div>
+        {/* ====================================================================
+            TAB CONTENT
+            ==================================================================== */}
+        {activeTab === 'personal' ? (
+          /* ================================================================
+              PERSONAL INFO TAB
+              ================================================================ */
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+            <h2 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+              Personal Information
+            </h2>
 
-          <div className="p-4 xs:p-6 sm:p-8">
-            
-            {/* My Info Tab */}
-            {activeTab === 'info' && (
-              <div className="space-y-4 xs:space-y-5">
-                <h2 className="text-lg xs:text-xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
-                  Personal Information
-                </h2>
-
-                {/* Name Fields */}
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      First Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                      <input
-                        type="text"
-                        value={profileData.first_name}
-                        onChange={(e) => setProfileData({...profileData, first_name: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                                 outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                                 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Last Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                      <input
-                        type="text"
-                        value={profileData.last_name}
-                        onChange={(e) => setProfileData({...profileData, last_name: e.target.value})}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                                 outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                                 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Fields */}
+            <div className="space-y-4">
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Email Address
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    First Name
                   </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                    <input
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={profileData.first_name}
+                    onChange={(e) => setProfileData({ ...profileData, first_name: e.target.value })}
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
+                  />
                 </div>
-
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Phone Number
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Last Name
                   </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                    <input
-                      type="tel"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={profileData.last_name}
+                    onChange={(e) => setProfileData({ ...profileData, last_name: e.target.value })}
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
+                  />
                 </div>
+              </div>
 
-                {/* Professional Fields */}
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                           outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
+                />
+              </div>
+
+              {/* Specialty */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Specialty
+                </label>
+                <input
+                  type="text"
+                  value={profileData.specialty}
+                  onChange={(e) => setProfileData({ ...profileData, specialty: e.target.value })}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                           outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="e.g., General Physician"
+                />
+              </div>
+
+              {/* License & Clinic */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Specialty
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    License Number
                   </label>
-                  <div className="relative">
-                    <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                    <input
-                      type="text"
-                      value={profileData.specialty}
-                      onChange={(e) => setProfileData({...profileData, specialty: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={profileData.license_number}
+                    onChange={(e) => setProfileData({ ...profileData, license_number: e.target.value })}
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
+                    placeholder="SL12345"
+                  />
                 </div>
-
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      License Number
-                    </label>
-                    <input
-                      type="text"
-                      value={profileData.license_number}
-                      onChange={(e) => setProfileData({...profileData, license_number: e.target.value})}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Clinic Name
-                    </label>
-                    <input
-                      type="text"
-                      value={profileData.clinic_name}
-                      onChange={(e) => setProfileData({...profileData, clinic_name: e.target.value})}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Clinic Name
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.clinic_name}
+                    onChange={(e) => setProfileData({ ...profileData, clinic_name: e.target.value })}
+                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                             transition-all text-sm xs:text-base
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             placeholder-gray-400 dark:placeholder-gray-500"
+                    placeholder="City Medical Center"
+                  />
                 </div>
+              </div>
 
+              {/* Save Button */}
+              <div className="flex justify-end pt-4">
                 <button
                   onClick={handleSaveProfile}
-                  className="w-full xs:w-auto px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900
-                           rounded-lg font-semibold hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth 
-                           shadow-lg flex items-center justify-center gap-2 text-sm xs:text-base"
+                  disabled={savingProfile}
+                  className="px-4 xs:px-6 py-2 xs:py-3 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg font-medium 
+                           hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg 
+                           disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm xs:text-base"
                 >
-                  <Save className="w-5 h-5" />
-                  Save Changes
+                  <Save className="w-4 h-4 xs:w-5 xs:h-5" />
+                  {savingProfile ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
-            )}
+            </div>
+          </div>
+        ) : (
+          /* ================================================================
+              SECURITY TAB
+              ================================================================ */
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+            <h2 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+              Change Password
+            </h2>
 
-            {/* Security Tab */}
-            {activeTab === 'security' && (
-              <div className="space-y-4 xs:space-y-5">
-                <h2 className="text-lg xs:text-xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
-                  Change Password
-                </h2>
+            <div className="space-y-4">
+              {/* Current Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordData.current_password}
+                  onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                           outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    value={passwordData.current_password}
-                    onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
-                    placeholder="Enter current password"
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
-                </div>
+              {/* New Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordData.new_password}
+                  onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                           outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Must be at least 8 characters
+                </p>
+              </div>
 
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={passwordData.new_password}
-                    onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})}
-                    placeholder="Enter new password"
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
-                </div>
+              {/* Confirm New Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={passwordData.confirm_password}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
+                           outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                           transition-all text-sm xs:text-base
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                           placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    value={passwordData.confirm_password}
-                    onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})}
-                    placeholder="Confirm new password"
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                             focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
-                </div>
-
+              {/* Change Password Button */}
+              <div className="flex justify-end pt-4">
                 <button
                   onClick={handleChangePassword}
-                  className="w-full xs:w-auto px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900
-                           rounded-lg font-semibold hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth 
-                           shadow-lg text-sm xs:text-base"
+                  disabled={changingPassword}
+                  className="px-4 xs:px-6 py-2 xs:py-3 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg font-medium 
+                           hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg 
+                           disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm xs:text-base"
                 >
-                  Change Password
+                  <Lock className="w-4 h-4 xs:w-5 xs:h-5" />
+                  {changingPassword ? 'Changing...' : 'Change Password'}
                 </button>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

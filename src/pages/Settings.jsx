@@ -1,19 +1,28 @@
-import React, { useState } from 'react'
-import { Moon, Sun, Monitor, Bell, LogOut } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+// =============================================================================
+// SETTINGS PAGE
+// =============================================================================
+//
+// PURPOSE:
+// - Theme settings (Light/Dark mode)
+// - Notification preferences
+// - Account settings
+// - Logout functionality
+//
+// =============================================================================
+
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Moon, Sun, Monitor, Bell, LogOut, Trash2 } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 import Header from '../components/Header'
 
 function Settings() {
-  const { logout, theme, setTheme } = useAuth()
+  const { theme, setTheme, logout } = useAuth()
   const navigate = useNavigate()
 
-  const [settings, setSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    sessionReminders: true
-  })
-
+  // ==========================================================================
+  // FUNCTION: HANDLE LOGOUT
+  // ==========================================================================
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
       logout()
@@ -21,182 +30,198 @@ function Settings() {
     }
   }
 
+  // ==========================================================================
+  // FUNCTION: HANDLE DELETE ACCOUNT
+  // ==========================================================================
+  /**
+   * TODO BACKEND: Implement account deletion
+   * - Endpoint: DELETE /api/auth/account
+   * - Should soft-delete or permanently remove user data
+   * - GDPR compliance: Remove all personal data
+   */
+  const handleDeleteAccount = () => {
+    const confirmed = window.confirm(
+      'Are you ABSOLUTELY sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.'
+    )
+    
+    if (confirmed) {
+      const doubleConfirm = window.prompt(
+        'Type "DELETE" to confirm account deletion:'
+      )
+      
+      if (doubleConfirm === 'DELETE') {
+        alert('Account deletion will be implemented when backend is ready.')
+        // TODO BACKEND: Call delete account API
+      }
+    }
+  }
+
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="Settings" subtitle="Manage your preferences" />
       
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-4xl mx-auto">
-        
-        {/* Appearance Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 mb-4 sm:mb-6 transition-colors">
-          <h2 className="text-lg xs:text-xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
-            Appearance
-          </h2>
-
-          <div className="space-y-3">
-            <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-300 mb-3 xs:mb-4">
-              Choose how TECNOT looks to you. Select a theme or sync with your system settings.
-            </p>
-
-            <div className="grid grid-cols-1 xs:grid-cols-3 gap-3">
-              {/* Light Theme */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-3xl mx-auto">
+        <div className="space-y-4 sm:space-y-6">
+          
+          {/* ====================================================================
+              APPEARANCE SETTINGS
+              ==================================================================== */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+            <h2 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Appearance
+            </h2>
+            
+            <div className="space-y-3">
+              {/* Light Mode */}
               <button
                 onClick={() => setTheme('light')}
-                className={`p-4 rounded-lg border-2 transition-all text-left
-                          ${theme === 'light' 
-                            ? 'border-tecnot-primary bg-tecnot-light dark:bg-blue-900/30' 
-                            : 'border-gray-200 dark:border-gray-600 hover:border-tecnot-primary dark:hover:border-tecnot-light'
-                          }`}
+                className={`w-full flex items-center gap-3 p-3 xs:p-4 rounded-lg border-2 transition-smooth ${
+                  theme === 'light'
+                    ? 'border-tecnot-primary dark:border-tecnot-light bg-tecnot-light/20 dark:bg-tecnot-light/10'
+                    : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
               >
-                <Sun className="w-6 h-6 xs:w-8 xs:h-8 text-yellow-500 mb-2" />
-                <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Light</p>
-                <p className="text-[10px] xs:text-xs text-gray-600 dark:text-gray-300">Day theme</p>
+                <Sun className="w-5 h-5 xs:w-6 xs:h-6 text-yellow-500" />
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Light Mode</p>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Bright and clear interface</p>
+                </div>
+                {theme === 'light' && (
+                  <div className="w-5 h-5 bg-tecnot-primary dark:bg-tecnot-light rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white dark:bg-gray-900 rounded-full"></div>
+                  </div>
+                )}
               </button>
 
-              {/* Dark Theme */}
+              {/* Dark Mode */}
               <button
                 onClick={() => setTheme('dark')}
-                className={`p-4 rounded-lg border-2 transition-all text-left
-                          ${theme === 'dark' 
-                            ? 'border-purple-500 bg-purple-100 dark:bg-purple-900/30' 
-                            : 'border-gray-200 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400'
-                          }`}
+                className={`w-full flex items-center gap-3 p-3 xs:p-4 rounded-lg border-2 transition-smooth ${
+                  theme === 'dark'
+                    ? 'border-tecnot-primary dark:border-tecnot-light bg-tecnot-light/20 dark:bg-tecnot-light/10'
+                    : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
               >
-                <Moon className="w-6 h-6 xs:w-8 xs:h-8 text-purple-500 mb-2" />
-                <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Dark</p>
-                <p className="text-[10px] xs:text-xs text-gray-600 dark:text-gray-300">Night theme</p>
+                <Moon className="w-5 h-5 xs:w-6 xs:h-6 text-blue-500" />
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Dark Mode</p>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Easy on the eyes</p>
+                </div>
+                {theme === 'dark' && (
+                  <div className="w-5 h-5 bg-tecnot-primary dark:bg-tecnot-light rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white dark:bg-gray-900 rounded-full"></div>
+                  </div>
+                )}
               </button>
 
-               
+              {/* System Mode */}
+              <button
+                onClick={() => setTheme('system')}
+                className={`w-full flex items-center gap-3 p-3 xs:p-4 rounded-lg border-2 transition-smooth ${
+                  theme === 'system'
+                    ? 'border-tecnot-primary dark:border-tecnot-light bg-tecnot-light/20 dark:bg-tecnot-light/10'
+                    : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Monitor className="w-5 h-5 xs:w-6 xs:h-6 text-gray-500 dark:text-gray-400" />
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">System</p>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Follow system preferences</p>
+                </div>
+                {theme === 'system' && (
+                  <div className="w-5 h-5 bg-tecnot-primary dark:bg-tecnot-light rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white dark:bg-gray-900 rounded-full"></div>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Notifications Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-6 sm:p-8 mb-4 sm:mb-6 transition-colors">
-          <h2 className="text-lg xs:text-xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6">
-            Notifications
-          </h2>
-
-          <div className="space-y-4">
+          {/* ====================================================================
+              NOTIFICATION SETTINGS
+              ==================================================================== */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+            <h2 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Notifications
+            </h2>
             
-            {/* Email Notifications */}
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bell className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
-                    Email Notifications
-                  </p>
+            <div className="space-y-3">
+              {/* Email Notifications */}
+              <div className="flex items-center justify-between p-3 xs:p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 xs:w-6 xs:h-6 text-tecnot-primary dark:text-tecnot-light" />
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Email Notifications</p>
+                    <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Receive updates via email</p>
+                  </div>
                 </div>
-                <p className="text-[10px] xs:text-xs text-gray-600 dark:text-gray-400">
-                  Receive email updates about your patients and sessions
-                </p>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" defaultChecked />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-tecnot-primary/20 dark:peer-focus:ring-tecnot-light/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tecnot-primary dark:peer-checked:bg-tecnot-light"></div>
+                </label>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={settings.emailNotifications}
-                  onChange={(e) => setSettings({...settings, emailNotifications: e.target.checked})}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 
-                             peer-focus:ring-tecnot-primary/20 dark:peer-focus:ring-tecnot-light/20 rounded-full peer 
-                             peer-checked:after:translate-x-full peer-checked:after:border-white 
-                             after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-                             after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full 
-                             after:h-5 after:w-5 after:transition-all peer-checked:bg-tecnot-primary dark:peer-checked:bg-tecnot-light">
-                </div>
-              </label>
-            </div>
 
-            {/* Push Notifications */}
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bell className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
-                    Push Notifications
-                  </p>
+              {/* Push Notifications */}
+              <div className="flex items-center justify-between p-3 xs:p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 xs:w-6 xs:h-6 text-tecnot-primary dark:text-tecnot-light" />
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">Push Notifications</p>
+                    <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Browser notifications</p>
+                  </div>
                 </div>
-                <p className="text-[10px] xs:text-xs text-gray-600 dark:text-gray-400">
-                  Get push notifications on your device
-                </p>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-tecnot-primary/20 dark:peer-focus:ring-tecnot-light/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tecnot-primary dark:peer-checked:bg-tecnot-light"></div>
+                </label>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={settings.pushNotifications}
-                  onChange={(e) => setSettings({...settings, pushNotifications: e.target.checked})}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 
-                             peer-focus:ring-tecnot-primary/20 dark:peer-focus:ring-tecnot-light/20 rounded-full peer 
-                             peer-checked:after:translate-x-full peer-checked:after:border-white 
-                             after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-                             after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full 
-                             after:h-5 after:w-5 after:transition-all peer-checked:bg-tecnot-primary dark:peer-checked:bg-tecnot-light">
-                </div>
-              </label>
-            </div>
-
-            {/* Session Reminders */}
-            <div className="flex items-center justify-between py-3">
-              <div className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bell className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
-                    Session Reminders
-                  </p>
-                </div>
-                <p className="text-[10px] xs:text-xs text-gray-600 dark:text-gray-400">
-                  Get reminded about upcoming patient sessions
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={settings.sessionReminders}
-                  onChange={(e) => setSettings({...settings, sessionReminders: e.target.checked})}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 
-                             peer-focus:ring-tecnot-primary/20 dark:peer-focus:ring-tecnot-light/20 rounded-full peer 
-                             peer-checked:after:translate-x-full peer-checked:after:border-white 
-                             after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-                             after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full 
-                             after:h-5 after:w-5 after:transition-all peer-checked:bg-tecnot-primary dark:peer-checked:bg-tecnot-light">
-                </div>
-              </label>
             </div>
           </div>
-        </div>
 
-        {/* Danger Zone */}
-        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg sm:rounded-xl p-4 xs:p-6 sm:p-8 transition-colors">
-          <h2 className="text-lg xs:text-xl font-bold text-red-900 dark:text-red-400 mb-2 xs:mb-3">
-            Danger Zone
-          </h2>
-          <p className="text-xs xs:text-sm text-red-700 dark:text-red-300 mb-4 xs:mb-6">
-            Once you logout, you'll need to login again to access your account.
-          </p>
-          
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-6 xs:px-8 py-3 xs:py-4 
-                     bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700
-                     text-white rounded-lg font-semibold 
-                     transition-smooth shadow-lg w-full xs:w-auto text-sm xs:text-base"
-          >
-            <LogOut className="w-5 h-5" />
-            Log Out
-          </button>
-        </div>
+          {/* ====================================================================
+              ACCOUNT ACTIONS
+              ==================================================================== */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+            <h2 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Account Actions
+            </h2>
+            
+            <div className="space-y-3">
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 p-3 xs:p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-smooth text-sm xs:text-base"
+              >
+                <LogOut className="w-5 h-5 xs:w-6 xs:h-6 text-gray-700 dark:text-gray-300" />
+                <span className="font-semibold text-gray-900 dark:text-white">Logout</span>
+              </button>
 
-        {/* App Info */}
-        <div className="mt-6 text-center text-xs xs:text-sm text-gray-500 dark:text-gray-400">
-          <p>TECNOT v1.0.0</p>
-          <p className="mt-1">© 2026 TECNOT. All rights reserved.</p>
+              {/* Delete Account Button */}
+              <button
+                onClick={handleDeleteAccount}
+                className="w-full flex items-center gap-3 p-3 xs:p-4 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg transition-smooth text-sm xs:text-base"
+              >
+                <Trash2 className="w-5 h-5 xs:w-6 xs:h-6 text-red-600 dark:text-red-400" />
+                <span className="font-semibold text-red-600 dark:text-red-400">Delete Account</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ====================================================================
+              APP INFO
+              ==================================================================== */}
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 border border-gray-200 dark:border-gray-700 transition-colors">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2 text-sm xs:text-base">About TECNOT</h3>
+            <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 mb-2">
+              AI Clinical Scribe for Sri Lankan Doctors
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              Version 1.0.0 • Built with React + FastAPI
+            </p>
+          </div>
         </div>
       </div>
     </div>

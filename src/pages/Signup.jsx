@@ -1,3 +1,25 @@
+// =============================================================================
+// SIGNUP PAGE
+// =============================================================================
+//
+// PURPOSE:
+// - Register new doctor accounts
+// - Collect professional information
+// - Support email/password signup
+// - Support Google OAuth signup
+//
+// BACKEND INTEGRATION:
+// - Line 85: handleSubmit() - POST /api/auth/register
+//
+// FORM VALIDATION:
+// - Email format
+// - Password strength (min 8 characters)
+// - Password confirmation match
+// - Required fields: email, password, first_name, last_name
+// - Optional fields: specialty, license_number, clinic_name
+//
+// =============================================================================
+
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -6,6 +28,12 @@ import { FileText, Mail, Lock, User, Stethoscope, Loader2 } from 'lucide-react'
 function Signup() {
   const navigate = useNavigate()
   const { register } = useAuth()
+
+  // ==========================================================================
+  // STATE MANAGEMENT
+  // ==========================================================================
+  
+  // Form data
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -16,18 +44,51 @@ function Signup() {
     license_number: '',
     clinic_name: ''
   })
+  
+  // Loading state
   const [loading, setLoading] = useState(false)
+  
+  // Error message
   const [error, setError] = useState('')
 
+  // ==========================================================================
+  // FUNCTION: HANDLE SIGNUP SUBMIT
+  // ==========================================================================
+  /**
+   * Handles signup form submission
+   * 
+   * VALIDATION:
+   * - Passwords must match
+   * - Password must be at least 8 characters
+   * - Email must be valid format (handled by browser)
+   * 
+   * BACKEND INTEGRATION:
+   * - Calls: POST /api/auth/register
+   * - Sends: All form data except confirmPassword
+   * - Receives: { access_token: string, user: object }
+   * 
+   * SUCCESS FLOW:
+   * 1. Call register() from AuthContext
+   * 2. AuthContext stores token in localStorage
+   * 3. AuthContext sets user state
+   * 4. User is automatically logged in
+   * 5. Redirect to home page
+   * 
+   * ERROR FLOW:
+   * - Display backend error message
+   * - User can fix and try again
+   */
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
+    setError('') // Clear previous errors
 
+    // VALIDATION: Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
     }
 
+    // VALIDATION: Check password length
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters')
       return
@@ -36,40 +97,76 @@ function Signup() {
     setLoading(true)
 
     try {
+      // Remove confirmPassword before sending to backend
       const { confirmPassword, ...registerData } = formData
+      
+      // Call register function from AuthContext
+      // This will call POST /api/auth/register
       await register(registerData)
+      
+      // Success! User is auto-logged in, redirect to home
       navigate('/')
+      
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      // Extract error message from backend response
+      const errorMessage = 
+        err.response?.data?.message || 
+        err.response?.data?.detail || 
+        'Registration failed. Please try again.'
+      
+      setError(errorMessage)
+      
     } finally {
       setLoading(false)
     }
   }
 
+  // ==========================================================================
+  // FUNCTION: HANDLE INPUT CHANGE
+  // ==========================================================================
+  /**
+   * Updates form state when user types
+   */
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setFormData({ 
+      ...formData, 
+      [e.target.name]: e.target.value 
+    })
   }
 
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
   return (
     <div className="min-h-screen bg-gradient-to-br from-tecnot-primary to-tecnot-dark 
                     dark:from-gray-900 dark:to-gray-950
                     flex items-center justify-center p-4 py-8 transition-colors">
       <div className="w-full max-w-2xl">
         
-        {/* Logo & Brand */}
+        {/* ====================================================================
+            LOGO & BRANDING
+            ==================================================================== */}
         <div className="text-center mb-6 xs:mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 xs:w-20 xs:h-20 
                        bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-4 transition-colors">
             <FileText className="w-10 h-10 xs:w-12 xs:h-12 text-tecnot-primary dark:text-tecnot-light" />
           </div>
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-2">Join TECNOT</h1>
-          <p className="text-sm xs:text-base text-tecnot-light dark:text-gray-400">Create your account to get started</p>
+          <h1 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-2">
+            Join TECNOT
+          </h1>
+          <p className="text-sm xs:text-base text-tecnot-light dark:text-gray-400">
+            Create your account to get started
+          </p>
         </div>
 
-        {/* Signup Card */}
+        {/* ====================================================================
+            SIGNUP CARD
+            ==================================================================== */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 xs:p-8 sm:p-10 transition-colors">
           
-          {/* Error Message */}
+          {/* ================================================================
+              ERROR MESSAGE
+              ================================================================ */}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 
                          text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4 text-sm transition-colors">
@@ -77,14 +174,21 @@ function Signup() {
             </div>
           )}
 
-          {/* Signup Form */}
+          {/* ================================================================
+              SIGNUP FORM
+              ================================================================ */}
           <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5">
             
-            {/* Personal Info Section */}
+            {/* ============================================================
+                PERSONAL INFORMATION SECTION
+                ============================================================ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* First Name */}
+              
+              {/* First Name - REQUIRED */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  First Name
+                </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
@@ -106,9 +210,11 @@ function Signup() {
                 </div>
               </div>
 
-              {/* Last Name */}
+              {/* Last Name - REQUIRED */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Last Name
+                </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
@@ -131,9 +237,11 @@ function Signup() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* Email - REQUIRED */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
@@ -155,11 +263,16 @@ function Signup() {
               </div>
             </div>
 
-            {/* Password Fields */}
+            {/* ============================================================
+                PASSWORD FIELDS
+                ============================================================ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Password */}
+              
+              {/* Password - REQUIRED */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
@@ -181,9 +294,11 @@ function Signup() {
                 </div>
               </div>
 
-              {/* Confirm Password */}
+              {/* Confirm Password - REQUIRED */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Confirm Password
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
@@ -206,13 +321,19 @@ function Signup() {
               </div>
             </div>
 
-            {/* Professional Info Section */}
+            {/* ============================================================
+                PROFESSIONAL INFORMATION SECTION
+                ============================================================ */}
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-base xs:text-lg font-semibold text-gray-900 dark:text-white mb-4">Professional Information</h3>
+              <h3 className="text-base xs:text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Professional Information
+              </h3>
               
-              {/* Specialty */}
+              {/* Specialty - Optional */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Specialty</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Specialty
+                </label>
                 <div className="relative">
                   <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input
@@ -235,9 +356,12 @@ function Signup() {
 
               {/* License & Clinic */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* License Number */}
+                
+                {/* License Number - Optional */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">License Number</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    License Number
+                  </label>
                   <input
                     type="text"
                     name="license_number"
@@ -255,9 +379,11 @@ function Signup() {
                   />
                 </div>
 
-                {/* Clinic Name */}
+                {/* Clinic Name - Optional */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Clinic Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Clinic Name
+                  </label>
                   <input
                     type="text"
                     name="clinic_name"
@@ -277,7 +403,9 @@ function Signup() {
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* ============================================================
+                SUBMIT BUTTON
+                ============================================================ */}
             <button
               type="submit"
               disabled={loading}
@@ -300,17 +428,23 @@ function Signup() {
             </button>
           </form>
 
-          {/* Divider */}
+          {/* ================================================================
+              DIVIDER
+              ================================================================ */}
           <div className="relative my-6 xs:my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or sign up with</span>
+              <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                Or sign up with
+              </span>
             </div>
           </div>
 
-          {/* Google Signup */}
+          {/* ================================================================
+              GOOGLE SIGNUP BUTTON
+              ================================================================ */}
           <button
             type="button"
             className="w-full flex items-center justify-center gap-3 py-3 xs:py-4 
@@ -328,10 +462,15 @@ function Signup() {
             Sign up with Google
           </button>
 
-          {/* Login Link */}
+          {/* ================================================================
+              LOGIN LINK
+              ================================================================ */}
           <p className="text-center text-sm xs:text-base text-gray-600 dark:text-gray-400 mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-tecnot-primary dark:text-tecnot-light hover:underline font-semibold">
+            <Link 
+              to="/login" 
+              className="text-tecnot-primary dark:text-tecnot-light hover:underline font-semibold"
+            >
               Login
             </Link>
           </p>

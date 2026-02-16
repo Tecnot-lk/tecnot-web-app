@@ -1,148 +1,158 @@
+// =============================================================================
+// PATIENT DETAIL PAGE
+// =============================================================================
+//
+// PURPOSE:
+// - Display detailed patient information
+// - Show consultation history
+// - Quick access to start new session
+// - View past SOAP notes
+//
+// BACKEND INTEGRATION:
+// - Line 45: fetchPatientData() - GET /api/patients/:mrn
+// - Line 70: fetchPatientSessions() - GET /api/sessions?patient_id=X
+//
+// =============================================================================
+
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Calendar, FileText, Phone, Mail, Loader2, Download } from 'lucide-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { Calendar, FileText, User, Phone, Mail, MapPin, Loader2, Plus } from 'lucide-react'
 import Header from '../components/Header'
-import PatientBanner from '../components/PatientBanner'
-import * as patientService from '../services/patientService'
 
 function PatientDetail() {
-  const { code } = useParams() // This is the MRN from the URL
-  const [patient, setPatient] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [sessions, setSessions] = useState([])
+  const { mrn } = useParams() // Get MRN from URL
+  const navigate = useNavigate()
 
+  // ==========================================================================
+  // STATE MANAGEMENT
+  // ==========================================================================
+  
+  const [patient, setPatient] = useState(null)
+  const [sessions, setSessions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // ==========================================================================
+  // EFFECT: FETCH PATIENT DATA ON MOUNT
+  // ==========================================================================
   useEffect(() => {
     fetchPatientData()
-  }, [code])
+    fetchPatientSessions()
+  }, [mrn])
 
+  // ==========================================================================
+  // FUNCTION: FETCH PATIENT DATA
+  // ==========================================================================
+  /**
+   * Fetches patient details by MRN
+   * 
+   * BACKEND INTEGRATION:
+   * - Endpoint: GET /api/patients/:mrn
+   * - Expected response: Patient object with all details
+   */
   const fetchPatientData = async () => {
     try {
       setLoading(true)
-      // Try to fetch patient from API using the MRN
-      const data = await patientService.getPatientByMRN(code)
-      setPatient(data)
-      
-      // Fetch sessions for this patient
-      // const sessionsData = await patientService.getPatientSessions(code)
-      // setSessions(sessionsData)
-      
+
+      // TODO BACKEND: Replace with actual API call
+      // const response = await fetch(`/api/patients/${mrn}`)
+      // const data = await response.json()
+      // setPatient(data)
+
+      // DUMMY DATA for now
+      setPatient({
+        id: '1',
+        mrn: mrn,
+        first_name: 'Malik',
+        last_name: 'Fernando',
+        age: 38,
+        gender: 'Male',
+        date_of_birth: '1985-03-15',
+        nationality: 'Sri Lankan',
+        national_id: '851234567V',
+        mobile_number: '+94771234567',
+        email: 'malik@example.com',
+        preferred_language: 'Sinhala',
+        blood_type: 'O+',
+        chronics: 'Diabetes Type 2',
+        allergies: 'Penicillin',
+        drug_precautions: 'Avoid NSAIDs'
+      })
+
     } catch (error) {
       console.error('Error fetching patient:', error)
-      
-      // Patient-specific dummy sessions - CORRECTED MAPPING
-      const dummySessions = {
-        'MRN001234': [ // Malik Fernando
-          { id: 'malik-1', date: '2026-02-05 14:30', chief_complaint: 'Severe headache', status: 'completed' },
-          { id: 'malik-2', date: '2026-01-15 10:20', chief_complaint: 'Follow-up diabetes', status: 'completed' },
-          { id: 'malik-3', date: '2025-12-20 16:45', chief_complaint: 'Leg pain', status: 'completed' },
-        ],
-        'MRN005678': [ // Shiman Perera
-          { id: 'shiman-1', date: '2026-02-03 09:15', chief_complaint: 'Annual health checkup', status: 'completed' },
-          { id: 'shiman-2', date: '2026-01-20 14:00', chief_complaint: 'Flu symptoms', status: 'completed' },
-          { id: 'shiman-3', date: '2025-12-15 11:30', chief_complaint: 'Vaccination', status: 'completed' },
-        ],
-        'MRN009012': [ // Aisha Khan
-          { id: 'aisha-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up', status: 'completed' },
-          { id: 'aisha-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain', status: 'completed' },
-          { id: 'aisha-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment', status: 'completed' },
-        ]
-      }
-      
-      // Set sessions based on current patient's MRN
-      setSessions(dummySessions[code] || [])
-      
-      // Using dummy data based on MRN
-      const dummyPatients = {
-        'MRN001234': {
-          id: '1',
-          mrn: 'MRN001234',
-          first_name: 'Malik',
-          last_name: 'Fernando',
-          age: 38,
-          gender: 'Male',
-          blood_type: 'O+',
-          chronics: 'Diabetes Type 2',
-          allergies: 'Penicillin',
-          drug_precautions: 'Avoid NSAIDs',
-          national_id: '851234567V',
-          mobile_number: '+94 77 123 4567',
-          email: 'malik@example.com',
-          nationality: 'Sri Lankan',
-          preferred_language: 'Sinhala'
-        },
-        'MRN005678': {
-          id: '2',
-          mrn: 'MRN005678',
-          first_name: 'Shiman',
-          last_name: 'Perera',
-          age: 35,
-          gender: 'Male',
-          blood_type: 'A+',
-          chronics: 'None',
-          allergies: 'None',
-          drug_precautions: 'None',
-          national_id: '901234567V',
-          mobile_number: '+94 71 234 5678',
-          email: 'shiman@example.com',
-          nationality: 'Sri Lankan',
-          preferred_language: 'English'
-        },
-        'MRN009012': {
-          id: '3',
-          mrn: 'MRN009012',
-          first_name: 'Aisha',
-          last_name: 'Khan',
-          age: 42,
-          gender: 'Female',
-          blood_type: 'B+',
-          chronics: 'Hypertension',
-          allergies: 'Sulfa drugs',
-          drug_precautions: 'Monitor blood pressure',
-          national_id: '821234567V',
-          mobile_number: '+94 76 345 6789',
-          email: 'aisha@example.com',
-          nationality: 'Sri Lankan',
-          preferred_language: 'Tamil'
-        }
-      }
-      
-      setPatient(dummyPatients[code] || dummyPatients['MRN001234'])
+      alert('Failed to load patient details.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleShareAsPDF = (sessionId, chiefComplaint) => {
-    console.log('Generating PDF for session:', sessionId)
-    alert(`Generating PDF for: ${chiefComplaint}\n\nThis will create and download the SOAP note as a PDF file.`)
-    // TODO: Implement actual PDF generation
-    // You can use libraries like jsPDF or html2pdf.js
+  // ==========================================================================
+  // FUNCTION: FETCH PATIENT SESSIONS
+  // ==========================================================================
+  /**
+   * Fetches consultation history for this patient
+   * 
+   * BACKEND INTEGRATION:
+   * - Endpoint: GET /api/sessions?patient_id={patient.id}
+   * - Expected response: Array of session objects sorted by date
+   */
+  const fetchPatientSessions = async () => {
+    try {
+      // TODO BACKEND: Replace with actual API call
+      // const response = await fetch(`/api/sessions?patient_id=${patient.id}`)
+      // const data = await response.json()
+      // setSessions(data.results)
+
+      // DUMMY DATA
+      setSessions([
+        {
+          id: '1',
+          date: '2026-02-10T10:30:00',
+          complaint: 'General checkup',
+          diagnosis: 'Routine examination - All normal'
+        },
+        {
+          id: '2',
+          date: '2026-01-15T14:00:00',
+          complaint: 'Follow-up for diabetes',
+          diagnosis: 'Blood sugar levels stable'
+        },
+        {
+          id: '3',
+          date: '2025-12-05T09:15:00',
+          complaint: 'Cold and flu symptoms',
+          diagnosis: 'Viral upper respiratory infection'
+        }
+      ])
+
+    } catch (error) {
+      console.error('Error fetching sessions:', error)
+    }
   }
+
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
 
   if (loading) {
     return (
-      <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-        <Header title="Patient Details" subtitle="Loading..." />
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary dark:text-tecnot-light" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary dark:text-tecnot-light" />
       </div>
     )
   }
 
   if (!patient) {
     return (
-      <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-        <Header title="Patient Details" subtitle="Not Found" />
-        <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">Patient not found</p>
-          <Link
-            to="/patients"
-            className="inline-flex items-center gap-2 text-tecnot-primary dark:text-tecnot-light hover:text-tecnot-dark dark:hover:text-tecnot-primary"
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">Patient not found</p>
+          <button
+            onClick={() => navigate('/patients')}
+            className="text-tecnot-primary dark:text-tecnot-light hover:underline font-semibold"
           >
-            <ArrowLeft className="w-5 h-5" />
             Back to Patients
-          </Link>
+          </button>
         </div>
       </div>
     )
@@ -150,154 +160,152 @@ function PatientDetail() {
 
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Header title="Patient Details" subtitle={`${patient.first_name} ${patient.last_name}`} />
-      
-      {/* Patient Banner */}
-      <PatientBanner patient={patient} />
+      <Header 
+        title={`${patient.first_name} ${patient.last_name}`} 
+        subtitle={`MRN: ${patient.mrn}`} 
+      />
 
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
-        
-        {/* Back Button */}
-        <Link
-          to="/patients"
-          className="inline-flex items-center gap-2 text-tecnot-primary dark:text-tecnot-light hover:text-tecnot-dark dark:hover:text-tecnot-primary
-                   transition-smooth mb-4 sm:mb-6 text-sm xs:text-base"
-        >
-          <ArrowLeft className="w-4 h-4 xs:w-5 xs:h-5" />
-          Back to Patients
-        </Link>
-
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* LEFT: Patient Info + Actions */}
-          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+          {/* ====================================================================
+              LEFT COLUMN - PATIENT INFORMATION
+              ==================================================================== */}
+          <div className="lg:col-span-1 space-y-4">
             
-            {/* Patient Info Card */}
+            {/* Patient Card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-base xs:text-lg">Patient Information</h3>
+              
+              {/* Avatar */}
+              <div className="flex justify-center mb-4">
+                <div className={`w-20 h-20 xs:w-24 xs:h-24 rounded-full flex items-center justify-center text-white font-bold text-3xl xs:text-4xl
+                              ${patient.gender === 'Male' ? 'bg-blue-500' : patient.gender === 'Female' ? 'bg-pink-500' : 'bg-gray-500'}`}>
+                  {patient.first_name?.charAt(0)}
+                </div>
+              </div>
+
+              {/* Name */}
+              <h2 className="text-xl xs:text-2xl font-bold text-gray-900 dark:text-white text-center mb-1">
+                {patient.first_name} {patient.last_name}
+              </h2>
+              <p className="text-sm xs:text-base text-gray-600 dark:text-gray-400 text-center mb-4">
+                {patient.age}Y • {patient.gender}
+              </p>
+
+              {/* Quick Info */}
+              <div className="space-y-3 text-sm xs:text-base">
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">{patient.mobile_number}</span>
+                </div>
+                {patient.email && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 truncate">{patient.email}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">{patient.nationality}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <User className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">{patient.national_id}</span>
+                </div>
+              </div>
+
+              {/* Start Session Button */}
+              <Link
+                to="/new-session"
+                state={{ selectedPatient: patient }}
+                className="mt-6 w-full flex items-center justify-center gap-2 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 
+                         px-4 py-3 rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg text-sm xs:text-base"
+              >
+                <Plus className="w-4 h-4 xs:w-5 xs:h-5" />
+                Start New Session
+              </Link>
+            </div>
+
+            {/* Medical Info Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-sm xs:text-base">
+                Medical Information
+              </h3>
               
               <div className="space-y-3 text-xs xs:text-sm">
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-600 dark:text-gray-400">Mobile</p>
-                    <p className="font-medium text-gray-900 dark:text-white truncate">{patient.mobile_number}</p>
-                  </div>
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Blood Type</p>
+                  <p className="font-semibold text-red-600 dark:text-red-400">{patient.blood_type || 'N/A'}</p>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-600 dark:text-gray-400">Email</p>
-                    <p className="font-medium text-gray-900 dark:text-white truncate">{patient.email}</p>
-                  </div>
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Chronic Conditions</p>
+                  <p className="font-semibold text-orange-600 dark:text-orange-400">{patient.chronics || 'None'}</p>
                 </div>
-
-                <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <p className="text-gray-600 dark:text-gray-400 mb-1">Nationality</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{patient.nationality}</p>
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Allergies</p>
+                  <p className="font-semibold text-red-600 dark:text-red-400">{patient.allergies || 'None'}</p>
                 </div>
-
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Drug Precautions</p>
+                  <p className="font-semibold text-purple-600 dark:text-purple-400">{patient.drug_precautions || 'None'}</p>
+                </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 mb-1">Preferred Language</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{patient.preferred_language}</p>
-                </div>
-
-                <div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-1">National ID</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{patient.national_id}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{patient.preferred_language}</p>
                 </div>
               </div>
             </div>
-
-            {/* Actions */}
-            <div className="space-y-3">
-              <Link
-                to="/new-session"
-                className="w-full flex items-center justify-center gap-2 bg-tecnot-primary dark:bg-tecnot-light
-                         text-white dark:text-gray-900 px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
-                         hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg text-sm xs:text-base"
-              >
-                <Calendar className="w-5 h-5" />
-                Start New Session
-              </Link>
-
-              <button
-                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800
-                         border-2 border-tecnot-primary dark:border-tecnot-light text-tecnot-primary dark:text-tecnot-light
-                         px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
-                         hover:bg-tecnot-light dark:hover:bg-gray-700 transition-smooth text-sm xs:text-base"
-              >
-                Edit Patient Info
-              </button>
-            </div>
           </div>
 
-          {/* RIGHT: Consultation History */}
+          {/* ====================================================================
+              RIGHT COLUMN - CONSULTATION HISTORY
+              ==================================================================== */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-base xs:text-lg sm:text-xl">
-                Consultation History ({sessions.length} sessions)
+              <h3 className="text-base xs:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 xs:w-6 xs:h-6 text-tecnot-primary dark:text-tecnot-light" />
+                Consultation History
               </h3>
 
               {sessions.length === 0 ? (
-                <div className="text-center py-8">
-                  <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">No consultation history yet</p>
+                <div className="text-center py-12">
+                  <FileText className="w-12 h-12 xs:w-16 xs:h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-500 dark:text-gray-400 text-sm xs:text-base">
+                    No consultation records found.
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-3 xs:space-y-4">
                   {sessions.map((session) => (
                     <div
                       key={session.id}
-                      className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 xs:p-4 sm:p-5 
-                               hover:border-tecnot-primary dark:hover:border-tecnot-light transition-all duration-200
-                               hover:shadow-md"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 xs:p-4 
+                               hover:bg-gray-50 dark:hover:bg-gray-700 transition-smooth cursor-pointer"
+                      onClick={() => navigate(`/soap-note/${session.id}`)}
                     >
-                      <div className="flex flex-col xs:flex-row xs:items-start xs:justify-between gap-3 mb-3">
+                      <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm xs:text-base truncate">
-                            {session.chief_complaint}
-                          </h4>
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base truncate">
+                            {session.complaint}
+                          </p>
                           <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">
                             {new Date(session.date).toLocaleDateString('en-GB', {
                               day: '2-digit',
                               month: 'short',
-                              year: 'numeric',
+                              year: 'numeric'
+                            })}
+                            {' at '}
+                            {new Date(session.date).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
                           </p>
                         </div>
-                        <span className="inline-flex items-center px-2.5 xs:px-3 py-1 rounded-full 
-                                       text-[10px] xs:text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400
-                                       self-start xs:self-auto">
-                          {session.status}
-                        </span>
+                        <FileText className="w-5 h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
                       </div>
-
-                      <div className="flex flex-col xs:flex-row gap-2 xs:gap-3">
-                        <Link
-                          to={`/soap-note/${session.id}`}
-                          className="flex-1 flex items-center justify-center gap-2 
-                                   bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 px-3 xs:px-4 py-2 xs:py-2.5 
-                                   rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
-                                   transition-smooth text-xs xs:text-sm"
-                        >
-                          <FileText className="w-4 h-4" />
-                          View SOAP Note
-                        </Link>
-                        <button
-                          onClick={() => handleShareAsPDF(session.id, session.chief_complaint)}
-                          className="flex-1 flex items-center justify-center gap-2 
-                                   bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300
-                                   px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg font-medium 
-                                   hover:bg-gray-50 dark:hover:bg-gray-600 transition-smooth text-xs xs:text-sm"
-                        >
-                          <Download className="w-4 h-4" />
-                          Share as PDF
-                        </button>
-                      </div>
+                      <p className="text-xs xs:text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                        <span className="font-medium">Diagnosis:</span> {session.diagnosis}
+                      </p>
                     </div>
                   ))}
                 </div>
