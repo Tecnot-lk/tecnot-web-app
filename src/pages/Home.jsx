@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, Users, FileText, Clock, Filter, X } from 'lucide-react'
+import { Calendar, Users, FileText, Filter, X } from 'lucide-react'
 import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -74,35 +74,37 @@ function Home() {
               </button>
             </div>
 
-            {/* Filter Panel */}
+            {/* ✅ Compact Filter Panel */}
             {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 
-                             shadow-sm border border-gray-200 dark:border-gray-700 mb-4 animate-fadeIn transition-colors">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-900 dark:text-white text-sm xs:text-base">
+              <div className="bg-white dark:bg-gray-800 rounded-lg 
+                             p-4 shadow-sm border border-gray-200 dark:border-gray-700 
+                             mb-4 transition-colors">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                     Filter Patients
                   </h3>
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-smooth"
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-smooth"
                   >
-                    <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4">
+                {/* Compact Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   {/* Gender */}
                   <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
                       Gender
                     </label>
                     <select
                       value={filters.gender}
                       onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
+                               rounded-md bg-white dark:bg-gray-700 
+                               text-gray-900 dark:text-white text-xs"
                     >
                       <option value="">All</option>
                       <option value="Male">Male</option>
@@ -113,128 +115,96 @@ function Home() {
 
                   {/* DOB */}
                   <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Date of Birth
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
+                      DOB
                     </label>
                     <input
                       type="date"
                       value={filters.dob}
                       onChange={(e) => setFilters({ ...filters, dob: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
+                               rounded-md bg-white dark:bg-gray-700 
+                               text-gray-900 dark:text-white text-xs"
                     />
                   </div>
 
                   {/* Age */}
                   <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Age (Y/M/D)
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
+                      Age
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g., 25Y 3M 10D"
+                      placeholder="25Y"
                       value={filters.age}
                       onChange={(e) => setFilters({ ...filters, age: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
+                               rounded-md bg-white dark:bg-gray-700 
+                               text-gray-900 dark:text-white text-xs"
                     />
                   </div>
 
                   {/* Nationality */}
                   <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
                       Nationality
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter nationality"
                       value={filters.nationality}
                       onChange={(e) => setFilters({ ...filters, nationality: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
+                               rounded-md bg-white dark:bg-gray-700 
+                               text-gray-900 dark:text-white text-xs"
                     />
                   </div>
 
                   {/* Patient ID */}
                   <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
                       Patient ID
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter patient ID"
                       value={filters.patientId}
                       onChange={(e) => setFilters({ ...filters, patientId: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
+                               rounded-md bg-white dark:bg-gray-700 
+                               text-gray-900 dark:text-white text-xs"
                     />
                   </div>
 
                   {/* Clinic */}
                   <div>
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
                       Clinic
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter clinic name"
                       value={filters.clinic}
                       onChange={(e) => setFilters({ ...filters, clinic: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
-                    />
-                  </div>
-
-                  {/* Doctor Name */}
-                  <div className="xs:col-span-2">
-                    <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Doctor Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter doctor name"
-                      value={filters.doctorName}
-                      onChange={(e) => setFilters({ ...filters, doctorName: e.target.value })}
-                      className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                               transition-smooth text-xs xs:text-sm
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
+                               rounded-md bg-white dark:bg-gray-700 
+                               text-gray-900 dark:text-white text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-4">
+                {/* Buttons */}
+                <div className="flex justify-end gap-2 mt-4">
                   <button
                     onClick={handleResetFilters}
-                    className="flex-1 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg 
-                             font-medium text-gray-700 dark:text-gray-300 
-                             hover:bg-gray-50 dark:hover:bg-gray-700 transition-smooth
-                             text-xs xs:text-sm"
+                    className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 
+                             rounded-md text-gray-700 dark:text-gray-300"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleApplyFilters}
-                    className="flex-1 px-4 py-2 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg 
-                             font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg
-                             text-xs xs:text-sm"
+                    className="px-4 py-1.5 text-xs bg-tecnot-primary dark:bg-tecnot-light 
+                             text-white dark:text-gray-900 rounded-md"
                   >
-                    Apply Filters
+                    Apply
                   </button>
                 </div>
               </div>
