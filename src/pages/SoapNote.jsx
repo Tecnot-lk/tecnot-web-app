@@ -34,7 +34,7 @@ function SoapNote() {
       id: '1',
       mrn: 'MRN001234',
       first_name: 'Malik',
-      last_name: 'Fernando',
+      last_name: 'Hanaffi',
       age: 38,
       gender: 'Male',
       blood_type: 'O+',
@@ -46,8 +46,8 @@ function SoapNote() {
     'MRN005678': {
       id: '2',
       mrn: 'MRN005678',
-      first_name: 'Shiman',
-      last_name: 'Perera',
+      first_name: 'Shimani',
+      last_name: 'Khan',
       age: 35,
       gender: 'Male',
       blood_type: 'A+',
@@ -59,7 +59,7 @@ function SoapNote() {
     'MRN009012': {
       id: '3',
       mrn: 'MRN009012',
-      first_name: 'Aisha',
+      first_name: 'Shimani',
       last_name: 'Khan',
       age: 42,
       gender: 'Female',
@@ -756,7 +756,6 @@ Reassure patient about good BP control.`
 
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-[10px] xs:text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  💡 <strong>Tip:</strong> Click "Continue This Session" to add more notes to this consultation.
                 </p>
               </div>
             </div>
