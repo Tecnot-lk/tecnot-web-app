@@ -391,9 +391,9 @@ Reassure patient about good BP control.`
           { id: 'shiman-3', date: '2025-12-15 11:30', chief_complaint: 'Vaccination' },
         ],
         'MRN009012': [
-          { id: 'aisha-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up' },
-          { id: 'aisha-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain' },
-          { id: 'aisha-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment' },
+          { id: 'Shimani-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up' },
+          { id: 'Shimani-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain' },
+          { id: 'Shimani-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment' },
         ]
       }
       

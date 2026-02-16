@@ -110,35 +110,7 @@ function Settings() {
               </label>
             </div>
 
-            {/* Push Notifications */}
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bell className="w-4 h-4 xs:w-5 xs:h-5 text-tecnot-primary dark:text-tecnot-light flex-shrink-0" />
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
-                    Push Notifications
-                  </p>
-                </div>
-                <p className="text-[10px] xs:text-xs text-gray-600 dark:text-gray-400">
-                  Get push notifications on your device
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={settings.pushNotifications}
-                  onChange={(e) => setSettings({...settings, pushNotifications: e.target.checked})}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 
-                             peer-focus:ring-tecnot-primary/20 dark:peer-focus:ring-tecnot-light/20 rounded-full peer 
-                             peer-checked:after:translate-x-full peer-checked:after:border-white 
-                             after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-                             after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full 
-                             after:h-5 after:w-5 after:transition-all peer-checked:bg-tecnot-primary dark:peer-checked:bg-tecnot-light">
-                </div>
-              </label>
-            </div>
+           
 
             {/* Session Reminders */}
             <div className="flex items-center justify-between py-3">
@@ -172,27 +144,7 @@ function Settings() {
           </div>
         </div>
 
-        {/* Danger Zone */}
-        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg sm:rounded-xl p-4 xs:p-6 sm:p-8 transition-colors">
-          <h2 className="text-lg xs:text-xl font-bold text-red-900 dark:text-red-400 mb-2 xs:mb-3">
-            Danger Zone
-          </h2>
-          <p className="text-xs xs:text-sm text-red-700 dark:text-red-300 mb-4 xs:mb-6">
-            Once you logout, you'll need to login again to access your account.
-          </p>
-          
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-6 xs:px-8 py-3 xs:py-4 
-                     bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700
-                     text-white rounded-lg font-semibold 
-                     transition-smooth shadow-lg w-full xs:w-auto text-sm xs:text-base"
-          >
-            <LogOut className="w-5 h-5" />
-            Log Out
-          </button>
-        </div>
-
+        
         {/* App Info */}
         <div className="mt-6 text-center text-xs xs:text-sm text-gray-500 dark:text-gray-400">
           <p>TECNOT v1.0.0</p>

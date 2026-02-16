@@ -71,10 +71,10 @@ function PatientDetail() {
           { id: 'shiman-2', date: '2026-01-20 14:00', chief_complaint: 'Flu symptoms', status: 'completed' },
           { id: 'shiman-3', date: '2025-12-15 11:30', chief_complaint: 'Vaccination', status: 'completed' },
         ],
-        'MRN009012': [ // Aisha Khan
-          { id: 'aisha-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up', status: 'completed' },
-          { id: 'aisha-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain', status: 'completed' },
-          { id: 'aisha-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment', status: 'completed' },
+        'MRN009012': [ // Shimani Khan
+          { id: 'shimani-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up', status: 'completed' },
+          { id: 'shimani-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain', status: 'completed' },
+          { id: 'shimani-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment', status: 'completed' },
         ]
       }
       
@@ -132,7 +132,7 @@ function PatientDetail() {
           drug_precautions: 'Monitor blood pressure',
           national_id: '821234567V',
           mobile_number: '+94 76 345 6789',
-          email: 'aisha@example.com',
+          email: 'shimanikhan@example.com',
           nationality: 'Sri Lankan',
           preferred_language: 'Tamil',
           date_of_birth: '1983-11-10'
