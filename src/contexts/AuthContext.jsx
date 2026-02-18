@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import * as authService from '../services/authService'
 
@@ -12,131 +13,133 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({ first_name: 'Ibrahim', specialty: 'General Physician' })
-  const [token, setToken] = useState('mock-token')
-  const [isAuthenticated, setIsAuthenticated] = useState(true)
-  const [loading, setLoading] = useState(false)
-  
-  // ============================================
-  // THEME FUNCTIONALITY - ADDED
-  // ============================================
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('tecnot_theme') || 'light'
-  })
+  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // Theme effect - applies theme to document
+  // ✅ On app start: load auth from localStorage
   useEffect(() => {
-    localStorage.setItem('tecnot_theme', theme)
-    const root = document.documentElement
-    
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else if (theme === 'light') {
-      root.classList.remove('dark')
-    } else if (theme === 'system') {
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      if (systemPrefersDark) {
-        root.classList.add('dark')
-      } else {
-        root.classList.remove('dark')
+    const storedToken = localStorage.getItem('tecnot_token')
+    const storedUser = localStorage.getItem('tecnot_user')
+
+    if (storedToken && storedUser) {
+      setToken(storedToken)
+      setUser(JSON.parse(storedUser))
+      setIsAuthenticated(true)
+    } else {
+      setToken(null)
+      setUser(null)
+      setIsAuthenticated(false)
+    }
+
+    setLoading(false)
+  }, [])
+
+  // ✅ MOCK LOGIN (works without backend)
+  const login = async ({ email, password }) => {
+    // basic validation
+    if (!email || !password) {
+      throw new Error('Email and password are required.')
+    }
+
+    // If user already signed up before, allow login using that email
+    const storedUser = localStorage.getItem('tecnot_user')
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser)
+      if (parsed.email?.toLowerCase() !== email.toLowerCase()) {
+        throw new Error('No account found with this email. Please sign up.')
       }
     }
-  }, [theme])
-  // ============================================
 
-  // Comment out the useEffect for now (we're using mock auth)
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     const storedToken = localStorage.getItem('tecnot_token')
-      
-  //     if (storedToken) {
-  //       try {
-  //         const userData = await authService.getCurrentUser()
-  //         setUser(userData)
-  //         setToken(storedToken)
-  //         setIsAuthenticated(true)
-  //       } catch (error) {
-  //         console.error('Auth check failed:', error)
-  //         localStorage.removeItem('tecnot_token')
-  //         setToken(null)
-  //         setUser(null)
-  //         setIsAuthenticated(false)
-  //       }
-  //     }
-      
-  //     setLoading(false)
-  //   }
+    const mockToken = 'mock-token'
+    localStorage.setItem('tecnot_token', mockToken)
 
-  //   checkAuth()
-  // }, [])
-
-  const login = async (credentials) => {
-    try {
-      const response = await authService.login(credentials)
-      
-      localStorage.setItem('tecnot_token', response.access_token)
-      setToken(response.access_token)
-      setUser(response.user)
-      setIsAuthenticated(true)
-      
-      return response
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error
+    // If no user exists yet, create a default one
+    if (!storedUser) {
+      const defaultUser = {
+        first_name: 'Ibrahim',
+        last_name: 'Malik',
+        email,
+        phone: '+94 77 999 8888',
+        specialty: 'General Physician',
+        license_number: 'SL12345',
+        clinic_name: 'Ibrahim Medical Center',
+      }
+      localStorage.setItem('tecnot_user', JSON.stringify(defaultUser))
+      setUser(defaultUser)
+    } else {
+      setUser(JSON.parse(storedUser))
     }
+
+    setToken(mockToken)
+    setIsAuthenticated(true)
   }
 
-  const register = async (userData) => {
-    try {
-      const response = await authService.register(userData)
-      
-      localStorage.setItem('tecnot_token', response.access_token)
-      setToken(response.access_token)
-      setUser(response.user)
-      setIsAuthenticated(true)
-      
-      return response
-    } catch (error) {
-      console.error('Registration error:', error)
-      throw error
+  // ✅ MOCK SIGNUP (stores extra fields)
+  const signup = async ({
+    first_name,
+    last_name,
+    email,
+    phone,
+    specialty,
+    license_number,
+    clinic_name,
+    password,
+  }) => {
+    if (!first_name || !last_name || !email || !phone || !specialty || !license_number || !clinic_name || !password) {
+      throw new Error('Please fill all required fields.')
     }
+
+    const mockUser = {
+      first_name,
+      last_name,
+      email,
+      phone,
+      specialty,
+      license_number,
+      clinic_name,
+    }
+
+    const mockToken = 'mock-token'
+
+    localStorage.setItem('tecnot_token', mockToken)
+    localStorage.setItem('tecnot_user', JSON.stringify(mockUser))
+
+    setToken(mockToken)
+    setUser(mockUser)
+    setIsAuthenticated(true)
   }
 
-  const googleLogin = async (googleToken) => {
-    try {
-      const response = await authService.googleLogin(googleToken)
-      
-      localStorage.setItem('tecnot_token', response.access_token)
-      setToken(response.access_token)
-      setUser(response.user)
-      setIsAuthenticated(true)
-      
-      return response
-    } catch (error) {
-      console.error('Google login error:', error)
-      throw error
-    }
-  }
-
+  // ✅ LOGOUT
   const logout = () => {
     localStorage.removeItem('tecnot_token')
+    localStorage.removeItem('tecnot_user')
     setToken(null)
     setUser(null)
     setIsAuthenticated(false)
   }
 
-  const value = {
-    user,
-    token,
-    isAuthenticated,
-    loading,
-    login,
-    register,
-    googleLogin,
-    logout,
-    theme,      // ADDED
-    setTheme,   // ADDED
+  // ✅ OPTIONAL: call backend current user later
+  // (keep for when you add real backend)
+  const getCurrentUser = async () => {
+    return authService.getCurrentUser()
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated,
+        loading,
+        login,
+        signup,
+        logout,
+        getCurrentUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
