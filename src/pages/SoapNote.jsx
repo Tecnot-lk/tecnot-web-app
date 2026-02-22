@@ -34,7 +34,7 @@ function SoapNote() {
       id: '1',
       mrn: 'MRN001234',
       first_name: 'Malik',
-      last_name: 'Fernando',
+      last_name: 'Hanaffi',
       age: 38,
       gender: 'Male',
       blood_type: 'O+',
@@ -47,7 +47,7 @@ function SoapNote() {
       id: '2',
       mrn: 'MRN005678',
       first_name: 'Shiman',
-      last_name: 'Perera',
+      last_name: 'Nafaas',
       age: 35,
       gender: 'Male',
       blood_type: 'A+',
@@ -59,7 +59,7 @@ function SoapNote() {
     'MRN009012': {
       id: '3',
       mrn: 'MRN009012',
-      first_name: 'Aisha',
+      first_name: 'Shimani',
       last_name: 'Khan',
       age: 42,
       gender: 'Female',
@@ -284,7 +284,7 @@ Observe patient for 15 minutes.
 Provide vaccination card.`
         },
         
-        // Aisha Khan sessions
+        // Shimani Khan sessions
         'aisha-1': {
           chief_complaint: 'High blood pressure follow-up',
           history_present_illness: 'Patient with hypertension for 3 years. Here for routine follow-up. Currently on Amlodipine 5mg daily. Checking blood pressure regularly at home - readings around 135-145/85-90.',

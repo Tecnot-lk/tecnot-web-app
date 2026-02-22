@@ -1,341 +1,450 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { FileText, Mail, Lock, User, Stethoscope, Loader2 } from 'lucide-react'
+import {
+  User,
+  Mail,
+  Building2,
+  BadgeCheck,
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  Stethoscope,
+} from 'lucide-react'
+import logo from '../assets/logos.png'
+
+// ✅ Flags + all countries phone input
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
+
+// ✅ MOVE INPUT OUTSIDE (prevents re-mount focus bug)
+function TextInput({ label, icon: Icon, className = '', ...props }) {
+  return (
+    <div>
+      <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+          <Icon className="w-5 h-5" />
+        </div>
+        <input
+          {...props}
+          className={
+            `w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg
+             bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light
+             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+             transition-smooth text-sm xs:text-base ${className}`
+          }
+        />
+      </div>
+    </div>
+  )
+}
 
 function Signup() {
   const navigate = useNavigate()
-  const { register } = useAuth()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
+  const { signup } = useAuth()
+
+  const [step, setStep] = useState('signup') // 'signup' | 'verify'
+  const [loading, setLoading] = useState(false)
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+
+  const [error, setError] = useState('')
+  const [showPass, setShowPass] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  const specialtyOptions = useMemo(
+    () => [
+      'General Physician',
+      'Cardiology',
+      'Dermatology',
+      'ENT',
+      'Gastroenterology',
+      'Gynecology',
+      'Neurology',
+      'Oncology',
+      'Orthopedics',
+      'Pediatrics',
+      'Psychiatry',
+      'Radiology',
+      'Surgery',
+      'Other',
+    ],
+    []
+  )
+
+  const [form, setForm] = useState({
     first_name: '',
     last_name: '',
-    specialty: '',
+    email: '',
+    phone: '', // ✅ E.164 phone from PhoneInput
+    specialty: 'General Physician',
     license_number: '',
-    clinic_name: ''
+    clinic_name: '',
+    password: '',
+    confirm_password: '',
   })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+
+  const [verificationCode, setVerificationCode] = useState('')
+
+  // ✅ stable handler (also helps)
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters.')
       return
     }
-
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
+    if (form.password !== form.confirm_password) {
+      setError('Passwords do not match.')
+      return
+    }
+    if (!form.phone) {
+      setError('Please enter a valid phone number.')
       return
     }
 
     setLoading(true)
-
     try {
-      const { confirmPassword, ...registerData } = formData
-      await register(registerData)
-      navigate('/')
+      await signup({
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        phone: form.phone, // ✅ already includes country code
+        specialty: form.specialty,
+        license_number: form.license_number,
+        clinic_name: form.clinic_name,
+        password: form.password,
+      })
+
+      setStep('verify')
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      setError(err?.message || 'Signup failed. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const handleVerify = async (e) => {
+    e.preventDefault()
+    setError('')
+
+    if (!verificationCode.trim() || verificationCode.trim().length < 4) {
+      setError('Please enter the verification code sent to your email.')
+      return
+    }
+
+    setVerifyLoading(true)
+    try {
+      // TODO: call backend verify endpoint
+      navigate('/login', { replace: true })
+    } catch (err) {
+      setError(err?.message || 'Invalid code. Please try again.')
+    } finally {
+      setVerifyLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    setError('')
+    setResendLoading(true)
+    try {
+      // TODO: call backend resend endpoint
+    } catch (err) {
+      setError(err?.message || 'Failed to resend code.')
+    } finally {
+      setResendLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-tecnot-primary to-tecnot-dark 
-                    dark:from-gray-900 dark:to-gray-950
-                    flex items-center justify-center p-4 py-8 transition-colors">
-      <div className="w-full max-w-2xl">
-        
-        {/* Logo & Brand */}
-        <div className="text-center mb-6 xs:mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 xs:w-20 xs:h-20 
-                       bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-4 transition-colors">
-            <FileText className="w-10 h-10 xs:w-12 xs:h-12 text-tecnot-primary dark:text-tecnot-light" />
+    <div className="min-h-screen w-full flex items-center justify-center px-4 py-10 bg-gray-50 dark:bg-gray-900 transition-colors">
+      <div className="w-full max-w-3xl">
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm p-5 sm:p-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center text-center mb-6">
+            <img src={logo} alt="Tecnot Logo" className="h-28 sm:h-32 w-auto object-contain mb-4" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+              {step === 'signup' ? 'Create your account' : 'Verify your email'}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+              {step === 'signup'
+                ? 'Join Tecnot and start documenting smarter'
+                : `We sent a verification code to ${form.email}`}
+            </p>
           </div>
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-2">Join TECNOT</h1>
-          <p className="text-sm xs:text-base text-tecnot-light dark:text-gray-400">Create your account to get started</p>
-        </div>
 
-        {/* Signup Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 xs:p-8 sm:p-10 transition-colors">
-          
-          {/* Error Message */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 
-                         text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4 text-sm transition-colors">
+            <div className="mb-5 p-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-200 text-sm">
               {error}
             </div>
           )}
 
-          {/* Signup Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5">
-            
-            {/* Personal Info Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* First Name */}
+          {step === 'signup' && (
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <input
-                    type="text"
+                <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-4">
+                  Personal Information
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <TextInput
+                    label="First Name"
+                    icon={User}
                     name="first_name"
-                    value={formData.first_name}
+                    value={form.first_name}
                     onChange={handleChange}
-                    placeholder="John"
+                    placeholder="Ibrahim"
                     required
-                    className="w-full pl-11 pr-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
                   />
-                </div>
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <input
-                    type="text"
+                  <TextInput
+                    label="Last Name"
+                    icon={User}
                     name="last_name"
-                    value={formData.last_name}
+                    value={form.last_name}
                     onChange={handleChange}
-                    placeholder="Doe"
+                    placeholder="Malik"
                     required
-                    className="w-full pl-11 pr-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
                   />
                 </div>
-              </div>
-            </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="doctor@example.com"
-                  required
-                  className="w-full pl-11 pr-4 py-3 
-                           border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                           outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                           focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                           bg-white dark:bg-gray-700 
-                           text-gray-900 dark:text-white
-                           placeholder-gray-400 dark:placeholder-gray-500
-                           transition-all text-sm xs:text-base"
-                />
-              </div>
-            </div>
-
-            {/* Password Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
+                <div className="mt-4">
+                  <TextInput
+                    label="Email Address"
+                    icon={Mail}
+                    name="email"
+                    type="email"
+                    value={form.email}
                     onChange={handleChange}
-                    placeholder="••••••••"
+                    placeholder="dr.ibrahim@clinic.lk"
                     required
-                    className="w-full pl-11 pr-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
                   />
                 </div>
-              </div>
 
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    required
-                    className="w-full pl-11 pr-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
-                  />
+                {/* ✅ Phone with flags */}
+                <div className="mt-4">
+                  <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Phone Number
+                  </label>
+
+                  <div className="rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2
+                                  focus-within:border-tecnot-primary dark:focus-within:border-tecnot-light
+                                  focus-within:ring-4 focus-within:ring-tecnot-primary/20 dark:focus-within:ring-tecnot-light/20 transition-smooth">
+                    <PhoneInput
+                      international
+                      defaultCountry="LK"
+                      value={form.phone}
+                      onChange={(val) => setForm((prev) => ({ ...prev, phone: val || '' }))}
+                      className="tecnot-phone"
+                    />
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                    Example: +94 77 123 4567
+                  </p>
                 </div>
-              </div>
-            </div>
 
-            {/* Professional Info Section */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-base xs:text-lg font-semibold text-gray-900 dark:text-white mb-4">Professional Information</h3>
-              
-              {/* Specialty */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Specialty</label>
-                <div className="relative">
-                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <input
-                    type="text"
-                    name="specialty"
-                    value={formData.specialty}
-                    onChange={handleChange}
-                    placeholder="e.g., General Physician"
-                    className="w-full pl-11 pr-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
-                  />
+                {/* Specialty dropdown */}
+                <div className="mt-4">
+                  <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Specialty
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                      <Stethoscope className="w-5 h-5" />
+                    </div>
+                    <select
+                      name="specialty"
+                      value={form.specialty}
+                      onChange={handleChange}
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg
+                                 bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                 outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light
+                                 transition-smooth text-sm xs:text-base"
+                      required
+                    >
+                      {specialtyOptions.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              {/* License & Clinic */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* License Number */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">License Number</label>
-                  <input
-                    type="text"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <TextInput
+                    label="License Number"
+                    icon={BadgeCheck}
                     name="license_number"
-                    value={formData.license_number}
+                    value={form.license_number}
                     onChange={handleChange}
                     placeholder="SL12345"
-                    className="w-full px-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
+                    required
                   />
-                </div>
-
-                {/* Clinic Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Clinic Name</label>
-                  <input
-                    type="text"
+                  <TextInput
+                    label="Clinic Name"
+                    icon={Building2}
                     name="clinic_name"
-                    value={formData.clinic_name}
+                    value={form.clinic_name}
                     onChange={handleChange}
-                    placeholder="City Medical Center"
-                    className="w-full px-4 py-3 
-                             border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light 
-                             focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             bg-white dark:bg-gray-700 
-                             text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500
-                             transition-all text-sm xs:text-base"
+                    placeholder="Ibrahim Medical Center"
+                    required
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-tecnot-primary dark:bg-tecnot-light 
-                       text-white dark:text-gray-900 
-                       py-3 xs:py-4 rounded-lg font-semibold 
-                       hover:bg-tecnot-dark dark:hover:bg-tecnot-primary 
-                       transition-smooth shadow-lg hover:shadow-xl 
-                       active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center gap-2 text-sm xs:text-base mt-6"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-          </form>
+              <div>
+                <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-4">Security</h2>
 
-          {/* Divider */}
-          <div className="relative my-6 xs:my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or sign up with</span>
-            </div>
-          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                        <Lock className="w-5 h-5" />
+                      </div>
+                      <input
+                        name="password"
+                        type={showPass ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="••••••••"
+                        required
+                        className="w-full pl-11 pr-11 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg
+                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                   outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-smooth"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPass((s) => !s)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
 
-          {/* Google Signup */}
-          <button
-            type="button"
-            className="w-full flex items-center justify-center gap-3 py-3 xs:py-4 
-                     border-2 border-gray-200 dark:border-gray-600 rounded-lg font-medium 
-                     text-gray-700 dark:text-gray-300 
-                     hover:bg-gray-50 dark:hover:bg-gray-700 
-                     transition-smooth active:scale-95 text-sm xs:text-base"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Sign up with Google
-          </button>
+                  {/* Confirm */}
+                  <div>
+                    <label className="block text-xs xs:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                        <Lock className="w-5 h-5" />
+                      </div>
+                      <input
+                        name="confirm_password"
+                        type={showConfirm ? 'text' : 'password'}
+                        value={form.confirm_password}
+                        onChange={handleChange}
+                        placeholder="••••••••"
+                        required
+                        className="w-full pl-11 pr-11 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg
+                                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                                   outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-smooth"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirm((s) => !s)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          {/* Login Link */}
-          <p className="text-center text-sm xs:text-base text-gray-600 dark:text-gray-400 mt-6">
-            Already have an account?{' '}
-            <Link to="/login" className="text-tecnot-primary dark:text-tecnot-light hover:underline font-semibold">
-              Login
-            </Link>
-          </p>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-lg font-semibold bg-tecnot-primary dark:bg-tecnot-light
+                           text-white dark:text-gray-900 hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
+                           transition-smooth shadow-lg btn-glow flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                {loading ? 'Creating account...' : 'Create account'}
+              </button>
+
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+                Already have an account?{' '}
+                <Link to="/login" className="text-tecnot-primary dark:text-tecnot-light font-semibold hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </form>
+          )}
+
+          {step === 'verify' && (
+            <form onSubmit={handleVerify} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Verification Code
+                </label>
+                <input
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  placeholder="Enter code (ex: 123456)"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg
+                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none
+                             focus:border-tecnot-primary dark:focus:border-tecnot-light transition-smooth"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  Check your Gmail inbox (and spam) for the code.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={verifyLoading}
+                className="w-full py-3 rounded-lg font-semibold bg-tecnot-primary dark:bg-tecnot-light
+                           text-white dark:text-gray-900 hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
+                           transition-smooth shadow-lg btn-glow flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {verifyLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                {verifyLoading ? 'Verifying...' : 'Verify & continue'}
+              </button>
+
+              <div className="flex items-center justify-between text-sm">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendLoading}
+                  className="text-tecnot-primary dark:text-tecnot-light font-semibold hover:underline disabled:opacity-60"
+                >
+                  {resendLoading ? 'Resending...' : 'Resend code'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep('signup')}
+                  className="text-gray-600 dark:text-gray-300 hover:underline"
+                >
+                  Back
+                </button>
+              </div>
+            </form>
+          )}
         </div>
+
+        <p className="text-center text-xs text-gray-500 dark:text-gray-500 mt-6">
+          © {new Date().getFullYear()} Tecnot • AI Clinical Scribe
+        </p>
       </div>
     </div>
   )
