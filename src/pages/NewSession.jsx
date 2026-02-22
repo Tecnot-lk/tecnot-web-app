@@ -768,55 +768,13 @@ function NewSession() {
                 </div>
 
                 {/* Blood Pressure - Optional */}
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Blood Pressure
-                  </label>
-                  <input
-                    type="text"
-                    value={vitals.blood_pressure}
-                    onChange={(e) => setVitals({ ...vitals, blood_pressure: e.target.value })}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="120/80"
-                  />
-                </div>
+                
 
                 {/* Heart Rate - Optional */}
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Heart Rate (bpm)
-                  </label>
-                  <input
-                    type="number"
-                    value={vitals.heart_rate}
-                    onChange={(e) => setVitals({ ...vitals, heart_rate: e.target.value })}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="72"
-                  />
-                </div>
+                
 
                 {/* SpO2 - Optional */}
-                <div>
-                  <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    SpO2 (%)
-                  </label>
-                  <input
-                    type="number"
-                    value={vitals.spo2}
-                    onChange={(e) => setVitals({ ...vitals, spo2: e.target.value })}
-                    className="w-full px-3 xs:px-4 py-2 xs:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                             outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="98"
-                  />
-                </div>
+               
               </div>
             </div>
 
