@@ -17,6 +17,20 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('tecnot_theme') || 'light'
+  })
+
+  // ✅ Apply theme to <html> element whenever it changes
+  useEffect(() => {
+    const root = document.documentElement
+    if (theme === 'dark') {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+    localStorage.setItem('tecnot_theme', theme)
+  }, [theme])
 
   // ✅ On app start: load auth from localStorage
   useEffect(() => {
@@ -38,12 +52,10 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ MOCK LOGIN (works without backend)
   const login = async ({ email, password }) => {
-    // basic validation
     if (!email || !password) {
       throw new Error('Email and password are required.')
     }
 
-    // If user already signed up before, allow login using that email
     const storedUser = localStorage.getItem('tecnot_user')
     if (storedUser) {
       const parsed = JSON.parse(storedUser)
@@ -55,7 +67,6 @@ export const AuthProvider = ({ children }) => {
     const mockToken = 'mock-token'
     localStorage.setItem('tecnot_token', mockToken)
 
-    // If no user exists yet, create a default one
     if (!storedUser) {
       const defaultUser = {
         first_name: 'Ibrahim',
@@ -121,7 +132,6 @@ export const AuthProvider = ({ children }) => {
   }
 
   // ✅ OPTIONAL: call backend current user later
-  // (keep for when you add real backend)
   const getCurrentUser = async () => {
     return authService.getCurrentUser()
   }
@@ -137,6 +147,8 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         getCurrentUser,
+        theme,
+        setTheme,
       }}
     >
       {children}
