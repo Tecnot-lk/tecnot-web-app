@@ -1,24 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <!-- CRITICAL: Proper viewport for mobile -->
-  <!-- New Comment-->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
-  <!-- Page title (shows in browser tab) -->
-  <title>TECNOT - AI Clinical Scribe</title>
-  
-  <!-- Google Fonts - Inter (clean, modern, professional i have added a comment) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <!-- This div is where React will inject your app -->
-  <div id="root"></div>
-  
-  <!-- This loads your React app -->
-  <script type="module" src="/src/main.jsx"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="description" content="TECNOT - AI Clinical Scribe for Sri Lankan Doctors. Automatically record, transcribe, and generate SOAP notes from patient consultations." />
+    <meta name="keywords" content="medical scribe, AI clinical scribe, SOAP notes, medical records, healthcare technology, Sri Lanka" />
+    <meta name="author" content="TECNOT Team" />
+    <meta name="theme-color" content="#4DB8A8" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tecnot.lk/" />
+    <meta property="og:title" content="TECNOT - AI Clinical Scribe" />
+    <meta property="og:description" content="Automatically record, transcribe, and generate SOAP notes from patient consultations." />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://tecnot.lk/" />
+    <meta property="twitter:title" content="TECNOT - AI Clinical Scribe" />
+    <meta property="twitter:description" content="Automatically record, transcribe, and generate SOAP notes from patient consultations." />
+    <meta property="twitter:image" content="/twitter-image.png" />
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/src/main.jsx" as="script" />
+    
+    <title>TECNOT - AI Clinical Scribe for Doctors</title>
+  </head>
+  <body>
+    <!-- No JavaScript Warning -->
+    <noscript>
+      <div style="
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh; 
+        background: linear-gradient(135deg, #4DB8A8 0%, #2D9B8C 100%);
+        color: white;
+        font-family: 'Inter', sans-serif;
+        text-align: center;
+        padding: 20px;
+      ">
+        <div>
+          <h1 style="font-size: 2em; margin-bottom: 10px;">⚠️ JavaScript Required</h1>
+          <p style="font-size: 1.2em;">
+            TECNOT requires JavaScript to be enabled in your browser.<br>
+            Please enable JavaScript and refresh the page.
+          </p>
+        </div>
+      </div>
+    </noscript>
+    
+    <!-- Root Element -->
+    <div id="root"></div>
+    
+    <!-- Main Script -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
