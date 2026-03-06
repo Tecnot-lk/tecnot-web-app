@@ -1,12 +1,32 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function Header({ title, subtitle }) {
   const { user } = useAuth()
+  const [profilePic, setProfilePic] = useState(null)
 
-  // Get user initials
+  // Load picture from localStorage and listen for changes
+  useEffect(() => {
+    const loadPic = () => {
+      const savedPic = localStorage.getItem('doctor_profile_pic');
+      setProfilePic(savedPic);
+    };
+
+    loadPic();
+
+    window.addEventListener('profilePicUpdated', loadPic);
+    
+    window.addEventListener('storage', loadPic);
+
+    return () => {
+      window.removeEventListener('profilePicUpdated', loadPic);
+      window.removeEventListener('storage', loadPic);
+    };
+  }, []);
+
+  // Get user initials (Fallback if no image exists)
   const getInitials = () => {
     if (!user) return 'U'
     const firstName = user.first_name || user.email?.charAt(0) || 'U'
@@ -38,7 +58,6 @@ function Header({ title, subtitle }) {
             className="p-1.5 xs:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-smooth relative"
           >
             <Bell className="w-5 h-5 xs:w-6 xs:h-6 text-gray-600 dark:text-gray-300" />
-            {/* Notification badge */}
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </Link>
           
@@ -55,8 +74,18 @@ function Header({ title, subtitle }) {
                 {user?.specialty || 'General Physician'}
               </p>
             </div>
-            <div className="w-8 h-8 xs:w-10 xs:h-10 bg-tecnot-primary dark:bg-tecnot-light rounded-full flex items-center justify-center text-white dark:text-gray-900 font-bold text-sm xs:text-base">
-              {getInitials()}
+
+            {/* Avatar Container */}
+            <div className="w-8 h-8 xs:w-10 xs:h-10 bg-tecnot-primary dark:bg-tecnot-light rounded-full flex items-center justify-center text-white dark:text-gray-900 font-bold text-sm xs:text-base overflow-hidden border border-gray-200 dark:border-gray-700">
+              {profilePic ? (
+                <img 
+                  src={profilePic} 
+                  alt="Doctor" 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                getInitials()
+              )}
             </div>
           </Link>
         </div>

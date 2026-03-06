@@ -1,8 +1,35 @@
-import React, { useState } from 'react'
-import { User, Mail, Phone, Stethoscope, Save } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { User, Mail, Phone, Stethoscope, Save, Camera, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
 
 function Profile() {
+  const [uploading, setUploading] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState(null)
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      setPreviewUrl(base64String);
+      localStorage.setItem('doctor_profile_pic', base64String);
+      
+      // Trigger a custom event to notify the Header immediately
+      window.dispatchEvent(new Event('profilePicUpdated'));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => {
+    // ✅ Check if an image was saved previously
+    const savedPic = localStorage.getItem('doctor_profile_pic');
+    if (savedPic) {
+      setPreviewUrl(savedPic);
+    }
+  }, []);
+
   const [profileData, setProfileData] = useState({
     first_name: 'Ibrahim',
     last_name: 'Malik',
@@ -46,10 +73,26 @@ function Profile() {
         <div className="bg-gradient-to-r from-tecnot-primary to-tecnot-dark dark:from-tecnot-light dark:to-tecnot-primary rounded-lg sm:rounded-xl 
                      p-6 xs:p-8 sm:p-10 mb-6 text-white dark:text-gray-900 transition-colors">
           <div className="flex flex-col sm:flex-row items-center gap-4 xs:gap-6">
-            <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 bg-white dark:bg-gray-800 rounded-full 
-                         flex items-center justify-center text-tecnot-primary dark:text-tecnot-light font-bold 
-                         text-3xl xs:text-4xl sm:text-5xl flex-shrink-0 transition-colors">
-              I
+            <div className="relative group">
+              <div className="w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 bg-white dark:bg-gray-800 rounded-full 
+                          flex items-center justify-center text-tecnot-primary dark:text-tecnot-light font-bold 
+                          text-3xl xs:text-4xl sm:text-5xl flex-shrink-0 transition-colors overflow-hidden border-4 border-white/20">
+                {previewUrl ? (
+                  <img src={previewUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  profileData.first_name.charAt(0)
+                )}
+                
+                {/* Upload Overlay - visible on hover */}
+                <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                  {uploading ? (
+                    <Loader2 className="w-8 h-8 animate-spin text-white" />
+                  ) : (
+                    <Camera className="w-8 h-8 text-white" />
+                  )}
+                </label>
+              </div>
             </div>
             <div className="text-center sm:text-left">
               <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold mb-1 xs:mb-2">
