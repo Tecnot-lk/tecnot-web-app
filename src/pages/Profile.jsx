@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { User, Mail, Phone, Stethoscope, Save, Camera, Eye, EyeOff } from 'lucide-react'
+import { User, Mail, Phone, Stethoscope, Save, Eye, EyeOff, Camera } from 'lucide-react'
 import Header from '../components/Header'
 
 function Profile() {
@@ -20,6 +20,8 @@ function Profile() {
   })
 
   const [activeTab, setActiveTab] = useState('info')
+  
+  // Profile photo state
   const [photoPreview, setPhotoPreview] = useState(null)
   
   // Password visibility states
@@ -66,26 +68,25 @@ function Profile() {
           <div className="flex flex-col sm:flex-row items-center gap-4 xs:gap-6">
             {/* Profile Photo with Upload */}
             <div className="relative">
-              <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 bg-white dark:bg-gray-700 rounded-full 
-                           flex items-center justify-center overflow-hidden flex-shrink-0 transition-colors
-                           border-4 border-white/20 shadow-lg">
+              <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 bg-white rounded-full 
+                           flex items-center justify-center overflow-hidden flex-shrink-0">
                 {photoPreview ? (
                   <img src={photoPreview} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="text-tecnot-primary dark:text-tecnot-light font-bold text-3xl xs:text-4xl sm:text-5xl">
+                  <div className="text-tecnot-primary font-bold text-3xl xs:text-4xl sm:text-5xl">
                     {profileData.first_name.charAt(0)}
                   </div>
                 )}
               </div>
-              <label className="absolute bottom-0 right-0 bg-tecnot-primary dark:bg-tecnot-light rounded-full p-2 
-                             shadow-lg cursor-pointer hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth">
+              <label className="absolute bottom-0 right-0 bg-tecnot-primary rounded-full p-2 
+                             shadow-lg cursor-pointer hover:bg-tecnot-dark transition-smooth">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoChange}
                   className="hidden"
                 />
-                <Camera className="w-4 h-4 xs:w-5 xs:h-5 text-white dark:text-gray-900" />
+                <Camera className="w-4 h-4 xs:w-5 xs:h-5 text-white" />
               </label>
             </div>
             
@@ -217,17 +218,16 @@ function Profile() {
                     Specialty
                   </label>
                   <div className="relative">
-                    <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 z-10" />
+                    <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
                     <select
                       value={profileData.specialty}
                       onChange={(e) => setProfileData({...profileData, specialty: e.target.value})}
                       style={{ colorScheme: 'light' }}
-                      className="w-full pl-11 pr-10 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               appearance-none cursor-pointer
-                               hover:border-tecnot-primary dark:hover:border-tecnot-light"
+                      className="w-full pl-11 pr-10 py-3 border-2 border-gray-200 rounded-lg 
+                               outline-none focus:border-tecnot-primary focus:ring-4 
+                               focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base
+                               bg-white cursor-pointer appearance-none
+                               hover:border-tecnot-primary"
                     >
                       <option value="">Select a specialty</option>
                       <option value="General Physician">General Physician</option>
@@ -248,17 +248,10 @@ function Profile() {
                       <option value="Endocrinologist">Endocrinologist</option>
                       <option value="Oncologist">Oncologist</option>
                       <option value="Gastroenterologist">Gastroenterologist</option>
-                      <option value="Pulmonologist">Pulmonologist</option>
-                      <option value="Nephrologist">Nephrologist</option>
-                      <option value="Rheumatologist">Rheumatologist</option>
-                      <option value="Allergist/Immunologist">Allergist/Immunologist</option>
-                      <option value="Infectious Disease Specialist">Infectious Disease Specialist</option>
-                      <option value="Hematologist">Hematologist</option>
-                      <option value="Pathologist">Pathologist</option>
                     </select>
                     {/* Custom Arrow Icon */}
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg className="w-5 h-5 text-tecnot-primary dark:text-tecnot-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-tecnot-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -316,7 +309,7 @@ function Profile() {
                   Change Password
                 </h2>
 
-                {/* Current Passwordujkjk */}
+                {/* Current Password */}
                 <div>
                   <label className="block text-xs xs:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Current Password
@@ -327,17 +320,17 @@ function Profile() {
                       value={passwordData.current_password}
                       onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
                       placeholder="Enter current password"
-                      className="w-full px-4 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-4 pr-12 py-3 border-2 border-gray-200 rounded-lg 
+                               outline-none focus:border-tecnot-primary focus:ring-4 
+                               focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 
-                               hover:text-tecnot-primary dark:hover:text-tecnot-light transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2
+                                text-gray-500 hover:text-tecnot-primary
+                                transition-colors duration-200
+                                focus:outline-none"
                     >
                       {showCurrentPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -359,17 +352,17 @@ function Profile() {
                       value={passwordData.new_password}
                       onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})}
                       placeholder="Enter new password"
-                      className="w-full px-4 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-4 pr-12 py-3 border-2 border-gray-200 rounded-lg 
+                               outline-none focus:border-tecnot-primary focus:ring-4 
+                               focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 
-                               hover:text-tecnot-primary dark:hover:text-tecnot-light transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2
+                                text-gray-500 hover:text-tecnot-primary
+                                transition-colors duration-200
+                                focus:outline-none"
                     >
                       {showNewPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -391,17 +384,17 @@ function Profile() {
                       value={passwordData.confirm_password}
                       onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})}
                       placeholder="Confirm new password"
-                      className="w-full px-4 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg 
-                               outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 
-                               focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20 transition-all text-sm xs:text-base
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-4 pr-12 py-3 border-2 border-gray-200 rounded-lg 
+                               outline-none focus:border-tecnot-primary focus:ring-4 
+                               focus:ring-tecnot-primary/20 transition-all text-sm xs:text-base"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 
-                               hover:text-tecnot-primary dark:hover:text-tecnot-light transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2
+                                text-gray-500 hover:text-tecnot-primary
+                                transition-colors duration-200
+                                focus:outline-none"
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -412,18 +405,6 @@ function Profile() {
                   </div>
                 </div>
 
-                {/* Password Tips */}
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 
-                             rounded-lg p-4 text-sm text-blue-800 dark:text-blue-300">
-                  <p className="font-semibold mb-2"> Password Security Tips:</p>
-                  <ul className="space-y-1 ml-4 list-disc">
-                    <li>Use at least 8 characters</li>
-                    <li>Include uppercase and lowercase letters</li>
-                    <li>Add numbers and special characters</li>
-                    <li>Avoid common words or patterns</li>
-                  </ul>
-                </div>
-
                 <button
                   onClick={handleChangePassword}
                   className="w-full xs:w-auto px-6 xs:px-8 py-3 xs:py-4 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900
@@ -432,6 +413,19 @@ function Profile() {
                 >
                   Change Password
                 </button>
+
+                {/* Security Tips */}
+                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2 text-sm xs:text-base">
+                    Password Tips:
+                  </h4>
+                  <ul className="text-xs xs:text-sm text-blue-800 space-y-1">
+                    <li>• Use at least 8 characters</li>
+                    <li>• Mix uppercase, lowercase, numbers, and symbols</li>
+                    <li>• Don't use personal information</li>
+                    <li>• Change your password regularly</li>
+                  </ul>
+                </div>
               </div>
             )}
           </div>
