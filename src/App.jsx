@@ -7,8 +7,8 @@ import Sidebar from './components/Sidebar'
 import PrivateRoute from './components/PrivateRoute'
 
 // Pages
-//import Login from './pages/Login'
-//import Signup from './pages/Signup'
+import Login from './pages/Login'      // UNCOMMENTED
+import Signup from './pages/Signup'    // UNCOMMENTED
 import Home from './pages/Home'
 import Patients from './pages/Patients'
 import PatientDetail from './pages/PatientDetail'
@@ -24,10 +24,10 @@ function App() {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tecnot-primary mx-auto mb-4"></div>
-          <p className="text-gray-600 text-sm">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tecnot-primary dark:border-tecnot-light mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">Loading...</p>
         </div>
       </div>
     )
@@ -35,7 +35,7 @@ function App() {
 
   return (
     <Router>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         {/* Sidebar - Only show when authenticated */}
         {isAuthenticated && <Sidebar />}
         

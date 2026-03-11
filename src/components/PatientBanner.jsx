@@ -1,205 +1,175 @@
 import React from 'react'
-import { Heart, AlertTriangle, Pill, Clock, Droplet, Activity } from 'lucide-react'
+import { Heart, AlertTriangle, Pill, Clock } from 'lucide-react'
 
 function PatientBanner({ patient, session }) {
-  if (!patient) return null
-
-  // Get gender icon and color
-  const getGenderStyle = () => {
-    switch (patient.gender) {
-      case 'Female':
-        return { color: 'bg-pink-500', symbol: '♀' }
-      case 'Male':
-        return { color: 'bg-blue-500', symbol: '♂' }
-      default:
-        return { color: 'bg-gray-500', symbol: '⚧' }
-    }
+  // Calculate age display
+  const getAgeDisplay = () => {
+    if (patient.age) return `${patient.age}Y`
+    return 'N/A'
   }
-
-  const genderStyle = getGenderStyle()
-
-  // Calculate risk score (dummy - replace with actual calculation)
-  const getRiskScore = () => {
-    // Simple risk calculation based on age and chronics
-    let risk = 0
-    if (patient.age > 60) risk += 2
-    if (patient.age > 70) risk += 3
-    if (patient.chronics) risk += 2
-    if (patient.allergies) risk += 1
-    return risk
-  }
-
-  const riskScore = getRiskScore()
 
   return (
-    <div className="sticky top-16 z-20 bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300 shadow-md">
-      <div className="px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
+    <div className="bg-gradient-to-r from-tecnot-primary to-tecnot-dark 
+                    dark:from-gray-800 dark:to-gray-900
+                    border-b-4 border-tecnot-dark dark:border-tecnot-light
+                    px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 
+                    shadow-lg transition-colors">
+      
+      {/* Patient Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 sm:mb-6">
         
-        {/* TOP ROW: Basic Patient Info */}
-        <div className="flex flex-wrap items-center justify-between gap-2 xs:gap-3 mb-2 xs:mb-3">
-          
-          {/* LEFT: Gender Icon + Name + Basic Info */}
-          <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-1">
-            {/* Gender Icon */}
-            <div 
-              className={`w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white font-bold text-lg xs:text-xl sm:text-2xl flex-shrink-0 ${genderStyle.color}`}
-            >
-              {genderStyle.symbol}
-            </div>
-            
-            {/* Patient Name & Info */}
-            <div className="min-w-0 flex-1">
-              <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                {patient.first_name} {patient.last_name}
-              </h2>
-              <div className="flex flex-wrap gap-1 xs:gap-1.5 sm:gap-2 text-[10px] xs:text-xs sm:text-sm text-gray-700">
-                <span className="font-medium">MRN: {patient.mrn}</span>
-                <span className="hidden xs:inline">•</span>
-                <span className="whitespace-nowrap">{patient.age}Y {patient.gender}</span>
-              </div>
-            </div>
+        {/* Left: Patient Info */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Avatar */}
+          <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center 
+                         text-white font-bold text-lg sm:text-2xl flex-shrink-0
+                         ${patient.gender === 'Male' ? 'bg-blue-500' : 'bg-pink-500'}
+                         shadow-lg`}>
+            {patient.first_name?.charAt(0)}
           </div>
-
-          {/* RIGHT: Blood Type, SpO2, Risk Score */}
-          <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-3 flex-wrap">
-            
-            {/* Blood Type */}
-            {patient.blood_type && (
-              <div className="bg-red-100 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-lg border border-red-300">
-                <div className="flex items-center gap-1">
-                  <Droplet className="w-3 h-3 xs:w-4 xs:h-4 text-red-600" />
-                  <span className="font-bold text-red-700 text-xs xs:text-sm">{patient.blood_type}</span>
-                </div>
-              </div>
-            )}
-            
-            {/* SpO2 (from session vitals) */}
-            {session?.vitals?.spo2 && (
-              <div className="bg-blue-100 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-lg border border-blue-300">
-                <div className="flex items-center gap-1">
-                  <Activity className="w-3 h-3 xs:w-4 xs:h-4 text-blue-600" />
-                  <span className="font-bold text-blue-700 text-xs xs:text-sm">
-                    SpO2: {session.vitals.spo2}%
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Risk Score */}
-            <div className={`px-2 xs:px-3 sm:px-4 py-1 xs:py-2 rounded-lg flex items-baseline gap-1
-                          ${riskScore >= 5 ? 'bg-red-600' : riskScore >= 3 ? 'bg-orange-600' : 'bg-gray-800'}`}>
-              <span className="text-lg xs:text-xl sm:text-2xl font-bold text-white">{riskScore}</span>
-              <span className="text-[10px] xs:text-xs text-white">Risk</span>
+          
+          {/* Name & Details */}
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1">
+              {patient.first_name} {patient.last_name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-tecnot-light dark:text-gray-300">
+              <span className="font-medium">MRN: {patient.mrn}</span>
+              <span>•</span>
+              <span>{getAgeDisplay()} {patient.gender}</span>
             </div>
           </div>
         </div>
 
-        {/* BOTTOM ROW: Medical Info - 4 Columns (Responsive Grid) */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-1.5 xs:gap-2 sm:gap-3 text-[10px] xs:text-xs sm:text-sm">
+        {/* Right: Blood Type & Risk Badge */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Blood Type */}
+          {patient.blood_type && (
+            <div className="bg-white/20 dark:bg-gray-700/50 backdrop-blur-sm 
+                         px-3 sm:px-4 py-2 rounded-lg border border-white/30 dark:border-gray-600">
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
+                <span className="font-bold text-white text-sm sm:text-base">{patient.blood_type}</span>
+              </div>
+            </div>
+          )}
           
-          {/* Chronic Conditions */}
-          <div className="flex items-start gap-1.5 xs:gap-2 bg-white/50 rounded-lg p-2">
-            <Heart className="w-3 h-3 xs:w-4 xs:h-4 text-red-500 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="font-semibold text-gray-700">Chronics:</span>
-              <span className={`ml-1 ${patient.chronics ? 'text-red-600 font-medium' : 'text-gray-500'} break-words block xs:inline`}>
-                {patient.chronics || 'None'}
-              </span>
-            </div>
-          </div>
-
-          {/* Allergies */}
-          <div className="flex items-start gap-1.5 xs:gap-2 bg-white/50 rounded-lg p-2">
-            <AlertTriangle className="w-3 h-3 xs:w-4 xs:h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="font-semibold text-gray-700">Allergies:</span>
-              <span className={`ml-1 ${patient.allergies ? 'text-orange-600 font-medium' : 'text-gray-500'} break-words block xs:inline`}>
-                {patient.allergies || 'None'}
-              </span>
-            </div>
-          </div>
-
-          {/* Drug Precautions */}
-          <div className="flex items-start gap-1.5 xs:gap-2 bg-white/50 rounded-lg p-2">
-            <Pill className="w-3 h-3 xs:w-4 xs:h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="font-semibold text-gray-700">Precautions:</span>
-              <span className={`ml-1 ${patient.drug_precautions ? 'text-purple-600 font-medium' : 'text-gray-500'} break-words block xs:inline`}>
-                {patient.drug_precautions || 'None'}
-              </span>
-            </div>
-          </div>
-
-          {/* National ID */}
-          <div className="flex items-start gap-1.5 xs:gap-2 bg-white/50 rounded-lg p-2">
-            <Clock className="w-3 h-3 xs:w-4 xs:h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="font-semibold text-gray-700">National ID:</span>
-              <span className="ml-1 text-gray-600 break-all block xs:inline">{patient.national_id || 'N/A'}</span>
-            </div>
-          </div>
+          {/* Risk Level Badge (if available) */}
+          
         </div>
-
-        {/* ADDITIONAL ROW: Full Vitals Display (if session exists) */}
-        {session?.vitals && (
-          <div className="mt-2 xs:mt-3 pt-2 xs:pt-3 border-t border-gray-300">
-            <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-4 h-4 text-tecnot-primary" />
-              <h3 className="text-xs xs:text-sm font-semibold text-gray-900">Current Vitals</h3>
-            </div>
-            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-6 gap-2 xs:gap-3">
-              
-              {/* Height */}
-              {session.vitals.height && (
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <p className="text-[10px] xs:text-xs text-gray-600">Height</p>
-                  <p className="text-sm xs:text-base font-bold text-gray-900">{session.vitals.height} cm</p>
-                </div>
-              )}
-
-              {/* Weight */}
-              {session.vitals.weight && (
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <p className="text-[10px] xs:text-xs text-gray-600">Weight</p>
-                  <p className="text-sm xs:text-base font-bold text-gray-900">{session.vitals.weight} kg</p>
-                </div>
-              )}
-
-              {/* Temperature */}
-              {session.vitals.temperature && (
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <p className="text-[10px] xs:text-xs text-gray-600">Temp</p>
-                  <p className="text-sm xs:text-base font-bold text-gray-900">{session.vitals.temperature} °C</p>
-                </div>
-              )}
-
-              {/* Blood Pressure */}
-              {session.vitals.blood_pressure && (
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <p className="text-[10px] xs:text-xs text-gray-600">BP</p>
-                  <p className="text-sm xs:text-base font-bold text-gray-900">{session.vitals.blood_pressure}</p>
-                </div>
-              )}
-
-              {/* Heart Rate */}
-              {session.vitals.heart_rate && (
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <p className="text-[10px] xs:text-xs text-gray-600">HR</p>
-                  <p className="text-sm xs:text-base font-bold text-gray-900">{session.vitals.heart_rate} bpm</p>
-                </div>
-              )}
-
-              {/* SpO2 */}
-              {session.vitals.spo2 && (
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <p className="text-[10px] xs:text-xs text-gray-600">SpO2</p>
-                  <p className="text-sm xs:text-base font-bold text-gray-900">{session.vitals.spo2}%</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Alert Banners - Chronics, Allergies, Precautions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4">
+        
+        {/* Chronics */}
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm 
+                     rounded-lg p-3 border-l-4 border-red-500 shadow-md transition-colors">
+          <div className="flex items-center gap-2 mb-1">
+            <Heart className="w-4 h-4 text-red-500 flex-shrink-0" />
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Chronics:</span>
+          </div>
+          <p className="text-sm font-bold text-red-600 dark:text-red-400">
+            {patient.chronics || 'None'}
+          </p>
+        </div>
+
+        {/* Allergies */}
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm 
+                     rounded-lg p-3 border-l-4 border-orange-500 shadow-md transition-colors">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Allergies:</span>
+          </div>
+          <p className="text-sm font-bold text-orange-600 dark:text-orange-400">
+            {patient.allergies || 'None'}
+          </p>
+        </div>
+
+        {/* Drug Precautions */}
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm 
+                     rounded-lg p-3 border-l-4 border-purple-500 shadow-md transition-colors">
+          <div className="flex items-center gap-2 mb-1">
+            <Pill className="w-4 h-4 text-purple-500 flex-shrink-0" />
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Precautions:</span>
+          </div>
+          <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
+            {patient.drug_precautions || 'None'}
+          </p>
+        </div>
+
+        {/* National ID */}
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm 
+                     rounded-lg p-3 border-l-4 border-blue-500 shadow-md transition-colors">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">National ID:</span>
+          </div>
+          <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
+            {patient.national_id || 'N/A'}
+          </p>
+        </div>
+      </div>
+
+      {/* Session Vitals (if available) */}
+      {session?.vitals && (
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm 
+                     rounded-lg p-3 sm:p-4 shadow-md transition-colors">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Current Session Vitals
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {session.vitals.height && (
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Height</p>
+                <p className="text-sm font-bold text-tecnot-primary dark:text-tecnot-light">
+                  {session.vitals.height}cm
+                </p>
+              </div>
+            )}
+            {session.vitals.weight && (
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Weight</p>
+                <p className="text-sm font-bold text-tecnot-primary dark:text-tecnot-light">
+                  {session.vitals.weight}kg
+                </p>
+              </div>
+            )}
+            {session.vitals.temperature && (
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Temp</p>
+                <p className="text-sm font-bold text-tecnot-primary dark:text-tecnot-light">
+                  {session.vitals.temperature}°C
+                </p>
+              </div>
+            )}
+            {session.vitals.blood_pressure && (
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">BP</p>
+                <p className="text-sm font-bold text-tecnot-primary dark:text-tecnot-light">
+                  {session.vitals.blood_pressure}
+                </p>
+              </div>
+            )}
+            {session.vitals.heart_rate && (
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">HR</p>
+                <p className="text-sm font-bold text-tecnot-primary dark:text-tecnot-light">
+                  {session.vitals.heart_rate} bpm
+                </p>
+              </div>
+            )}
+            {session.vitals.spo2 && (
+              <div className="text-center">
+                <p className="text-xs text-gray-600 dark:text-gray-400">SpO2</p>
+                <p className="text-sm font-bold text-tecnot-primary dark:text-tecnot-light">
+                  {session.vitals.spo2}%
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
