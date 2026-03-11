@@ -46,8 +46,8 @@ function SoapNote() {
     'MRN005678': {
       id: '2',
       mrn: 'MRN005678',
-      first_name: 'Shimani',
-      last_name: 'Khan',
+      first_name: 'Shiman',
+      last_name: 'Nafaas',
       age: 35,
       gender: 'Male',
       blood_type: 'A+',
@@ -284,7 +284,7 @@ Observe patient for 15 minutes.
 Provide vaccination card.`
         },
         
-        // Aisha Khan sessions
+        // Shimani Khan sessions
         'aisha-1': {
           chief_complaint: 'High blood pressure follow-up',
           history_present_illness: 'Patient with hypertension for 3 years. Here for routine follow-up. Currently on Amlodipine 5mg daily. Checking blood pressure regularly at home - readings around 135-145/85-90.',

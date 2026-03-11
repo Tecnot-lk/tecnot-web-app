@@ -4,6 +4,7 @@ import { Calendar, Users, FileText, Filter, X } from 'lucide-react'
 import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
 
+ 
 function Home() {
   const { user } = useAuth()
 
