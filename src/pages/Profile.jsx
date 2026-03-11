@@ -144,6 +144,7 @@ function Profile() {
                 <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               </label>
             </div>
+            
             <div className="text-center sm:text-left">
               <h2 className="text-2xl font-bold">Dr. {profileData.first_name} {profileData.last_name}</h2>
               <p className="opacity-80 mt-1">{profileData.specialty || 'Doctor'}</p>
