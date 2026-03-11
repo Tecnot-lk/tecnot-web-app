@@ -1,121 +1,97 @@
-// =============================================================================
-// PATIENT SERVICE - API CALLS
-// =============================================================================
-//
-// This service handles all patient-related API calls
-// Uses the centralized API instance from authService for authentication
-//
-// =============================================================================
+// ✅ FULLY INTEGRATED WITH SUPABASE
+import { supabase } from './supabaseClient'
 
-import api from './authService'
-
-// =============================================================================
-// CREATE PATIENT
-// =============================================================================
+// ── CREATE ──────────────────────────────────────────────────────────────────
 export const createPatient = async (patientData) => {
-  const response = await api.post('/patients', patientData)
-  return response.data
+  // Get current logged-in doctor's user id to scope patients
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Auto-generate MRN if not provided
+  const mrn = patientData.mrn || `MRN${Date.now().toString().slice(-6)}`
+
+  const { data, error } = await supabase
+    .from('patients')
+    .insert([{ ...patientData, mrn, doctor_id: user.id }])
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
 }
 
-// =============================================================================
-// GET ALL PATIENTS
-// =============================================================================
-export const getPatients = async (params = {}) => {
-  const response = await api.get('/patients', { params })
-  return response.data
-}
+// ── GET ALL (for current doctor) ─────────────────────────────────────────────
+export const getPatients = async (searchQuery = '') => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
 
-// =============================================================================
-// GET PATIENT BY ID
-// =============================================================================
-export const getPatientById = async (id) => {
-  const response = await api.get(`/patients/${id}`)
-  return response.data
-}
+  let query = supabase
+    .from('patients')
+    .select('*')
+    .eq('doctor_id', user.id)
+    .order('created_at', { ascending: false })
 
-// =============================================================================
-// GET PATIENT BY MRN (Medical Record Number)
-// =============================================================================
-/**
- * Fetches a patient by their Medical Record Number (MRN)
- * This is used in PatientDetail.jsx when viewing patient details
- * 
- * @param {string} mrn - Patient's Medical Record Number (e.g., 'MRN001234')
- * @returns {Promise<Object>} Patient object
- */
-export const getPatientByMRN = async (mrn) => {
-  // Option 1: If your backend has a specific MRN endpoint
-  const response = await api.get(`/patients/mrn/${mrn}`)
-  return response.data
-  
-  // Option 2: If you need to use the regular ID endpoint, uncomment below:
-  // const response = await api.get(`/patients/${mrn}`)
-  // return response.data
-}
-
-// =============================================================================
-// UPDATE PATIENT
-// =============================================================================
-/**
- * Updates patient information
- * Modified to accept either ID or MRN as the identifier
- * 
- * @param {string} identifier - Patient ID or MRN
- * @param {Object} patientData - Updated patient information
- * @returns {Promise<Object>} Updated patient object
- */
-export const updatePatient = async (identifier, patientData) => {
-  // If identifier looks like an MRN (starts with 'MRN'), use MRN endpoint
-  if (identifier && identifier.toString().startsWith('MRN')) {
-    const response = await api.put(`/patients/mrn/${identifier}`, patientData)
-    return response.data
+  if (searchQuery) {
+    query = query.or(
+      `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,mrn.ilike.%${searchQuery}%`
+    )
   }
-  
-  // Otherwise use the ID endpoint
-  const response = await api.put(`/patients/${identifier}`, patientData)
-  return response.data
+
+  const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return { results: data || [], total: data?.length || 0 }
 }
 
-// =============================================================================
-// DELETE PATIENT
-// =============================================================================
+// ── GET BY ID ────────────────────────────────────────────────────────────────
+export const getPatientById = async (id) => {
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// ── GET BY MRN ───────────────────────────────────────────────────────────────
+export const getPatientByMRN = async (mrn) => {
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('mrn', mrn)
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// ── UPDATE ───────────────────────────────────────────────────────────────────
+export const updatePatient = async (id, updates) => {
+  const { data, error } = await supabase
+    .from('patients')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// ── DELETE ───────────────────────────────────────────────────────────────────
 export const deletePatient = async (id) => {
-  const response = await api.delete(`/patients/${id}`)
-  return response.data
+  const { error } = await supabase
+    .from('patients')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw new Error(error.message)
+  return true
 }
 
-// =============================================================================
-// SEARCH PATIENTS
-// =============================================================================
+// ── SEARCH ───────────────────────────────────────────────────────────────────
 export const searchPatients = async (query) => {
-  const response = await api.get('/patients/search', { params: { q: query } })
-  return response.data
-}
-
-// =============================================================================
-// SEARCH BY COMPLAINT
-// =============================================================================
-export const searchByComplaint = async (complaint) => {
-  const response = await api.get('/patients/search/complaint', { params: { q: complaint } })
-  return response.data
-}
-
-// =============================================================================
-// GET PATIENT SESSIONS (for consultation history)
-// =============================================================================
-/**
- * Fetches all consultation sessions for a patient
- * Used in PatientDetail.jsx to show consultation history
- * 
- * @param {string} mrn - Patient's Medical Record Number
- * @returns {Promise<Array>} Array of session objects
- */
-export const getPatientSessions = async (mrn) => {
-  // If your backend has a sessions endpoint for patients by MRN
-  const response = await api.get(`/patients/mrn/${mrn}/sessions`)
-  return response.data
-  
-  // Alternative if using ID:
-  // const response = await api.get(`/patients/${mrn}/sessions`)
-  // return response.data
+  const result = await getPatients(query)
+  return result.results
 }

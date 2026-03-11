@@ -1,93 +1,79 @@
 // src/contexts/AuthContext.jsx
+// ✅ FULLY INTEGRATED WITH SUPABASE AUTH
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import * as authService from '../services/authService'
+import { supabase } from '../services/supabaseClient'
 
 const AuthContext = createContext(null)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
 }
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
-  const [token, setToken] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('tecnot_theme') || 'light'
-  })
+  const [theme, setTheme] = useState(() => localStorage.getItem('tecnot_theme') || 'light')
 
-  // ✅ Apply theme to <html> element whenever it changes
+  // Apply theme
   useEffect(() => {
     const root = document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
+    theme === 'dark' ? root.classList.add('dark') : root.classList.remove('dark')
     localStorage.setItem('tecnot_theme', theme)
   }, [theme])
 
-  // ✅ On app start: load auth from localStorage
+  // Listen to Supabase auth state changes
   useEffect(() => {
-    const storedToken = localStorage.getItem('tecnot_token')
-    const storedUser = localStorage.getItem('tecnot_user')
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user)
+        setIsAuthenticated(true)
+        fetchProfile(session.user.id)
+      }
+      setLoading(false)
+    })
 
-    if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
-      setIsAuthenticated(true)
-    } else {
-      setToken(null)
-      setUser(null)
-      setIsAuthenticated(false)
-    }
+    // Subscribe to future auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+        setIsAuthenticated(true)
+        fetchProfile(session.user.id)
+      } else {
+        setUser(null)
+        setProfile(null)
+        setIsAuthenticated(false)
+      }
+    })
 
-    setLoading(false)
+    return () => subscription.unsubscribe()
   }, [])
 
-  // ✅ MOCK LOGIN (works without backend)
-  const login = async ({ email, password }) => {
-    if (!email || !password) {
-      throw new Error('Email and password are required.')
+  // Fetch doctor profile from profiles table
+  const fetchProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (!error && data) {
+      setProfile(data)
     }
-
-    const storedUser = localStorage.getItem('tecnot_user')
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser)
-      if (parsed.email?.toLowerCase() !== email.toLowerCase()) {
-        throw new Error('No account found with this email. Please sign up.')
-      }
-    }
-
-    const mockToken = 'mock-token'
-    localStorage.setItem('tecnot_token', mockToken)
-
-    if (!storedUser) {
-      const defaultUser = {
-        first_name: 'Ibrahim',
-        last_name: 'Malik',
-        email,
-        phone: '+94 77 999 8888',
-        specialty: 'General Physician',
-        license_number: 'SL12345',
-        clinic_name: 'Ibrahim Medical Center',
-      }
-      localStorage.setItem('tecnot_user', JSON.stringify(defaultUser))
-      setUser(defaultUser)
-    } else {
-      setUser(JSON.parse(storedUser))
-    }
-
-    setToken(mockToken)
-    setIsAuthenticated(true)
   }
 
-  // ✅ MOCK SIGNUP (stores extra fields)
+  // ✅ SUPABASE LOGIN
+  const login = async ({ email, password }) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
+    return data
+  }
+
+  // ✅ SUPABASE SIGNUP — creates auth user + inserts profile row
   const signup = async ({
     first_name,
     last_name,
@@ -98,59 +84,76 @@ export const AuthProvider = ({ children }) => {
     clinic_name,
     password,
   }) => {
-    if (!first_name || !last_name || !email || !phone || !specialty || !license_number || !clinic_name || !password) {
-      throw new Error('Please fill all required fields.')
-    }
-
-    const mockUser = {
-      first_name,
-      last_name,
+    // 1. Create auth user
+    const { data, error } = await supabase.auth.signUp({
       email,
-      phone,
-      specialty,
-      license_number,
-      clinic_name,
+      password,
+      options: {
+        data: { first_name, last_name }, // stored in auth.users metadata
+      },
+    })
+    if (error) throw new Error(error.message)
+
+    // 2. Insert into profiles table
+    if (data.user) {
+      const { error: profileError } = await supabase.from('profiles').insert([{
+        id: data.user.id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        specialty,
+        license_number,
+        clinic_name,
+      }])
+      if (profileError) console.error('Profile insert error:', profileError.message)
     }
 
-    const mockToken = 'mock-token'
-
-    localStorage.setItem('tecnot_token', mockToken)
-    localStorage.setItem('tecnot_user', JSON.stringify(mockUser))
-
-    setToken(mockToken)
-    setUser(mockUser)
-    setIsAuthenticated(true)
+    return data
   }
 
-  // ✅ LOGOUT
-  const logout = () => {
-    localStorage.removeItem('tecnot_token')
-    localStorage.removeItem('tecnot_user')
-    setToken(null)
+  // ✅ SUPABASE LOGOUT
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
+    setProfile(null)
     setIsAuthenticated(false)
   }
 
-  // ✅ OPTIONAL: call backend current user later
-  const getCurrentUser = async () => {
-    return authService.getCurrentUser()
+  // ✅ UPDATE PROFILE
+  const updateProfile = async (updates) => {
+    if (!user) throw new Error('Not authenticated')
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    setProfile(data)
+    return data
+  }
+
+  // ✅ CHANGE PASSWORD
+  const changePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) throw new Error(error.message)
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated,
-        loading,
-        login,
-        signup,
-        logout,
-        getCurrentUser,
-        theme,
-        setTheme,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      isAuthenticated,
+      loading,
+      login,
+      signup,
+      logout,
+      updateProfile,
+      changePassword,
+      theme,
+      setTheme,
+    }}>
       {children}
     </AuthContext.Provider>
   )
