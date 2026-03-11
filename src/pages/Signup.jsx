@@ -1,6 +1,7 @@
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../services/supabaseClient'
 import {
   User,
   Mail,
@@ -57,32 +58,32 @@ function Signup() {
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const specialtyOptions = useMemo(
-    () => [
-      'General Physician',
-      'Cardiology',
-      'Dermatology',
-      'ENT',
-      'Gastroenterology',
-      'Gynecology',
-      'Neurology',
-      'Oncology',
-      'Orthopedics',
-      'Pediatrics',
-      'Psychiatry',
-      'Radiology',
-      'Surgery',
-      'Other',
-    ],
-    []
-  )
+//the specialtyOptions table connection to SuperBase
+const [specialtyOptions, setSpecialtyOptions] = useState([])
+
+useEffect(() => {
+  const fetchSpecialties = async () => {
+    const { data, error } = await supabase
+      .from('specialtyOptions')
+      .select('*')
+
+    if (error) {
+      console.error('Error fetching specialties:', error)
+      return
+    }
+
+    setSpecialtyOptions(data)
+  }
+
+  fetchSpecialties()
+}, [])
 
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
     email: '',
     phone: '', // ✅ E.164 phone from PhoneInput
-    specialty: 'General Physician',
+    specialty: '',
     license_number: '',
     clinic_name: '',
     password: '',
@@ -273,9 +274,10 @@ function Signup() {
                                  transition-smooth text-sm xs:text-base"
                       required
                     >
+                      <option value="" disabled>Select a specialty</option>
                       {specialtyOptions.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
+                        <option key={s.id} value={s.name}>
+                          {s.name}
                         </option>
                       ))}
                     </select>
