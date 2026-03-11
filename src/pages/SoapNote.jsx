@@ -34,7 +34,7 @@ function SoapNote() {
       id: '1',
       mrn: 'MRN001234',
       first_name: 'Malik',
-      last_name: 'Fernando',
+      last_name: 'Hanaffi',
       age: 38,
       gender: 'Male',
       blood_type: 'O+',
@@ -47,7 +47,7 @@ function SoapNote() {
       id: '2',
       mrn: 'MRN005678',
       first_name: 'Shiman',
-      last_name: 'Perera',
+      last_name: 'Nafaas',
       age: 35,
       gender: 'Male',
       blood_type: 'A+',
@@ -59,7 +59,7 @@ function SoapNote() {
     'MRN009012': {
       id: '3',
       mrn: 'MRN009012',
-      first_name: 'Aisha',
+      first_name: 'Shimani',
       last_name: 'Khan',
       age: 42,
       gender: 'Female',
@@ -284,7 +284,7 @@ Observe patient for 15 minutes.
 Provide vaccination card.`
         },
         
-        // Aisha Khan sessions
+        // Shimani Khan sessions
         'aisha-1': {
           chief_complaint: 'High blood pressure follow-up',
           history_present_illness: 'Patient with hypertension for 3 years. Here for routine follow-up. Currently on Amlodipine 5mg daily. Checking blood pressure regularly at home - readings around 135-145/85-90.',
@@ -391,9 +391,9 @@ Reassure patient about good BP control.`
           { id: 'shiman-3', date: '2025-12-15 11:30', chief_complaint: 'Vaccination' },
         ],
         'MRN009012': [
-          { id: 'aisha-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up' },
-          { id: 'aisha-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain' },
-          { id: 'aisha-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment' },
+          { id: 'Shimani-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up' },
+          { id: 'Shimani-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain' },
+          { id: 'Shimani-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment' },
         ]
       }
       
@@ -754,11 +754,7 @@ Reassure patient about good BP control.`
                 Continue This Session
               </button>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] xs:text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  💡 <strong>Tip:</strong> Click "Continue This Session" to add more notes to this consultation.
-                </p>
-              </div>
+              
             </div>
           </div>
         </div>

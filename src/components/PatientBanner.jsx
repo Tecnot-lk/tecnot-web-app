@@ -55,12 +55,7 @@ function PatientBanner({ patient, session }) {
           )}
           
           {/* Risk Level Badge (if available) */}
-          <div className="bg-orange-500 px-3 sm:px-4 py-2 rounded-lg shadow-lg">
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xl sm:text-3xl font-bold text-white">3</span>
-              <span className="text-xs sm:text-sm font-semibold text-white">Risk</span>
-            </div>
-          </div>
+          
         </div>
       </div>
 

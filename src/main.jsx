@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import 'react-phone-number-input/style.css'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 
