@@ -754,7 +754,10 @@ Reassure patient about good BP control.`
                 Continue This Session
               </button>
 
-              
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-[10px] xs:text-xs text-gray-500 dark:text-gray-400 mb-2">
+                </p>
+              </div>
             </div>
           </div>
         </div>
