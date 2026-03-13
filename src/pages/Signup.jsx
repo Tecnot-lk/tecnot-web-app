@@ -1,4 +1,4 @@
-// ✅ SIGNUP — SUPABASE INTEGRATED
+//SIGNUP — SUPABASE INTEGRATED
 import React, { useMemo, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
