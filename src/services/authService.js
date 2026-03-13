@@ -1,6 +1,27 @@
 import axios from 'axios'
 
+//------------------------------------------------------
+//Set to true to skip email verification (testing mode)
+const SKIP_EMAIL_VERIFICATION = true
+//------------------------------------------------------
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo: SKIP_EMAIL_VERIFICATION ? null : window.location.origin,
+    data: {
+      first_name,
+      last_name,
+      phone,
+      specialty,
+      license_number,
+      clinic_name,
+    }
+  }
+})
 
 // Create axios instance
 const api = axios.create({
