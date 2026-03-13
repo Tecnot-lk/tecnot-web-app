@@ -1,7 +1,11 @@
 // src/contexts/AuthContext.jsx
-// ✅ FULLY INTEGRATED WITH SUPABASE AUTH
+//FULLY INTEGRATED WITH SUPABASE AUTH
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
+
+//Set true to skip email verification (testing)
+//Set false for production
+const SKIP_EMAIL_VERIFICATION = true
 
 const AuthContext = createContext(null)
 
@@ -89,7 +93,15 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
       options: {
-        data: { first_name, last_name }, // stored in auth.users metadata
+        emailRedirectTo: SKIP_EMAIL_VERIFICATION ? null : window.location.origin,
+          data: {
+            first_name,
+            last_name,
+            phone,
+            specialty,
+            license_number,
+            clinic_name,
+          }
       },
     })
     if (error) throw new Error(error.message)
