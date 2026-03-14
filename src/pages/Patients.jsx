@@ -84,48 +84,7 @@ function Patients() {
     } finally {
       setLoading(false)
     }
-      console.log('Using dummy data fallback')
       
-      // FALLBACK: Dummy data for frontend development
-      // TODO: Remove in production, show error message instead
-      const dummyData = [
-        { 
-          id: '1', 
-          mrn: 'MRN001234', 
-          first_name: 'Malik', 
-          last_name: 'Hanaffi', 
-          age: 38, 
-          gender: 'Male', 
-          mobile_number: '+94771234567', 
-          national_id: '851234567V' 
-        },
-        { 
-          id: '2', 
-          mrn: 'MRN005678', 
-          first_name: 'Shiman', 
-          last_name: 'Nafaas', 
-          age: 35, 
-          gender: 'Male', 
-          mobile_number: '+94712345678', 
-          national_id: '901234567V' 
-        },
-        { 
-          id: '3', 
-          mrn: 'MRN009012', 
-          first_name: 'Shimani', 
-          last_name: 'Khan', 
-          age: 42, 
-          gender: 'Female', 
-          mobile_number: '+94763456789', 
-          national_id: '821234567V' 
-        },
-      ]
-      console.log('Dummy patients loaded:', dummyData)
-      setPatients(dummyData)
-      
-    } finally {
-      setLoading(false)
-    }
   }
 
   // ==========================================================================
