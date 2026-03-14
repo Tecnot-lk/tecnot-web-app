@@ -97,12 +97,12 @@ function AddPatientModal({ onClose, onSuccess }) {
       }
       
       // Call backend API
-      const createdPatient = await patientService.createPatient(patientData)
+      await patientService.createPatient(patientData)
       
       // Success!
       alert('Patient added successfully!')
       resetForm()
-      onSuccess(createdPatient)
+      onSuccess()
       
     } catch (error) {
       console.error('Error adding patient:', error)
