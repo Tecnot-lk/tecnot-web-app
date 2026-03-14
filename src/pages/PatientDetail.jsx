@@ -211,10 +211,9 @@ function PatientDetail() {
       }
       
       // Call backend API to update patient
-      await patientService.updatePatient(patient.mrn, patientData)
-      
-      // Success! Update local state
-      setPatient(patientData)
+      const updatedPatient = await patientService.updatePatient(patient.id, patientData)
+
+      setPatient(updatedPatient)
       alert('Patient information updated successfully!')
       setShowEditModal(false)
       
