@@ -28,6 +28,7 @@ import PatientBanner from '../components/PatientBanner'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import * as patientService from '../services/patientService'
+import * as sessionService from '../services/sessionService'
 
 function PatientDetail() {
   const { code } = useParams() // This is the MRN from the URL
@@ -51,10 +52,9 @@ function PatientDetail() {
       // Try to fetch patient from API using the MRN
       const data = await patientService.getPatientByMRN(code)
       setPatient(data)
-      
-      // Fetch sessions for this patient
-      // const sessionsData = await patientService.getPatientSessions(code)
-      // setSessions(sessionsData)
+
+      const sessionsData = await sessionService.getSessionsByPatient(data.id)
+      setSessions(sessionsData)
       
     } catch (error) {
       console.error('Error fetching patient:', error)
@@ -139,7 +139,6 @@ function PatientDetail() {
         }
       }
       
-      setPatient(dummyPatients[code] || dummyPatients['MRN001234'])
     } finally {
       setLoading(false)
     }
