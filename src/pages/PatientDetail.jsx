@@ -28,6 +28,7 @@ import PatientBanner from '../components/PatientBanner'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import * as patientService from '../services/patientService'
+import * as sessionService from '../services/sessionService'
 
 function PatientDetail() {
   const { code } = useParams() // This is the MRN from the URL
@@ -51,95 +52,15 @@ function PatientDetail() {
       // Try to fetch patient from API using the MRN
       const data = await patientService.getPatientByMRN(code)
       setPatient(data)
-      
-      // Fetch sessions for this patient
-      // const sessionsData = await patientService.getPatientSessions(code)
-      // setSessions(sessionsData)
+
+      const sessionsData = await sessionService.getSessionsByPatient(data.id)
+      setSessions(sessionsData)
       
     } catch (error) {
       console.error('Error fetching patient:', error)
       
-      // Patient-specific dummy sessions - CORRECTED MAPPING
-      const dummySessions = {
-        'MRN001234': [ // Malik Fernando
-          { id: 'malik-1', date: '2026-02-05 14:30', chief_complaint: 'Severe headache', status: 'completed' },
-          { id: 'malik-2', date: '2026-01-15 10:20', chief_complaint: 'Follow-up diabetes', status: 'completed' },
-          { id: 'malik-3', date: '2025-12-20 16:45', chief_complaint: 'Leg pain', status: 'completed' },
-        ],
-        'MRN005678': [ // Shiman Perera
-          { id: 'shiman-1', date: '2026-02-03 09:15', chief_complaint: 'Annual health checkup', status: 'completed' },
-          { id: 'shiman-2', date: '2026-01-20 14:00', chief_complaint: 'Flu symptoms', status: 'completed' },
-          { id: 'shiman-3', date: '2025-12-15 11:30', chief_complaint: 'Vaccination', status: 'completed' },
-        ],
-        'MRN009012': [ // Aisha Khan
-          { id: 'aisha-1', date: '2026-02-01 16:00', chief_complaint: 'High blood pressure follow-up', status: 'completed' },
-          { id: 'aisha-2', date: '2026-01-10 10:45', chief_complaint: 'Chest pain', status: 'completed' },
-          { id: 'aisha-3', date: '2025-12-05 13:20', chief_complaint: 'Medication adjustment', status: 'completed' },
-        ]
-      }
+     
       
-      // Set sessions based on current patient's MRN
-      setSessions(dummySessions[code] || [])
-      
-      // Using dummy data based on MRN
-      const dummyPatients = {
-        'MRN001234': {
-          id: '1',
-          mrn: 'MRN001234',
-          first_name: 'Malik',
-          last_name: 'Hanaffi',
-          age: 38,
-          gender: 'Male',
-          blood_type: 'O+',
-          chronics: 'Diabetes Type 2',
-          allergies: 'Penicillin',
-          drug_precautions: 'Avoid NSAIDs',
-          national_id: '851234567V',
-          mobile_number: '+94 77 123 4567',
-          email: 'malik@example.com',
-          nationality: 'Sri Lankan',
-          preferred_language: 'Sinhala',
-          date_of_birth: '1987-05-15'
-        },
-        'MRN005678': {
-          id: '2',
-          mrn: 'MRN005678',
-          first_name: 'Shiman',
-          last_name: 'Nafaas',
-          age: 35,
-          gender: 'Male',
-          blood_type: 'A+',
-          chronics: 'None',
-          allergies: 'None',
-          drug_precautions: 'None',
-          national_id: '901234567V',
-          mobile_number: '+94 71 234 5678',
-          email: 'shiman@example.com',
-          nationality: 'Sri Lankan',
-          preferred_language: 'English',
-          date_of_birth: '1990-08-20'
-        },
-        'MRN009012': {
-          id: '3',
-          mrn: 'MRN009012',
-          first_name: 'Shimani',
-          last_name: 'Khan',
-          age: 42,
-          gender: 'Female',
-          blood_type: 'B+',
-          chronics: 'Hypertension',
-          allergies: 'Sulfa drugs',
-          drug_precautions: 'Monitor blood pressure',
-          national_id: '821234567V',
-          mobile_number: '+94 76 345 6789',
-          email: 'aisha@example.com',
-          nationality: 'Sri Lankan',
-          preferred_language: 'Tamil',
-          date_of_birth: '1983-11-10'
-        }
-      }
-      
-      setPatient(dummyPatients[code] || dummyPatients['MRN001234'])
     } finally {
       setLoading(false)
     }
@@ -211,10 +132,9 @@ function PatientDetail() {
       }
       
       // Call backend API to update patient
-      await patientService.updatePatient(patient.mrn, patientData)
-      
-      // Success! Update local state
-      setPatient(patientData)
+      const updatedPatient = await patientService.updatePatient(patient.id, patientData)
+
+      setPatient(updatedPatient)
       alert('Patient information updated successfully!')
       setShowEditModal(false)
       

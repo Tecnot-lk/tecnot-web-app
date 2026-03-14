@@ -3,29 +3,33 @@ import { supabase } from './supabaseClient'
 
 // ── CREATE ──────────────────────────────────────────────────────────────────
 export const createPatient = async (patientData) => {
-  // Get current logged-in doctor's user id to scope patients
   const { data: { session } } = await supabase.auth.getSession()
   const userId = session?.user?.id
+
+  let currentDoctorId
 
   if (!userId) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Authentication session not found.')
-    var currentDoctorId = user.id
+    currentDoctorId = user.id
   } else {
-    var currentDoctorId = userId
+    currentDoctorId = userId
   }
+  
 
-  // Auto-generate MRN if not provided
   const mrn = patientData.mrn || `MRN${Date.now().toString().slice(-6)}`
 
   const { data, error } = await supabase
     .from('patients')
     .insert([{ ...patientData, mrn, doctor_id: currentDoctorId }])
-    .select().single()
+    .select()
+    .single()
 
   if (error) throw new Error(error.message)
   return data
 }
+
+  
 
 // ── GET ALL (for current doctor) ─────────────────────────────────────────────
 export const getPatients = async (searchQuery = '') => {
