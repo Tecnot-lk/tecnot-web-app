@@ -21,7 +21,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, User, Plus, X, Loader2 } from 'lucide-react'
+import { Search, User, Plus, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
 import AddPatientModal from '../components/AddPatientModal'
 import 'react-datepicker/dist/react-datepicker.css'
