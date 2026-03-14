@@ -80,6 +80,10 @@ function Patients() {
       
     } catch (error) {
       console.error('Error fetching patients:', error)
+      setPatients([])
+    } finally {
+      setLoading(false)
+    }
       console.log('Using dummy data fallback')
       
       // FALLBACK: Dummy data for frontend development
