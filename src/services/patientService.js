@@ -15,6 +15,15 @@ export const createPatient = async (patientData) => {
     var currentDoctorId = userId
   }
 
+  console.log('Session user id: ', userId)
+  console.log('Resolved doctor id:', currentDoctorId)
+
+  const mrn = patientData.mrn || 'MRN${Date.now().toString().slice(-6)}'
+
+  console.log('Patient insert payload:', { ...patientData, mrn, doctor_id: currentDoctorId })
+
+  const { data, error } = await supabase
+
   // Auto-generate MRN if not provided
   const mrn = patientData.mrn || `MRN${Date.now().toString().slice(-6)}`
 
