@@ -32,17 +32,7 @@ export const createPatient = async (patientData) => {
   return data
 }
 
-  // Auto-generate MRN if not provided
-  const mrn = patientData.mrn || `MRN${Date.now().toString().slice(-6)}`
-
-  const { data, error } = await supabase
-    .from('patients')
-    .insert([{ ...patientData, mrn, doctor_id: currentDoctorId }])
-    .select().single()
-
-  if (error) throw new Error(error.message)
-  return data
-}
+  
 
 // ── GET ALL (for current doctor) ─────────────────────────────────────────────
 export const getPatients = async (searchQuery = '') => {
