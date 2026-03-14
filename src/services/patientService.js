@@ -16,11 +16,8 @@ export const createPatient = async (patientData) => {
     currentDoctorId = userId
   }
   
-  console.log('Session user id:', userId)
-  console.log('Resolved doctor id:', currentDoctorId)
 
-  const mrn = patientData.mrn || 'MRN${Date.now().toString().slice(-6)}'
-  console.log('Patient insert payload:', { ...patientData, mrn, doctor_id: currentDoctorId })
+  const mrn = patientData.mrn || `MRN${Date.now().toString().slice(-6)}`
 
   const { data, error } = await supabase
     .from('patients')
