@@ -106,7 +106,7 @@ function AddPatientModal({ onClose, onSuccess }) {
       
     } catch (error) {
       console.error('Error adding patient:', error)
-      alert('Failed to add patient. Please try again.')
+      alert('Failed to add patient: ${error.message}')
     }
     }
 
