@@ -78,8 +78,7 @@ function PatientDetail() {
         ]
       }
       
-      // Set sessions based on current patient's MRN
-      setSessions(dummySessions[code] || [])
+      
       
       // Using dummy data based on MRN
       const dummyPatients = {
