@@ -75,7 +75,7 @@ function Home() {
               </button>
             </div>
 
-            {/* ✅ Compact Filter Panel */}
+            {/* Compact Filter Panel */}
             {showFilters && (
               <div className="bg-white dark:bg-gray-800 rounded-lg 
                              p-4 shadow-sm border border-gray-200 dark:border-gray-700 

@@ -12,7 +12,7 @@ import {
   X
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import logo from '../assets/logos.png' // ✅ Your real logo
+import logo from '../assets/logos.png' // Your real logo
 
 function Sidebar() {
   const location = useLocation()
@@ -68,7 +68,7 @@ function Sidebar() {
           overflow-y-auto
         `}
       >
-        {/* ✅ LOGO SECTION (White Glass Box) */}
+        {/* LOGO SECTION (White Glass Box) */}
         <div className="p-6 border-b border-white/20 dark:border-white/10">
           <Link
             to="/"

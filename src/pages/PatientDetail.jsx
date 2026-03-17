@@ -10,13 +10,13 @@
 // - Download SOAP notes as PDF
 //
 // FEATURES IMPLEMENTED:
-// - ✅ Edit Patient Info Modal
-// - ✅ Pre-populated form fields
-// - ✅ Date of birth picker with auto-age calculation
-// - ✅ Full field validation
-// - ✅ Save changes to backend
-// - ✅ Loading states
-// - ✅ Dark mode support
+// - Edit Patient Info Modal
+// - Pre-populated form fields
+// - Date of birth picker with auto-age calculation
+// - Full field validation
+// - Save changes to backend
+// - Loading states
+// - Dark mode support
 //
 // =============================================================================
 
