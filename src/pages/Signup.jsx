@@ -6,6 +6,7 @@ import { User, Mail, Building2, BadgeCheck, Lock, Eye, EyeOff, Loader2, Stethosc
 import logo from '../assets/logos.png'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
+import { supabase } from '../services/supabaseClient'
 
 function TextInput({ label, icon: Icon, className = '', ...props }) {
   return (
@@ -29,6 +30,10 @@ function TextInput({ label, icon: Icon, className = '', ...props }) {
 }
 
 function Signup() {
+  //OTP
+  const [otp, setOtp] = useState('')
+  const [verifying, setVerifying] = useState(false)
+
   const navigate = useNavigate()
   const { signup } = useAuth()
 
@@ -82,29 +87,95 @@ function Signup() {
       setLoading(false)
     }
   }
-
-  // ✅ Email confirmation success screen
-  if (signedUp) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 max-w-md w-full text-center">
-          <img src={logo} alt="Tecnot" className="h-20 w-auto object-contain mx-auto mb-6" />
-          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            We sent a confirmation link to <strong>{form.email}</strong>. Click the link to verify your account, then sign in.
-          </p>
-          <Link to="/login" className="block w-full py-3 rounded-xl font-semibold bg-tecnot-primary text-white hover:bg-tecnot-dark transition-all text-center">
-            Go to Sign In
-          </Link>
-        </div>
-      </div>
-    )
+  
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    if (otp.length !== 6) { setError('Please enter the 6-digit code.'); return }
+    setVerifying(true)
+    setError('')
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: form.email,
+        token: otp,
+        type: 'email'
+      })
+      if (error) throw new Error(error.message)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err?.message || 'Invalid code. Please try again.')
+    } finally {
+      setVerifying(false)
+    }
   }
+
+  const handleResendOtp = async () => {
+    setError('')
+    try {
+      await supabase.auth.signInWithOtp({
+        email: form.email,
+        options: { shouldCreateUser: false }
+      })
+      alert('New code sent!')
+    } catch (err) {
+      setError('Failed to resend code.')
+    }
+  }
+
+  //Email confirmation success screen
+  if (signedUp) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 max-w-md w-full text-center">
+        <img src={logo} alt="Tecnot" className="h-20 w-auto object-contain mx-auto mb-6" />
+        <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4">
+          <Mail className="w-8 h-8 text-blue-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Enter verification code</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          We sent a 6-digit code to <strong>{form.email}</strong>
+        </p>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-200 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <input
+            type="text"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+            placeholder="000000"
+            className="w-full text-center text-3xl font-bold tracking-[0.5em] px-4 py-4 
+                       border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none
+                       focus:border-tecnot-primary dark:focus:border-tecnot-light
+                       focus:ring-4 focus:ring-tecnot-primary/20
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          />
+          <button
+            type="submit"
+            disabled={verifying || otp.length !== 6}
+            className="w-full py-3 rounded-lg font-semibold bg-tecnot-primary text-white 
+                       hover:bg-tecnot-dark transition-smooth shadow-lg 
+                       flex items-center justify-center gap-2 disabled:opacity-70"
+          >
+            {verifying ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+            {verifying ? 'Verifying...' : 'Verify Account'}
+          </button>
+        </form>
+
+        <button
+          onClick={handleResendOtp}
+          className="mt-4 text-sm text-tecnot-primary dark:text-tecnot-light hover:underline"
+        >
+          Didn't receive a code? Resend
+        </button>
+      </div>
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center px-4 py-10 bg-gray-50 dark:bg-gray-900 transition-colors">

@@ -1,4 +1,4 @@
-// LOGIN — SUPABASE INTEGRATED
+// LOGIN - SUPABASE INTEGRATED
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
