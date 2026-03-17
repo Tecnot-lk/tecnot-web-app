@@ -1,35 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function Header({ title, subtitle }) {
-  const { user } = useAuth()
-  const [profilePic, setProfilePic] = useState(null)
-
-  // Load picture from localStorage and listen for changes
-  useEffect(() => {
-    const loadPic = () => {
-      const savedPic = localStorage.getItem('doctor_profile_pic');
-      setProfilePic(savedPic);
-    };
-
-    loadPic();
-
-    window.addEventListener('profilePicUpdated', loadPic);
-    
-    window.addEventListener('storage', loadPic);
-
-    return () => {
-      window.removeEventListener('profilePicUpdated', loadPic);
-      window.removeEventListener('storage', loadPic);
-    };
-  }, []);
+  const { user, profile } = useAuth()
 
   // Get user initials (Fallback if no image exists)
   const getInitials = () => {
     if (!user) return 'U'
-    const firstName = user.first_name || user.email?.charAt(0) || 'U'
+    const firstName = profile?.first_name || user.email?.charAt(0) || 'U'
     return firstName.charAt(0).toUpperCase()
   }
 
@@ -68,18 +48,18 @@ function Header({ title, subtitle }) {
           >
             <div className="hidden md:block text-right">
               <p className="text-xs xs:text-sm font-semibold text-gray-900 dark:text-white">
-                {user?.first_name ? `Dr. ${user.first_name}` : 'Doctor'}
+                {profile?.first_name ? `Dr. ${profile.first_name}` : 'Doctor'}
               </p>
               <p className="text-[10px] xs:text-xs text-gray-500 dark:text-gray-400">
-                {user?.specialty || 'General Physician'}
+                {profile?.specialty || 'General Physician'}
               </p>
             </div>
 
             {/* Avatar Container */}
             <div className="w-8 h-8 xs:w-10 xs:h-10 bg-tecnot-primary dark:bg-tecnot-light rounded-full flex items-center justify-center text-white dark:text-gray-900 font-bold text-sm xs:text-base overflow-hidden border border-gray-200 dark:border-gray-700">
-              {profilePic ? (
+              {profile?.avatar_url ? (
                 <img 
-                  src={profilePic} 
+                  src={profile.avatar_url} 
                   alt="Doctor" 
                   className="w-full h-full object-cover" 
                 />
