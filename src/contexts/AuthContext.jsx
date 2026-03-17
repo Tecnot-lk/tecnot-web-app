@@ -5,7 +5,7 @@ import { supabase } from '../services/supabaseClient'
 
 //Set true to skip email verification (testing)
 //Set false for production
-const SKIP_EMAIL_VERIFICATION = true
+const SKIP_EMAIL_VERIFICATION = false
 
 const AuthContext = createContext(null)
 
