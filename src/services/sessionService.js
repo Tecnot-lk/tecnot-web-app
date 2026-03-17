@@ -1,4 +1,4 @@
-// ✅ FULLY INTEGRATED WITH SUPABASE
+// FULLY INTEGRATED WITH SUPABASE
 import { supabase } from './supabaseClient'
 
 // ── CREATE SESSION ───────────────────────────────────────────────────────────

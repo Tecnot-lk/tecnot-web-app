@@ -1,4 +1,4 @@
-// ✅ PROFILE PAGE — FULLY SUPABASE INTEGRATED
+// PROFILE PAGE - FULLY SUPABASE INTEGRATED
 import React, { useState, useEffect } from 'react'
 import { User, Mail, Phone, Stethoscope, Save, Camera, Loader2, Lock } from 'lucide-react'
 import Header from '../components/Header'

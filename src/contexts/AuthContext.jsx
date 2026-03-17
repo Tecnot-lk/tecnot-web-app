@@ -70,14 +70,14 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // ✅ SUPABASE LOGIN
+  // SUPABASE LOGIN
   const login = async ({ email, password }) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw new Error(error.message)
     return data
   }
 
-  // ✅ SUPABASE SIGNUP — creates auth user + inserts profile row
+  // SUPABASE SIGNUP - creates auth user + inserts profile row
   const signup = async ({
     first_name,
     last_name,
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  // ✅ SUPABASE LOGOUT
+  // SUPABASE LOGOUT
   const logout = async () => {
     await supabase.auth.signOut()
     setUser(null)
@@ -140,7 +140,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false)
   }
 
-  // ✅ UPDATE PROFILE
+  // UPDATE PROFILE
   const updateProfile = async (updates) => {
     if (!user) throw new Error('Not authenticated')
     const { data, error } = await supabase
@@ -154,7 +154,7 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  // ✅ CHANGE PASSWORD
+  // CHANGE PASSWORD
   const changePassword = async (newPassword) => {
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw new Error(error.message)
