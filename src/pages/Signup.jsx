@@ -94,7 +94,7 @@ function Signup() {
     setVerifying(true)
     setError('')
     try {
-      const { error } = await supabase.verifyOtp({
+      const { error } = await supabase.auth.verifyOtp({
         email: form.email,
         token: otp,
         type: 'email'
