@@ -106,6 +106,14 @@ export const AuthProvider = ({ children }) => {
     })
     if (error) throw new Error(error.message)
 
+    // Send OTP to email for verification
+    if (!SKIP_EMAIL_VERIFICATION) {
+      await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false }
+      })
+    }
+
     // 2. Insert into profiles table
     if (data.user) {
       const { error: profileError } = await supabase.from('profiles').insert([{
