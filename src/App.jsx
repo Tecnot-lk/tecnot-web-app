@@ -17,6 +17,7 @@ import SoapNote from './pages/SoapNote'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Notifications from './pages/Notifications'
+import CompleteProfile from './pages/CompleteProfile'
 
 // NOTE: No changes needed here for Google OAuth.
 // Supabase automatically exchanges the OAuth code on redirect and fires
@@ -62,6 +63,8 @@ function App() {
             <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+            <Route path="/complete-profile" element={<PrivateRoute><CompleteProfile /></PrivateRoute>} />
+            <Route path="/complete-profile" element={<PrivateRoute><CompleteProfile /></PrivateRoute>} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
