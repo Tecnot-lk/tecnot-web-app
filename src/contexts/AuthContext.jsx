@@ -135,6 +135,7 @@ export const AuthProvider = ({ children }) => {
   // SUPABASE LOGOUT
   const logout = async () => {
     await supabase.auth.signOut()
+    localStorage.removeItem('doctor_profile_pic')
     setUser(null)
     setProfile(null)
     setIsAuthenticated(false)
