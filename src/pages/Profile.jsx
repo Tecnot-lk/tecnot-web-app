@@ -229,14 +229,14 @@ function Profile() {
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Personal Information</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { label: 'First Name', key: 'first_name', icon: User },
-                { label: 'Last Name', key: 'last_name', icon: User },
-                { label: 'Email', key: 'email', icon: Mail, disabled: true },
-                { label: 'Phone', key: 'phone', icon: Phone },
-                { label: 'Specialty', key: 'specialty', icon: Stethoscope },
-                { label: 'License Number', key: 'license_number', icon: User },
-                { label: 'Clinic Name', key: 'clinic_name', icon: User },
-              ].map(({ label, key, icon: Icon, disabled }) => (
+                { label: 'First Name', key: 'first_name', icon: User, placeholder: 'e.g. John' },
+                { label: 'Last Name', key: 'last_name', icon: User, placeholder: 'e.g. Smith' },
+                { label: 'Email', key: 'email', icon: Mail, placeholder: 'e.g. john@example.com', disabled: true },
+                { label: 'Phone', key: 'phone', icon: Phone, placeholder: 'e.g. +1 234 567 8900' },
+                { label: 'Specialty', key: 'specialty', icon: Stethoscope, placeholder: 'e.g. Cardiology' },
+                { label: 'License Number', key: 'license_number', icon: User, placeholder: 'e.g. LIC-123456' },
+                { label: 'Clinic Name', key: 'clinic_name', icon: User, placeholder: 'e.g. City Health Clinic' },
+              ].map(({ label, key, icon: Icon, placeholder, disabled }) => (
                 <div key={key}>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label>
                   <div className="relative">
@@ -246,8 +246,10 @@ function Profile() {
                       value={profileData[key]}
                       onChange={(e) => setProfileData(prev => ({ ...prev, [key]: e.target.value }))}
                       disabled={disabled}
+                      placeholder={placeholder}
                       className={`w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none
+                                 placeholder:text-gray-400 dark:placeholder:text-gray-400 placeholder:font-normal
                                  focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all
                                  ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
                     />
