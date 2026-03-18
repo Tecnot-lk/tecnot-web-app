@@ -1,28 +1,10 @@
 // =============================================================================
 // PATIENT DETAIL PAGE - COMPLETE UPDATED VERSION
 // =============================================================================
-//
-// PURPOSE:
-// - View detailed patient information
-// - Edit patient information
-// - View consultation history
-// - Start new sessions
-// - Download SOAP notes as PDF
-//
-// FEATURES IMPLEMENTED:
-// - Edit Patient Info Modal
-// - Pre-populated form fields
-// - Date of birth picker with auto-age calculation
-// - Full field validation
-// - Save changes to backend
-// - Loading states
-// - Dark mode support
-//
-// =============================================================================
 
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Calendar, FileText, Phone, Mail, Loader2, Download, X } from 'lucide-react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Calendar, FileText, Phone, Mail, Loader2, Download, X, Trash2 } from 'lucide-react'
 import Header from '../components/Header'
 import PatientBanner from '../components/PatientBanner'
 import DatePicker from 'react-datepicker'
@@ -31,16 +13,21 @@ import * as patientService from '../services/patientService'
 import * as sessionService from '../services/sessionService'
 
 function PatientDetail() {
-  const { code } = useParams() // This is the MRN from the URL
+  const { code } = useParams()
+  const navigate = useNavigate()
   const [patient, setPatient] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sessions, setSessions] = useState([])
-  
+
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false)
   const [editedPatient, setEditedPatient] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
   const [saving, setSaving] = useState(false)
+
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchPatientData()
@@ -49,98 +36,58 @@ function PatientDetail() {
   const fetchPatientData = async () => {
     try {
       setLoading(true)
-      // Try to fetch patient from API using the MRN
       const data = await patientService.getPatientByMRN(code)
       setPatient(data)
-
       const sessionsData = await sessionService.getSessionsByPatient(data.id)
       setSessions(sessionsData)
-      
     } catch (error) {
       console.error('Error fetching patient:', error)
-      
-     
-      
     } finally {
       setLoading(false)
     }
   }
 
-  // ======================================================================
-  // FUNCTION: OPEN EDIT MODAL
-  // ==========================================================================
   const handleEditPatient = () => {
-    // Create a copy of the patient data for editing
     setEditedPatient({ ...patient })
-    
-    // Parse and set the date of birth if available
     if (patient.date_of_birth) {
       setSelectedDate(new Date(patient.date_of_birth))
     } else {
       setSelectedDate(null)
     }
-    
     setShowEditModal(true)
   }
 
-  // ==========================================================================
-  // FUNCTION: CALCULATE AGE FROM DOB
-  // ==========================================================================
   const calculateAge = (dob) => {
     if (!dob) return ''
-    
     const birth = new Date(dob)
     const today = new Date()
     let age = today.getFullYear() - birth.getFullYear()
     const m = today.getMonth() - birth.getMonth()
-    
-    // Adjust if birthday hasn't occurred this year
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--
-    }
-    
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
     return age < 0 ? '' : String(age)
   }
 
-  // ==========================================================================
-  // FUNCTION: HANDLE DOB CHANGE
-  // ==========================================================================
   const handleDobChange = (date) => {
     setSelectedDate(date)
     const computedAge = calculateAge(date)
     setEditedPatient(prev => ({ ...prev, age: computedAge }))
   }
 
-  // ==========================================================================
-  // FUNCTION: SAVE EDITED PATIENT
-  // ==========================================================================
   const handleSavePatient = async () => {
-    // Validate required fields
     if (!editedPatient.first_name || !editedPatient.last_name) {
       alert('Please fill in patient name')
       return
     }
-
     try {
       setSaving(true)
-      
-      // Prepare patient data
       const patientData = {
         ...editedPatient,
-        // Format date for backend (YYYY-MM-DD)
         date_of_birth: selectedDate ? selectedDate.toISOString().split('T')[0] : null
       }
-      
-      // Call backend API to update patient
       const updatedPatient = await patientService.updatePatient(patient.id, patientData)
-
       setPatient(updatedPatient)
       alert('Patient information updated successfully!')
       setShowEditModal(false)
-      
-      // Optionally refresh data from backend
-      // fetchPatientData()
-      
     } catch (error) {
       console.error('Error updating patient:', error)
       alert('Failed to update patient. Please try again.')
@@ -149,20 +96,32 @@ function PatientDetail() {
     }
   }
 
-  // ==========================================================================
-  // FUNCTION: CANCEL EDIT
-  // ==========================================================================
   const handleCancelEdit = () => {
     setShowEditModal(false)
     setEditedPatient(null)
     setSelectedDate(null)
   }
 
+  // ==========================================================================
+  // FUNCTION: DELETE PATIENT
+  // ==========================================================================
+  const handleDeletePatient = async () => {
+    try {
+      setDeleting(true)
+      await patientService.deletePatient(patient.id)
+      setShowDeleteModal(false)
+      navigate('/patients')
+    } catch (error) {
+      console.error('Error deleting patient:', error)
+      alert('Failed to delete patient. Please try again.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const handleShareAsPDF = (sessionId, chiefComplaint) => {
     console.log('Generating PDF for session:', sessionId)
     alert(`Generating PDF for: ${chiefComplaint}\n\nThis will create and download the SOAP note as a PDF file.`)
-    // TODO: Implement actual PDF generation
-    // You can use libraries like jsPDF or html2pdf.js
   }
 
   if (loading) {
@@ -197,13 +156,11 @@ function PatientDetail() {
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="Patient Details" subtitle={`${patient.first_name} ${patient.last_name}`} />
-      
-      {/* Patient Banner */}
+
       <PatientBanner patient={patient} />
 
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
-        
-        {/* Back Button */}
+
         <Link
           to="/patients"
           className="inline-flex items-center gap-2 text-tecnot-primary dark:text-tecnot-light hover:text-tecnot-dark dark:hover:text-tecnot-primary
@@ -214,14 +171,14 @@ function PatientDetail() {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          
+
           {/* LEFT: Patient Info + Actions */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-            
+
             {/* Patient Info Card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 xs:p-5 sm:p-6 transition-colors">
               <h3 className="font-bold text-gray-900 dark:text-white mb-4 text-base xs:text-lg">Patient Information</h3>
-              
+
               <div className="space-y-3 text-xs xs:text-sm">
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
@@ -261,7 +218,7 @@ function PatientDetail() {
               <Link
                 to="/new-session"
                 className="w-full flex items-center justify-center gap-2 bg-tecnot-primary dark:bg-tecnot-light
-                         text-white dark:text-gray-900 px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
+                         text-white dark:text-gray-900 px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium
                          hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg text-sm xs:text-base"
               >
                 <Calendar className="w-5 h-5" />
@@ -272,10 +229,22 @@ function PatientDetail() {
                 onClick={handleEditPatient}
                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800
                          border-2 border-tecnot-primary dark:border-tecnot-light text-tecnot-primary dark:text-tecnot-light
-                         px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium 
+                         px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium
                          hover:bg-tecnot-light dark:hover:bg-gray-700 transition-smooth text-sm xs:text-base"
               >
                 Edit Patient Info
+              </button>
+
+              {/* Remove Patient Button */}
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800
+                         border-2 border-red-300 dark:border-red-700 text-red-500 dark:text-red-400
+                         px-4 xs:px-6 py-3 xs:py-4 rounded-lg font-medium
+                         hover:bg-red-50 dark:hover:bg-red-900/20 transition-smooth text-sm xs:text-base"
+              >
+                <Trash2 className="w-5 h-5" />
+                Remove Patient
               </button>
             </div>
           </div>
@@ -297,7 +266,7 @@ function PatientDetail() {
                   {sessions.map((session) => (
                     <div
                       key={session.id}
-                      className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 xs:p-4 sm:p-5 
+                      className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 xs:p-4 sm:p-5
                                hover:border-tecnot-primary dark:hover:border-tecnot-light transition-all duration-200
                                hover:shadow-md"
                     >
@@ -316,7 +285,7 @@ function PatientDetail() {
                             })}
                           </p>
                         </div>
-                        <span className="inline-flex items-center px-2.5 xs:px-3 py-1 rounded-full 
+                        <span className="inline-flex items-center px-2.5 xs:px-3 py-1 rounded-full
                                        text-[10px] xs:text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400
                                        self-start xs:self-auto">
                           {session.status}
@@ -326,8 +295,8 @@ function PatientDetail() {
                       <div className="flex flex-col xs:flex-row gap-2 xs:gap-3">
                         <Link
                           to={`/soap-note/${session.id}`}
-                          className="flex-1 flex items-center justify-center gap-2 
-                                   bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 px-3 xs:px-4 py-2 xs:py-2.5 
+                          className="flex-1 flex items-center justify-center gap-2
+                                   bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 px-3 xs:px-4 py-2 xs:py-2.5
                                    rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
                                    transition-smooth text-xs xs:text-sm"
                         >
@@ -336,9 +305,9 @@ function PatientDetail() {
                         </Link>
                         <button
                           onClick={() => handleShareAsPDF(session.id, session.chief_complaint)}
-                          className="flex-1 flex items-center justify-center gap-2 
+                          className="flex-1 flex items-center justify-center gap-2
                                    bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300
-                                   px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg font-medium 
+                                   px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg font-medium
                                    hover:bg-gray-50 dark:hover:bg-gray-600 transition-smooth text-xs xs:text-sm"
                         >
                           <Download className="w-4 h-4" />
@@ -362,16 +331,12 @@ function PatientDetail() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
           onClick={handleCancelEdit}
         >
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-
-          {/* Modal */}
           <div
-            className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 xs:p-8 max-w-2xl w-full 
+            className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 xs:p-8 max-w-2xl w-full
                      shadow-2xl max-h-[90vh] overflow-y-auto transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button
               onClick={handleCancelEdit}
               className="absolute top-4 right-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-smooth"
@@ -384,108 +349,40 @@ function PatientDetail() {
             </h2>
 
             <div className="space-y-4">
-              
-              {/* ============================================================
-                  NAME FIELDS
-                  ============================================================ */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
-                {/* First Name - REQUIRED */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter first name"
-                    value={editedPatient.first_name}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
+                  <input type="text" placeholder="Enter first name" value={editedPatient.first_name}
                     onChange={(e) => setEditedPatient({ ...editedPatient, first_name: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
-                
-                {/* Last Name - REQUIRED */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter last name"
-                    value={editedPatient.last_name}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
+                  <input type="text" placeholder="Enter last name" value={editedPatient.last_name}
                     onChange={(e) => setEditedPatient({ ...editedPatient, last_name: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
               </div>
 
-              {/* ============================================================
-                  DATE OF BIRTH
-                  ============================================================ */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Date of Birth
-                </label>
-                <DatePicker
-                  selected={selectedDate}
-                  onChange={handleDobChange}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Select date of birth"
-                  maxDate={new Date()}
-                  showYearDropdown
-                  scrollableYearDropdown
-                  yearDropdownItemNumber={100}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                           transition-all cursor-pointer text-sm xs:text-base
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           placeholder-gray-400 dark:placeholder-gray-500"
-                  wrapperClassName="w-full"
-                />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                <DatePicker selected={selectedDate} onChange={handleDobChange} dateFormat="dd/MM/yyyy"
+                  placeholderText="Select date of birth" maxDate={new Date()} showYearDropdown scrollableYearDropdown yearDropdownItemNumber={100}
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all cursor-pointer text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  wrapperClassName="w-full" />
               </div>
 
-              {/* ============================================================
-                  AGE & GENDER
-                  ============================================================ */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
-                {/* Age - Auto-calculated */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Age
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="Auto-calculated from DOB"
-                    value={editedPatient.age}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age</label>
+                  <input type="number" placeholder="Auto-calculated from DOB" value={editedPatient.age}
                     onChange={(e) => setEditedPatient({ ...editedPatient, age: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
-                
-                {/* Gender */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Gender
-                  </label>
-                  <select
-                    value={editedPatient.gender}
-                    onChange={(e) => setEditedPatient({ ...editedPatient, gender: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base
-                             text-gray-900 dark:text-white"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+                  <select value={editedPatient.gender} onChange={(e) => setEditedPatient({ ...editedPatient, gender: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base text-gray-900 dark:text-white">
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -494,115 +391,50 @@ function PatientDetail() {
                 </div>
               </div>
 
-              {/* ============================================================
-                  NATIONALITY & NATIONAL ID
-                  ============================================================ */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nationality
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter nationality"
-                    value={editedPatient.nationality}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nationality</label>
+                  <input type="text" placeholder="Enter nationality" value={editedPatient.nationality}
                     onChange={(e) => setEditedPatient({ ...editedPatient, nationality: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    National ID
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 851234567V"
-                    value={editedPatient.national_id}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">National ID</label>
+                  <input type="text" placeholder="e.g., 851234567V" value={editedPatient.national_id}
                     onChange={(e) => setEditedPatient({ ...editedPatient, national_id: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
               </div>
 
-              {/* ============================================================
-                  MOBILE & EMAIL
-                  ============================================================ */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Mobile Number
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+94 77 123 4567"
-                    value={editedPatient.mobile_number}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile Number</label>
+                  <input type="tel" placeholder="+94 77 123 4567" value={editedPatient.mobile_number}
                     onChange={(e) => setEditedPatient({ ...editedPatient, mobile_number: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="patient@example.com"
-                    value={editedPatient.email}
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                  <input type="email" placeholder="patient@example.com" value={editedPatient.email}
                     onChange={(e) => setEditedPatient({ ...editedPatient, email: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all text-sm xs:text-base
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                             placeholder-gray-400 dark:placeholder-gray-500"
-                  />
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
                 </div>
               </div>
 
-              {/* ============================================================
-                  LANGUAGE & BLOOD TYPE
-                  ============================================================ */}
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Preferred Language
-                  </label>
-                  <select
-                    value={editedPatient.preferred_language}
-                    onChange={(e) => setEditedPatient({ ...editedPatient, preferred_language: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base
-                             text-gray-900 dark:text-white"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Language</label>
+                  <select value={editedPatient.preferred_language} onChange={(e) => setEditedPatient({ ...editedPatient, preferred_language: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base text-gray-900 dark:text-white">
                     <option value="English">English</option>
                     <option value="Sinhala">Sinhala</option>
                     <option value="Tamil">Tamil</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Blood Type
-                  </label>
-                  <select
-                    value={editedPatient.blood_type}
-                    onChange={(e) => setEditedPatient({ ...editedPatient, blood_type: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                             transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base
-                             text-gray-900 dark:text-white"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Blood Type</label>
+                  <select value={editedPatient.blood_type} onChange={(e) => setEditedPatient({ ...editedPatient, blood_type: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all bg-white dark:bg-gray-700 cursor-pointer text-sm xs:text-base text-gray-900 dark:text-white">
                     <option value="">Select Blood Type</option>
                     <option value="A+">A+</option>
                     <option value="A-">A-</option>
@@ -616,105 +448,107 @@ function PatientDetail() {
                 </div>
               </div>
 
-              {/* ============================================================
-                  MEDICAL INFORMATION (OPTIONAL)
-                  ============================================================ */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Chronic Conditions
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Diabetes Type 2, Hypertension"
-                  value={editedPatient.chronics}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chronic Conditions</label>
+                <input type="text" placeholder="e.g., Diabetes Type 2, Hypertension" value={editedPatient.chronics}
                   onChange={(e) => setEditedPatient({ ...editedPatient, chronics: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                           transition-all text-sm xs:text-base
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           placeholder-gray-400 dark:placeholder-gray-500"
-                />
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Allergies
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Penicillin, Peanuts"
-                  value={editedPatient.allergies}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allergies</label>
+                <input type="text" placeholder="e.g., Penicillin, Peanuts" value={editedPatient.allergies}
                   onChange={(e) => setEditedPatient({ ...editedPatient, allergies: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                           transition-all text-sm xs:text-base
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           placeholder-gray-400 dark:placeholder-gray-500"
-                />
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Drug Precautions
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Avoid NSAIDs"
-                  value={editedPatient.drug_precautions}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Drug Precautions</label>
+                <input type="text" placeholder="e.g., Avoid NSAIDs" value={editedPatient.drug_precautions}
                   onChange={(e) => setEditedPatient({ ...editedPatient, drug_precautions: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                           focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                           transition-all text-sm xs:text-base
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           placeholder-gray-400 dark:placeholder-gray-500"
-                />
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
               </div>
 
-              {/* ============================================================
-                  MRN (READ-ONLY)
-                  ============================================================ */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Patient MRN (Cannot be changed)
-                </label>
-                <input
-                  type="text"
-                  value={editedPatient.mrn}
-                  disabled
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                           transition-all text-sm xs:text-base
-                           bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400
-                           cursor-not-allowed"
-                />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient MRN (Cannot be changed)</label>
+                <input type="text" value={editedPatient.mrn} disabled
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none transition-all text-sm xs:text-base bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed" />
               </div>
             </div>
 
-            {/* Modal Action Buttons */}
             <div className="flex gap-3 mt-6">
+              <button onClick={handleCancelEdit} disabled={saving}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-smooth text-sm xs:text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                Cancel
+              </button>
+              <button onClick={handleSavePatient} disabled={saving}
+                className="flex-1 px-6 py-3 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg hover:shadow-xl text-sm xs:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</> : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====================================================================
+          DELETE CONFIRMATION MODAL
+          ==================================================================== */}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => !deleting && setShowDeleteModal(false)}
+        >
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+          <div
+            className="relative bg-white dark:bg-gray-800 rounded-2xl p-6 xs:p-8 max-w-md w-full shadow-2xl transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close */}
+            <button
+              onClick={() => !deleting && setShowDeleteModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-smooth disabled:opacity-40"
+              disabled={deleting}
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Icon */}
+            <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-7 h-7 text-red-500 dark:text-red-400" />
+            </div>
+
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">
+              Remove Patient?
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-1">
+              You're about to permanently delete
+            </p>
+            <p className="text-base font-semibold text-gray-900 dark:text-white text-center mb-1">
+              {patient.first_name} {patient.last_name}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-6">
+              MRN: {patient.mrn} · This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3">
               <button
-                onClick={handleCancelEdit}
-                disabled={saving}
-                className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-medium 
-                         text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-smooth text-sm xs:text-base
-                         disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-medium
+                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700
+                           transition-smooth text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSavePatient}
-                disabled={saving}
-                className="flex-1 px-6 py-3 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900 rounded-lg font-medium 
-                         hover:bg-tecnot-dark dark:hover:bg-tecnot-primary transition-smooth shadow-lg hover:shadow-xl text-sm xs:text-base
-                         disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                onClick={handleDeletePatient}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium
+                           transition-smooth shadow-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed
+                           flex items-center justify-center gap-2"
               >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
+                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" />Deleting...</> : <><Trash2 className="w-4 h-4" />Yes, Remove</>}
               </button>
             </div>
           </div>
