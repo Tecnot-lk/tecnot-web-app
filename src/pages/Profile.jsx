@@ -1,6 +1,6 @@
 // PROFILE PAGE - FULLY SUPABASE INTEGRATED
 import React, { useState, useEffect } from 'react'
-import { User, Mail, Phone, Stethoscope, Save, Camera, Loader2, Lock } from 'lucide-react'
+import { User, Mail, Phone, Stethoscope, Save, Camera, Loader2, Lock, Eye, EyeOff } from 'lucide-react'
 import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../services/supabaseClient'
@@ -15,6 +15,12 @@ function Profile() {
   const [activeTab, setActiveTab] = useState('info')
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+
+  // Password visibility state for each field
+  const [showPasswords, setShowPasswords] = useState({
+    new_password: false,
+    confirm_password: false,
+  })
 
   const [profileData, setProfileData] = useState({
     first_name: '',
@@ -113,11 +119,16 @@ function Profile() {
       await changePassword(passwordData.new_password)
       setSuccessMsg('Password changed successfully!')
       setPasswordData({ new_password: '', confirm_password: '' })
+      setShowPasswords({ new_password: false, confirm_password: false })
     } catch (err) {
       setErrorMsg(err.message || 'Failed to change password.')
     } finally {
       setChangingPassword(false)
     }
+  }
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }))
   }
 
   const initials = `${profileData.first_name?.charAt(0) || ''}${profileData.last_name?.charAt(0) || ''}`.toUpperCase()
@@ -238,14 +249,26 @@ function Profile() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
-                      type="password"
+                      type={showPasswords[key] ? 'text' : 'password'}
                       value={passwordData[key]}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, [key]: e.target.value }))}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
+                      className="w-full pl-10 pr-12 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none
                                  focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all"
                     />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility(key)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none"
+                      aria-label={showPasswords[key] ? 'Hide password' : 'Show password'}
+                    >
+                      {showPasswords[key] ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
               ))}
