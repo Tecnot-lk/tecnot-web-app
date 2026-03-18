@@ -18,6 +18,7 @@ function Profile() {
 
   // Password visibility state for each field
   const [showPasswords, setShowPasswords] = useState({
+    current_password: false,
     new_password: false,
     confirm_password: false,
   })
@@ -33,6 +34,7 @@ function Profile() {
   })
 
   const [passwordData, setPasswordData] = useState({
+    current_password: '',
     new_password: '',
     confirm_password: '',
   })
@@ -73,7 +75,6 @@ function Profile() {
 
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
 
-    // Save URL to profile
     await updateProfile({ avatar_url: publicUrl })
     setPreviewUrl(publicUrl)
     window.dispatchEvent(new Event('profilePicUpdated'))
@@ -102,24 +103,48 @@ function Profile() {
     }
   }
 
-  // Change password via Supabase Auth
+  // Change password via Supabase Auth — verifies current password first
   const handleChangePassword = async () => {
     setSuccessMsg('')
     setErrorMsg('')
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      setErrorMsg('Passwords do not match.')
+
+    if (!passwordData.current_password) {
+      setErrorMsg('Please enter your current password.')
+      return
+    }
+    if (!passwordData.new_password) {
+      setErrorMsg('Please enter a new password.')
       return
     }
     if (passwordData.new_password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters.')
+      setErrorMsg('New password must be at least 6 characters.')
       return
     }
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      setErrorMsg('New passwords do not match.')
+      return
+    }
+
     setChangingPassword(true)
+
     try {
+      // Verify current password by re-authenticating with Supabase
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: passwordData.current_password,
+      })
+
+      if (signInError) {
+        setErrorMsg('Wrong password. Please try again.')
+        setChangingPassword(false)
+        return
+      }
+
+      // Current password is correct — proceed to update
       await changePassword(passwordData.new_password)
       setSuccessMsg('Password changed successfully!')
-      setPasswordData({ new_password: '', confirm_password: '' })
-      setShowPasswords({ new_password: false, confirm_password: false })
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' })
+      setShowPasswords({ current_password: false, new_password: false, confirm_password: false })
     } catch (err) {
       setErrorMsg(err.message || 'Failed to change password.')
     } finally {
@@ -132,6 +157,12 @@ function Profile() {
   }
 
   const initials = `${profileData.first_name?.charAt(0) || ''}${profileData.last_name?.charAt(0) || ''}`.toUpperCase()
+
+  const passwordFields = [
+    { label: 'Current Password', key: 'current_password' },
+    { label: 'New Password', key: 'new_password' },
+    { label: 'Confirm New Password', key: 'confirm_password' },
+  ]
 
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -155,7 +186,7 @@ function Profile() {
                 <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               </label>
             </div>
-            
+
             <div className="text-center sm:text-left">
               <h2 className="text-2xl font-bold">Dr. {profileData.first_name} {profileData.last_name}</h2>
               <p className="opacity-80 mt-1">{profileData.specialty || 'Doctor'}</p>
@@ -240,38 +271,42 @@ function Profile() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Change Password</h3>
             <div className="space-y-4 max-w-md">
-              {[
-                { label: 'New Password', key: 'new_password' },
-                { label: 'Confirm New Password', key: 'confirm_password' },
-              ].map(({ label, key }) => (
-                <div key={key}>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type={showPasswords[key] ? 'text' : 'password'}
-                      value={passwordData[key]}
-                      onChange={(e) => setPasswordData(prev => ({ ...prev, [key]: e.target.value }))}
-                      placeholder="••••••••"
-                      className="w-full pl-10 pr-12 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none
-                                 focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => togglePasswordVisibility(key)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none"
-                      aria-label={showPasswords[key] ? 'Hide password' : 'Show password'}
-                    >
-                      {showPasswords[key] ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
+              {passwordFields.map(({ label, key }, index) => (
+                <React.Fragment key={key}>
+                  {/* Divider between current password and new password fields */}
+                  {index === 1 && (
+                    <div className="border-t border-gray-100 dark:border-gray-700 pt-2" />
+                  )}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type={showPasswords[key] ? 'text' : 'password'}
+                        value={passwordData[key]}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, [key]: e.target.value }))}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-12 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
+                                   bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none
+                                   focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => togglePasswordVisibility(key)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none"
+                        aria-label={showPasswords[key] ? 'Hide password' : 'Show password'}
+                      >
+                        {showPasswords[key] ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </React.Fragment>
               ))}
+
               <button
                 onClick={handleChangePassword}
                 disabled={changingPassword}
