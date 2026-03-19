@@ -15,7 +15,7 @@ function AddPatientModal({ onClose, onSuccess }) {
     nationality: '',
     national_id: '',
     mobile_number: '',
-    email: '',
+    email: '', // stores only Gmail username part
     preferred_language: 'English',
     blood_type: '',
     chronics: '',
@@ -24,9 +24,6 @@ function AddPatientModal({ onClose, onSuccess }) {
     mrn: ''
   })
 
-  // ==========================================================================
-  // FUNCTION: CALCULATE AGE FROM DOB
-  // ==========================================================================
   const calculateAge = (dob) => {
     if (!dob) return ''
 
@@ -42,38 +39,30 @@ function AddPatientModal({ onClose, onSuccess }) {
     return age < 0 ? '' : String(age)
   }
 
-  // ==========================================================================
-  // FUNCTION: VALIDATE MOBILE NUMBER
-  // ==========================================================================
   const validateMobileNumber = (number) => {
     const cleaned = number.replace(/\s+/g, '')
-    const localPattern = /^0\d{9}$/       // 0770049469
-    const intlPattern = /^\+94\d{9}$/     // +94770049469
+    const localPattern = /^0\d{9}$/
+    const intlPattern = /^\+94\d{9}$/
 
     return localPattern.test(cleaned) || intlPattern.test(cleaned)
   }
 
-  // ==========================================================================
-  // FUNCTION: FORMAT MOBILE NUMBER WITH SPACES
-  // ==========================================================================
   const formatMobileNumber = (value) => {
     const cleaned = value.replace(/\s+/g, '')
 
-    // International format: +94 77 004 9469
     if (cleaned.startsWith('+94')) {
-      const part1 = cleaned.slice(0, 3)   // +94
-      const part2 = cleaned.slice(3, 5)   // 77
-      const part3 = cleaned.slice(5, 8)   // 004
-      const part4 = cleaned.slice(8, 12)  // 9469
+      const part1 = cleaned.slice(0, 3)
+      const part2 = cleaned.slice(3, 5)
+      const part3 = cleaned.slice(5, 8)
+      const part4 = cleaned.slice(8, 12)
 
       return [part1, part2, part3, part4].filter(Boolean).join(' ')
     }
 
-    // Local format: 077 004 9469
     if (cleaned.startsWith('0')) {
-      const part1 = cleaned.slice(0, 3)   // 077
-      const part2 = cleaned.slice(3, 6)   // 004
-      const part3 = cleaned.slice(6, 10)  // 9469
+      const part1 = cleaned.slice(0, 3)
+      const part2 = cleaned.slice(3, 6)
+      const part3 = cleaned.slice(6, 10)
 
       return [part1, part2, part3].filter(Boolean).join(' ')
     }
@@ -81,18 +70,17 @@ function AddPatientModal({ onClose, onSuccess }) {
     return cleaned
   }
 
-  // ==========================================================================
-  // FUNCTION: HANDLE DOB CHANGE
-  // ==========================================================================
+  const validateEmail = (email) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailPattern.test(email)
+}
+
   const handleDobChange = (date) => {
     setSelectedDate(date)
     const computedAge = calculateAge(date)
     setNewPatient((prev) => ({ ...prev, age: computedAge }))
   }
 
-  // ==========================================================================
-  // FUNCTION: SAVE NEW PATIENT
-  // ==========================================================================
   const handleSavePatient = async () => {
     if (!newPatient.first_name || !newPatient.last_name) {
       alert('Please fill in patient name')
@@ -106,6 +94,14 @@ function AddPatientModal({ onClose, onSuccess }) {
       alert('Enter a valid mobile number (077 004 9469 or +94 77 004 9469)')
       return
     }
+
+    if (
+  newPatient.email &&
+  !validateEmail(newPatient.email.trim())
+) {
+  alert('Please enter a valid email address (must include @)')
+  return
+}
 
     try {
       const patientData = {
@@ -139,9 +135,6 @@ function AddPatientModal({ onClose, onSuccess }) {
     }
   }
 
-  // ==========================================================================
-  // FUNCTION: RESET FORM
-  // ==========================================================================
   const resetForm = () => {
     setNewPatient({
       first_name: '',
@@ -339,7 +332,7 @@ function AddPatientModal({ onClose, onSuccess }) {
                 placeholder="077 004 9469 or +94 77 004 9469"
                 value={newPatient.mobile_number}
                 onChange={(e) => {
-                  let value = e.target.value
+                  const value = e.target.value
                   const cleaned = value.replace(/\s/g, '')
 
                   if (/^\+?\d*$/.test(cleaned)) {
@@ -364,21 +357,22 @@ function AddPatientModal({ onClose, onSuccess }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Email
+                Gmail
               </label>
+
               <input
-                type="email"
-                placeholder="patient@example.com"
-                value={newPatient.email}
-                onChange={(e) =>
-                  setNewPatient({ ...newPatient, email: e.target.value })
-                }
-                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                            focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                            transition-all text-sm xs:text-base
-                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                            placeholder-gray-400 dark:placeholder-gray-500"
-              />
+  type="email"
+  placeholder="Enter email (e.g., name@gmail.com)"
+  value={newPatient.email}
+  onChange={(e) =>
+    setNewPatient({ ...newPatient, email: e.target.value })
+  }
+  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
+              focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+              transition-all text-sm xs:text-base
+              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+              placeholder-gray-400 dark:placeholder-gray-500"
+/>
             </div>
           </div>
 
