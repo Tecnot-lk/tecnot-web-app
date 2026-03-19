@@ -1,33 +1,49 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Calendar, Users, FileText, Filter, X, ClipboardList, ChevronRight } from 'lucide-react'
+import { Calendar, Users, FileText, Filter, X, ClipboardList, ChevronRight, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../services/supabaseClient'
+
+// ── Map session status → human-readable action label ─────────────────────────
+function getActivityLabel(session) {
+  // If soap fields are filled → SOAP note was generated
+  if (session.soap_subjective || session.soap_objective || session.soap_assessment || session.soap_plan) {
+    return 'SOAP note generated'
+  }
+  // Use status field
+  switch (session.status) {
+    case 'completed':   return 'Consultation completed'
+    case 'in_progress': return 'Session in progress'
+    case 'draft':       return 'Session started'
+    default:            return 'Session started'
+  }
+}
+
+// ── Friendly relative time ────────────────────────────────────────────────────
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+  if (diff < 60)         return 'Just now'
+  if (diff < 3600)       return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400)      return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 86400 * 7)  return `${Math.floor(diff / 86400)}d ago`
+  return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+}
 
 function Home() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters]           = useState(false)
   const [showProfileBanner, setShowProfileBanner] = useState(false)
+  const [recentActivities, setRecentActivities] = useState([])
+  const [activitiesLoading, setActivitiesLoading] = useState(true)
 
   const [filters, setFilters] = useState({
-    gender:      '',
-    dob:         '',
-    age:         '',
-    nationality: '',
-    patientId:   '',
-    clinic:      '',
+    gender: '', dob: '', age: '', nationality: '', patientId: '', clinic: '',
   })
 
-  const recentActivities = [
-    { patient: 'Malik / 001',   action: 'Consultation completed', time: '2 hours ago' },
-    { patient: 'Shiman / 021',  action: 'SOAP note generated',    time: '4 hours ago' },
-    { patient: 'Ibrahim / 022', action: 'Session started',        time: '6 hours ago' },
-  ]
-
-  // ── Profile completion check ───────────────────────────────────────────────
+  // ── Profile completion check ──────────────────────────────────────────────
   useEffect(() => {
     const checkProfileCompletion = async () => {
       if (!user?.id) return
@@ -41,11 +57,8 @@ function Home() {
           .maybeSingle()
 
         const isIncomplete =
-          !data ||
-          !data.first_name ||
-          !data.license_number ||
-          !data.clinic_name ||
-          !data.specialty
+          !data || !data.first_name || !data.license_number ||
+          !data.clinic_name || !data.specialty
 
         setShowProfileBanner(isIncomplete)
       } catch {
@@ -56,19 +69,83 @@ function Home() {
     checkProfileCompletion()
   }, [user?.id])
 
+  // ── Fetch recent activity from sessions joined with patients ──────────────
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      if (!user?.id) return
+      setActivitiesLoading(true)
+
+      try {
+        // Fetch the 5 most recently updated sessions for this doctor
+        // joining patient name + mrn via patient_id
+        const { data, error } = await supabase
+          .from('sessions')
+          .select(`
+            id,
+            status,
+            created_at,
+            updated_at,
+            soap_subjective,
+            soap_objective,
+            soap_assessment,
+            soap_plan,
+            patients (
+              first_name,
+              last_name,
+              mrn
+            )
+          `)
+          .eq('doctor_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(5)
+
+        if (error) throw new Error(error.message)
+
+        const activities = (data || []).map((session) => ({
+          id:        session.id,
+          patient:   session.patients
+            ? `${session.patients.first_name} ${session.patients.last_name} / ${session.patients.mrn}`
+            : 'Unknown Patient',
+          mrn:       session.patients?.mrn || null,
+          action:    getActivityLabel(session),
+          time:      timeAgo(session.updated_at || session.created_at),
+        }))
+
+        setRecentActivities(activities)
+      } catch (err) {
+        console.error('Failed to fetch recent activity:', err)
+        setRecentActivities([])
+      } finally {
+        setActivitiesLoading(false)
+      }
+    }
+
+    fetchRecentActivity()
+
+    // Realtime — refresh activity whenever a session is inserted or updated
+    const channel = supabase
+      .channel('home-sessions-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sessions', filter: `doctor_id=eq.${user?.id}` },
+        () => fetchRecentActivity()   // re-fetch on any change
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user?.id])
+
   const handleDismissBanner = () => {
     sessionStorage.setItem(`profile_banner_dismissed_${user?.id}`, 'true')
     setShowProfileBanner(false)
   }
 
-  // ── Check if any filter has a value ───────────────────────────────────────
   const hasActiveFilters = Object.values(filters).some((v) => v !== '')
 
   const handleResetFilters = () => {
     setFilters({ gender: '', dob: '', age: '', nationality: '', patientId: '', clinic: '' })
   }
 
-  // ── Apply: navigate to Patients page, pass filters as route state ─────────
   const handleApplyFilters = () => {
     setShowFilters(false)
     navigate('/patients', { state: { filters } })
@@ -134,8 +211,6 @@ function Home() {
               <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                 Quick Actions
               </h2>
-
-              {/* Filter button — shows dot when filters are active */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="relative flex items-center justify-center gap-2 px-3 xs:px-4 py-2
@@ -169,7 +244,6 @@ function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  {/* Gender */}
                   <div>
                     <label className="block text-gray-600 dark:text-gray-400 mb-1">Gender</label>
                     <select
@@ -184,8 +258,6 @@ function Home() {
                       <option value="Other">Other</option>
                     </select>
                   </div>
-
-                  {/* DOB */}
                   <div>
                     <label className="block text-gray-600 dark:text-gray-400 mb-1">Date of Birth</label>
                     <input
@@ -196,8 +268,6 @@ function Home() {
                                  rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Age */}
                   <div>
                     <label className="block text-gray-600 dark:text-gray-400 mb-1">Age</label>
                     <input
@@ -209,8 +279,6 @@ function Home() {
                                  rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Nationality */}
                   <div>
                     <label className="block text-gray-600 dark:text-gray-400 mb-1">Nationality</label>
                     <input
@@ -222,8 +290,6 @@ function Home() {
                                  rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Patient ID / MRN */}
                   <div>
                     <label className="block text-gray-600 dark:text-gray-400 mb-1">Patient MRN</label>
                     <input
@@ -235,8 +301,6 @@ function Home() {
                                  rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Clinic */}
                   <div>
                     <label className="block text-gray-600 dark:text-gray-400 mb-1">Clinic</label>
                     <input
@@ -327,21 +391,84 @@ function Home() {
             <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
               Recent Activity
             </h2>
-            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700
-                            p-4 xs:p-5 sm:p-6 space-y-3 sm:space-y-4 transition-colors">
-              {recentActivities.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0"
-                >
-                  <div className="w-2 h-2 bg-tecnot-primary dark:bg-tecnot-light rounded-full mt-2 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base truncate">{activity.patient}</p>
-                    <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 truncate">{activity.action}</p>
-                    <p className="text-[10px] xs:text-xs text-gray-400 dark:text-gray-500 mt-0.5">{activity.time}</p>
-                  </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm
+                            border border-gray-100 dark:border-gray-700
+                            p-4 xs:p-5 sm:p-6 transition-colors">
+
+              {/* Loading skeleton */}
+              {activitiesLoading && (
+                <div className="space-y-4 animate-pulse">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700 mt-2 flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/5" />
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/5" />
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* Empty state */}
+              {!activitiesLoading && recentActivities.length === 0 && (
+                <div className="text-center py-6">
+                  <Calendar className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                    No recent activity yet. Start a session to see it here.
+                  </p>
+                </div>
+              )}
+
+              {/* Activity rows */}
+              {!activitiesLoading && recentActivities.length > 0 && (
+                <div className="space-y-3 sm:space-y-4">
+                  {recentActivities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="flex items-start gap-3 pb-3 sm:pb-4
+                                 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0"
+                    >
+                      {/* Dot — colour based on action type */}
+                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0
+                        ${activity.action === 'SOAP note generated'
+                          ? 'bg-purple-500'
+                          : activity.action === 'Consultation completed'
+                          ? 'bg-green-500'
+                          : 'bg-tecnot-primary dark:bg-tecnot-light'
+                        }`}
+                      />
+
+                      <div className="flex-1 min-w-0">
+                        {/* Patient name — clickable if MRN exists */}
+                        {activity.mrn ? (
+                          <Link
+                            to={`/patient/${activity.mrn}`}
+                            className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base
+                                       truncate block hover:text-tecnot-primary dark:hover:text-tecnot-light
+                                       transition-colors"
+                          >
+                            {activity.patient}
+                          </Link>
+                        ) : (
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base truncate">
+                            {activity.patient}
+                          </p>
+                        )}
+                        <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 truncate">
+                          {activity.action}
+                        </p>
+                        <p className="text-[10px] xs:text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          {activity.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
             </div>
           </div>
 
