@@ -38,6 +38,7 @@ import { Search, Mic, Square, Loader2, Plus, X, FileText, Wand2 } from 'lucide-r
 import Header from '../components/Header'
 import PatientBanner from '../components/PatientBanner'
 import * as patientService from '../services/patientService'
+import * as sessionService from '../services/sessionService'
 import AddPatientModal from '../components/AddPatientModal'
 
 function NewSession() {
@@ -376,7 +377,7 @@ function NewSession() {
    * 
    * TODO: Replace setTimeout with actual API call
    */
-  const handleGenerateSOAP = () => {
+   const handleGenerateSOAP = async () => {
     if (!audioBlob) {
       alert('No recording found!')
       return
@@ -384,54 +385,39 @@ function NewSession() {
 
     setProcessing(true)
 
-    // TODO BACKEND: Replace this with actual API call
-    // Example implementation:
-    /*
-    const formData = new FormData()
-    formData.append('audio', audioBlob, 'recording.webm')
-    formData.append('patient_id', selectedPatient.id)
-    formData.append('vitals', JSON.stringify(vitals))
-    
     try {
-      const response = await fetch('/api/sessions/generate-soap', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      })
-      const data = await response.json()
+      console.log(' Sending audio to AI backend...')
       
-      // Navigate to SOAP note page with generated data
-      navigate(`/soap-note/${data.session_id}`, {
-        state: {
-          patient: selectedPatient,
-          vitals,
-          transcript: data.transcript,
-          soap: data.soap
-        }
-      })
-    } catch (error) {
-      console.error('SOAP generation failed:', error)
-      alert('Failed to generate SOAP note. Please try again.')
-    } finally {
-      setProcessing(false)
-    }
-    */
-
-    // DEMO: Simulate API call
-    setTimeout(() => {
-      setProcessing(false)
+      // Call real AI backend
+      const result = await sessionService.generateSOAPFromAudio(
+        audioBlob,
+        selectedPatient.id,
+        vitals
+      )
+      
+      console.log(' SOAP Generated:', result)
+      
+      // Update transcript with real data from Gemini
+      setTranscriptText(result.transcript)
+      
+      // Navigate to SOAP note page with AI-generated data
       navigate('/soap-note/new', {
         state: {
           patient: selectedPatient,
           vitals,
-          transcript: transcriptText
+          transcript: result.transcript,
+          soap: result.soap,
+          sessionId: result.session_id
         }
       })
-    }, 2000)
+      
+    } catch (error) {
+      console.error(' SOAP generation failed:', error)
+      alert(`Failed to generate SOAP note: ${error.message}\n\nPlease check:\n1. Backend is running on port 8000\n2. API keys are set in .env\n3. Check browser console for details`)
+    } finally {
+      setProcessing(false)
+    }
   }
-
   // ==========================================================================
   // FUNCTION: FORMAT TIME
   // ==========================================================================

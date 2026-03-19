@@ -79,3 +79,38 @@ export const deleteSession = async (sessionId) => {
   if (error) throw new Error(error.message)
   return true
 }
+
+// ADD THIS NEW FUNCTION to sessionService.js
+
+/**
+ * Generate SOAP note from audio recording
+ * Calls backend AI endpoint (Gemini + GPT-4o)
+ */
+export const generateSOAPFromAudio = async (audioBlob, patientId, vitals) => {
+  try {
+    // Create FormData for file upload
+    const formData = new FormData()
+    formData.append('audio', audioBlob, 'recording.webm')
+    formData.append('patient_id', patientId)
+    formData.append('vitals', JSON.stringify(vitals))
+    
+    // Call backend API
+    const response = await fetch('http://localhost:8000/api/v1/sessions/generate-soap', {
+      method: 'POST',
+      body: formData
+      // Note: Don't set Content-Type header, browser will set it automatically with boundary
+    })
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.detail || 'Failed to generate SOAP note')
+    }
+    
+    const data = await response.json()
+    return data
+    
+  } catch (error) {
+    console.error('Error generating SOAP:', error)
+    throw error
+  }
+}
