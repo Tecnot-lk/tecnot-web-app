@@ -80,6 +80,11 @@ function PatientDetail() {
   return regex.test(nic)
   }
 
+  const isValidEmail = (email) => {
+  if (!email) return true // allow empty if optional
+  return email.includes('@')
+  }
+
   const handleSavePatient = async () => {
     if (!editedPatient.first_name || !editedPatient.last_name) {
       alert('Please fill in patient name')
@@ -89,7 +94,12 @@ function PatientDetail() {
     if (!isValidNIC(editedPatient.national_id)) {
       alert('Invalid National ID. Must be 12 digits OR 9 digits followed by V')
       return
-}
+    }
+
+    if (!isValidEmail(editedPatient.email)) {
+      alert('Email must contain @')
+      return
+    }
 
     try {
       setSaving(true)
