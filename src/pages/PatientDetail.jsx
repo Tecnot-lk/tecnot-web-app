@@ -169,22 +169,7 @@ function PatientDetail() {
     setSelectedDate(null)
   }
 
-  // ==========================================================================
-  // FUNCTION: DELETE PATIENT
-  // ==========================================================================
-  const handleDeletePatient = async () => {
-    try {
-      setDeleting(true)
-      await patientService.deletePatient(patient.id)
-      setShowDeleteModal(false)
-      navigate('/patients')
-    } catch (error) {
-      console.error('Error deleting patient:', error)
-      alert('Failed to delete patient. Please try again.')
-    } finally {
-      setDeleting(false)
-    }
-  }
+ 
 
   const handleShareAsPDF = (sessionId, chiefComplaint) => {
     console.log('Generating PDF for session:', sessionId)
