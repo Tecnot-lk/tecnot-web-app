@@ -124,6 +124,10 @@ function Profile() {
       setErrorMsg('New password must contain at least one uppercase letter.')
       return
     }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.new_password)) {
+      setErrorMsg('New password must contain at least one special character (e.g. !@#$%^&*).')
+      return
+    }
     if (passwordData.new_password !== passwordData.confirm_password) {
       setErrorMsg('New passwords do not match.')
       return
