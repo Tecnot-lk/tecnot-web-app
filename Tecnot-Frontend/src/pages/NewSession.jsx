@@ -299,21 +299,16 @@ console.log('🎤 Recording with format:', recorder.mimeType)
 
       // Event: Recording stopped
       recorder.onstop = () => {
-        // Create blob from chunks
-        const blob = new Blob(chunksRef.current, { 
-          type: recorder.mimeType || 'audio/webm' 
-        })
-        setAudioBlob(blob)
+  // Create blob from chunks
+  const blob = new Blob(chunksRef.current, { 
+    type: recorder.mimeType || 'audio/webm' 
+  })
+  setAudioBlob(blob)
 
-        // TODO BACKEND: This is demo transcript
-        // In production, this will be filled after Whisper transcription
-        setTranscriptText(
-          `Doctor: Hi ${selectedPatient.first_name}, what brings you in today?\n` +
-          `Patient: I've been having discomfort and would like to check.\n` +
-          `Doctor: Okay, we'll go through symptoms and history, then plan next steps.`
-        )
-      }
-
+  // Transcript will be filled after AI processing
+  setTranscriptText('Processing...')
+}
+      
       // Start recording
       recorder.start()
       setIsRecording(true)
@@ -396,46 +391,55 @@ console.log('🎤 Recording with format:', recorder.mimeType)
    * TODO: Replace setTimeout with actual API call
    */
    const handleGenerateSOAP = async () => {
-    if (!audioBlob) {
-      alert('No recording found!')
-      return
-    }
-
-    setProcessing(true)
-
-    try {
-      console.log(' Sending audio to AI backend...')
-      
-      // Call real AI backend
-      const result = await sessionService.generateSOAPFromAudio(
-        audioBlob,
-        selectedPatient.id,
-        vitals
-      )
-      
-      console.log(' SOAP Generated:', result)
-      
-      // Update transcript with real data from Gemini
-      setTranscriptText(result.transcript)
-      
-      // Navigate to SOAP note page with AI-generated data
-      navigate('/soap-note/new', {
-        state: {
-          patient: selectedPatient,
-          vitals,
-          transcript: result.transcript,
-          soap: result.soap,
-          sessionId: result.session_id
-        }
-      })
-      
-    } catch (error) {
-      console.error(' SOAP generation failed:', error)
-      alert(`Failed to generate SOAP note: ${error.message}\n\nPlease check:\n1. Backend is running on port 8000\n2. API keys are set in .env\n3. Check browser console for details`)
-    } finally {
-      setProcessing(false)
-    }
+  if (!audioBlob) {
+    alert('No recording found!')
+    return
   }
+
+  setProcessing(true)
+
+  try {
+    console.log('🎤 Sending audio to AI backend...')
+    
+    // Call real AI backend
+    const result = await sessionService.generateSOAPFromAudio(
+      audioBlob,
+      selectedPatient.id,
+      vitals
+    )
+    
+    console.log('✅ SOAP Generated:', result)
+    console.log('📝 Transcript:', result.transcript)
+    
+    // Update transcript with real data from AI
+    if (result.transcript) {
+      setTranscriptText(result.transcript)
+      console.log('✅ Transcript updated!')
+      
+      // Store result for View SOAP button
+      window.soapResult = {
+        patient: selectedPatient,
+        vitals,
+        transcript: result.transcript,
+        soap: result.soap,
+        sessionId: result.session_id
+      }
+      
+      // Show success message
+      alert('✅ Transcription complete! Review the transcript below, then click "View SOAP Note".')
+      
+    } else {
+      console.error('❌ No transcript in result!')
+      setTranscriptText('Error: No transcript received')
+    }
+    
+  } catch (error) {
+    console.error('❌ SOAP generation failed:', error)
+    alert(`Failed to generate SOAP note: ${error.message}\n\nPlease check:\n1. Backend is running on port 8000\n2. API keys are set in .env\n3. Check browser console for details`)
+  } finally {
+    setProcessing(false)
+  }
+}
   // ==========================================================================
   // FUNCTION: FORMAT TIME
   // ==========================================================================
@@ -724,28 +728,43 @@ console.log('🎤 Recording with format:', recorder.mimeType)
                 </div>
 
                 {/* Generate SOAP Button */}
-                <div className="mt-5 flex justify-end">
-                  <button
-                    onClick={handleGenerateSOAP}
-                    disabled={processing}
-                    className="px-5 xs:px-6 py-3 rounded-lg font-semibold text-white
-                             bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-95
-                             transition-all shadow-lg flex items-center gap-2
-                             disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {processing ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Generating SOAP Note...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="w-5 h-5" />
-                        Generate SOAP Note
-                      </>
-                    )}
-                  </button>
-                </div>
+<div className="mt-5 flex justify-end gap-3">
+  <button
+    onClick={handleGenerateSOAP}
+    disabled={processing || (transcriptText !== 'Processing...' && window.soapResult)}
+    className="px-5 xs:px-6 py-3 rounded-lg font-semibold text-white
+             bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-95
+             transition-all shadow-lg flex items-center gap-2
+             disabled:opacity-60 disabled:cursor-not-allowed"
+  >
+    {processing ? (
+      <>
+        <Loader2 className="w-5 h-5 animate-spin" />
+        Generating SOAP Note...
+      </>
+    ) : (
+      <>
+        <Wand2 className="w-5 h-5" />
+        Generate Transcription
+      </>
+    )}
+  </button>
+  
+  {/* View SOAP Note button - shows after generation */}
+  {window.soapResult && transcriptText !== 'Processing...' && (
+    <button
+      onClick={() => {
+        navigate('/soap-note/new', { state: window.soapResult })
+      }}
+      className="px-5 xs:px-6 py-3 rounded-lg font-semibold text-white
+               bg-green-600 hover:bg-green-700
+               transition-all shadow-lg flex items-center gap-2"
+    >
+      <FileText className="w-5 h-5" />
+      View SOAP Note
+    </button>
+  )}
+</div>
               </div>
             )}
           </div>
