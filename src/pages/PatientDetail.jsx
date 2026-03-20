@@ -73,11 +73,24 @@ function PatientDetail() {
     setEditedPatient(prev => ({ ...prev, age: computedAge }))
   }
 
+  const isValidNIC = (nic) => {
+  if (!nic) return true // allow empty if optional
+
+  const regex = /^(\d{12}|\d{9}[vV])$/
+  return regex.test(nic)
+  }
+
   const handleSavePatient = async () => {
     if (!editedPatient.first_name || !editedPatient.last_name) {
       alert('Please fill in patient name')
       return
     }
+
+    if (!isValidNIC(editedPatient.national_id)) {
+      alert('Invalid National ID. Must be 12 digits OR 9 digits followed by V')
+      return
+}
+
     try {
       setSaving(true)
       const patientData = {
