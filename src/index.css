@@ -353,7 +353,7 @@ html.dark * {
   outline: none !important;
   background: transparent !important;
   width: 100%;
-  color: inherit;
+  color: white;
   font-size: 1rem;
 }
 
