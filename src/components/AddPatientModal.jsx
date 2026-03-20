@@ -79,6 +79,15 @@ function AddPatientModal({ onClose, onSuccess }) {
       alert('Please fill in patient name')
       return
     }
+    if (!newPatient.national_id.trim()) {
+      alert('National ID is required')
+      return
+    }
+
+    if (!validateNationalId(newPatient.national_id)) {
+      alert('Enter a valid NIC number (New NIC or Old NIC format)')
+      return
+    }
 
     if (newPatient.mobile_number && !validateMobileNumber(newPatient.mobile_number)) {
       alert('Enter a valid mobile number (077 004 9469 or +94 77 004 9469)')
@@ -97,7 +106,7 @@ function AddPatientModal({ onClose, onSuccess }) {
         age: newPatient.age ? parseInt(newPatient.age, 10) : null,
         gender: newPatient.gender || null,
         nationality: newPatient.nationality.trim() || null,
-        national_id: newPatient.national_id.trim() || null,
+        national_id: newPatient.national_id.trim().toUpperCase() || null,
         mobile_number: newPatient.mobile_number.replace(/\s/g, '') || null,
         email: newPatient.email.trim().toLowerCase() || null,
         preferred_language: newPatient.preferred_language || 'English',
@@ -151,6 +160,13 @@ function AddPatientModal({ onClose, onSuccess }) {
       mrn: ''
     })
     setSelectedDate(null)
+  }
+  
+  const validateNationalId = (nic) => {
+  const cleaned = nic.trim().toUpperCase()
+  const newNicPattern = /^\d{12}$/
+  const oldNicPattern = /^\d{9}V$/
+  return newNicPattern.test(cleaned) || oldNicPattern.test(cleaned)
   }
 
   return (
@@ -290,7 +306,12 @@ function AddPatientModal({ onClose, onSuccess }) {
                 type="text"
                 placeholder="e.g., 851234567V"
                 value={newPatient.national_id}
-                onChange={(e) => setNewPatient({ ...newPatient, national_id: e.target.value })}
+                onChange={(e) =>
+                setNewPatient({
+                    ...newPatient,
+                    national_id: e.target.value.toUpperCase()
+                })
+                }
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none
                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
                             transition-all text-sm xs:text-base
