@@ -64,7 +64,12 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/
+    if (!passwordRegex.test(form.password)) {
+      setError('Password must be at least 8 characters, include one uppercase letter and one special character (e.g. !@#$%^&*).')
+      return
+    }
     if (form.password !== form.confirm_password) { setError('Passwords do not match.'); return }
     if (!form.phone) { setError('Please enter a valid phone number.'); return }
 
@@ -245,6 +250,9 @@ function Signup() {
                   </div>
                 ))}
               </div>
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                Min. 8 characters, one uppercase letter and one special character (e.g. !@#$%^&*)
+              </p>
             </div>
 
             <button type="submit" disabled={loading}
