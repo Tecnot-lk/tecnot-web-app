@@ -120,6 +120,10 @@ function Profile() {
       setErrorMsg('New password must be at least 6 characters.')
       return
     }
+    if (!/[A-Z]/.test(passwordData.new_password)) {
+      setErrorMsg('New password must contain at least one uppercase letter.')
+      return
+    }
     if (passwordData.new_password !== passwordData.confirm_password) {
       setErrorMsg('New passwords do not match.')
       return
