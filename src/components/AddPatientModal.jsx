@@ -64,9 +64,9 @@ function AddPatientModal({ onClose, onSuccess }) {
   }
 
   const validateEmail = (email) => {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailPattern.test(email)
-  }
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/
+  return emailPattern.test(email.trim())
+}
 
   const handleDobChange = (date) => {
     setSelectedDate(date)
@@ -86,7 +86,7 @@ function AddPatientModal({ onClose, onSuccess }) {
     }
 
     if (newPatient.email && !validateEmail(newPatient.email.trim())) {
-      alert('Please enter a valid email address (must include @)')
+      alert('Please enter a valid Gmail address (example@gmail.com)')
       return
     }
 
@@ -99,7 +99,7 @@ function AddPatientModal({ onClose, onSuccess }) {
         nationality: newPatient.nationality.trim() || null,
         national_id: newPatient.national_id.trim() || null,
         mobile_number: newPatient.mobile_number.replace(/\s/g, '') || null,
-        email: newPatient.email.trim() || null,
+        email: newPatient.email.trim().toLowerCase() || null,
         preferred_language: newPatient.preferred_language || 'English',
         blood_type: newPatient.blood_type || null,
         chronics: newPatient.chronics.trim() || null,
@@ -328,11 +328,11 @@ function AddPatientModal({ onClose, onSuccess }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Email
+                Gmail Address
               </label>
               <input
                 type="email"
-                placeholder="Enter email (e.g., patient@example.com)"
+                placeholder="Enter Gmail address (e.g., patient@gmail.com)"
                 value={newPatient.email}
                 onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none
