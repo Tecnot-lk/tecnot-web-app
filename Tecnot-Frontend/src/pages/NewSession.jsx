@@ -268,7 +268,25 @@ function NewSession() {
       streamRef.current = stream
 
       // Create MediaRecorder
-      const recorder = new MediaRecorder(stream)
+      // Create MediaRecorder with specific format
+const options = {
+  mimeType: 'audio/webm;codecs=opus'
+}
+
+// Try different formats if not supported
+if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+  options.mimeType = 'audio/webm'
+}
+if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+  options.mimeType = 'audio/ogg;codecs=opus'
+}
+if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+  options.mimeType = '' // Use default
+}
+
+const recorder = new MediaRecorder(stream, options)
+console.log('🎤 Recording with format:', recorder.mimeType)
+
       mediaRecorderRef.current = recorder
       chunksRef.current = []
 

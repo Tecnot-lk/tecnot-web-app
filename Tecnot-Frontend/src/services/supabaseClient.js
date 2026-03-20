@@ -1,12 +1,41 @@
-import { createClient } from '@supabase/supabase-js'
+// Temporary mock Supabase client for AI integration testing
+// This bypasses Supabase authentication to let the app run
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-export const supabase = createClient(supabaseUrl, supabaseKey)
-
-/**
-    * SUPABASE CLIENT SERVICE
-    * Handles the connection between the React frontend and the Postgres backend.
-    * Uses Environment Variables for secure credential management.
- */
+export const supabase = {
+  auth: {
+    getUser: async () => ({ 
+      data: { user: null }, 
+      error: null 
+    }),
+    getSession: async () => ({ 
+      data: { session: null }, 
+      error: null 
+    })
+  },
+  from: (table) => ({
+    select: () => ({
+      eq: () => ({
+        single: async () => ({ data: null, error: null }),
+        then: async (cb) => cb({ data: [], error: null })
+      }),
+      then: async (cb) => cb({ data: [], error: null })
+    }),
+    insert: () => ({
+      select: () => ({
+        single: async () => ({ data: null, error: null }),
+        then: async (cb) => cb({ data: [], error: null })
+      }),
+      then: async (cb) => cb({ data: [], error: null })
+    }),
+    update: () => ({
+      eq: () => ({
+        then: async (cb) => cb({ data: null, error: null })
+      })
+    }),
+    delete: () => ({
+      eq: () => ({
+        then: async (cb) => cb({ data: null, error: null })
+      })
+    })
+  })
+}

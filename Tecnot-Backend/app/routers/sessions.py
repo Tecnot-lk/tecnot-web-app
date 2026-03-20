@@ -19,6 +19,8 @@ async def generate_soap_endpoint(
     """
     Upload audio → Transcribe with Gemini → Generate SOAP with GPT-4o
     """
+    audio_path = None
+    
     try:
         # Create temp directory
         temp_dir = Path("temp_audio")
@@ -32,13 +34,21 @@ async def generate_soap_endpoint(
             content = await audio.read()
             f.write(content)
         
-        print(" Transcribing audio with Gemini...")
+        # Verify file was saved
+        file_size = os.path.getsize(audio_path)
+        print(f" Audio file saved: {audio_path}")
+        print(f" File size: {file_size} bytes")
+        
+        if file_size < 1000:
+            raise HTTPException(status_code=400, detail="Audio file too small - recording might have failed")
+        
+        print("🎤 Transcribing audio with Gemini...")
         
         # Step 1: Transcribe with Gemini
         transcript = await transcribe_audio(
-            str(audio_path), 
-            os.getenv("GOOGLE_API_KEY")
-        )
+    str(audio_path), 
+    os.getenv("GROQ_API_KEY")
+)
         
         print(f" Transcript: {transcript[:100]}...")
         print(" Generating SOAP note with GPT-4o...")
@@ -46,13 +56,14 @@ async def generate_soap_endpoint(
         # Step 2: Generate SOAP with GPT-4o
         soap_note = await generate_soap(
             transcript,
-            os.getenv("OPENAI_API_KEY")
+            os.getenv("GROQ_API_KEY")
         )
         
-        print("✅ SOAP note generated!")
+        print(" SOAP note generated!")
         
         # Clean up audio file
-        os.remove(audio_path)
+        if audio_path and os.path.exists(audio_path):
+            os.remove(audio_path)
         
         return {
             "success": True,
@@ -63,7 +74,7 @@ async def generate_soap_endpoint(
         
     except Exception as e:
         # Clean up on error
-        if audio_path.exists():
+        if audio_path and os.path.exists(audio_path):
             os.remove(audio_path)
         
         print(f" Error: {str(e)}")

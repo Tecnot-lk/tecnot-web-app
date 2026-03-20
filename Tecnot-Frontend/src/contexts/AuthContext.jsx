@@ -29,9 +29,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('tecnot_theme', theme)
   }, [theme])
 
-  // Listen to Supabase auth state changes
+ // Listen to Supabase auth state changes
   useEffect(() => {
-    // Get initial session
+    // TEMPORARY: Mock auth for AI integration testing
+    // Load mock user from localStorage
+    const storedUser = localStorage.getItem('tecnot_user')
+    const storedToken = localStorage.getItem('tecnot_token')
+    
+    if (storedUser && storedToken) {
+      const mockUser = JSON.parse(storedUser)
+      setUser(mockUser)
+      setProfile(mockUser)
+      setIsAuthenticated(true)
+    }
+    
+    setLoading(false)
+    
+    // Real Supabase auth will be re-enabled later:
+    /*
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user)
@@ -41,7 +56,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false)
     })
 
-    // Subscribe to future auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user)
@@ -55,6 +69,7 @@ export const AuthProvider = ({ children }) => {
     })
 
     return () => subscription.unsubscribe()
+    */
   }, [])
 
   // Fetch doctor profile from profiles table
@@ -70,11 +85,31 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // SUPABASE LOGIN
+  // SUPABASE LOGIN (temporarily mocked)
   const login = async ({ email, password }) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw new Error(error.message)
-    return data
+    // Mock login for AI testing
+    const mockUser = {
+      id: '1',
+      email: email,
+      first_name: 'Dr. Ibrahim',
+      last_name: 'Malik',
+      specialty: 'General Physician',
+      clinic_name: 'TECNOT Clinic'
+    }
+    
+    localStorage.setItem('tecnot_token', 'mock-token-12345')
+    localStorage.setItem('tecnot_user', JSON.stringify(mockUser))
+    
+    setUser(mockUser)
+    setProfile(mockUser)
+    setIsAuthenticated(true)
+    
+    return { user: mockUser }
+    
+    // Real Supabase login:
+    // const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    // if (error) throw new Error(error.message)
+    // return data
   }
 
   // SUPABASE SIGNUP - creates auth user + inserts profile row
@@ -132,13 +167,18 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  // SUPABASE LOGOUT
+ // SUPABASE LOGOUT (temporarily mocked)
   const logout = async () => {
-    await supabase.auth.signOut()
+    // Mock logout
+    localStorage.removeItem('tecnot_token')
+    localStorage.removeItem('tecnot_user')
     localStorage.removeItem('doctor_profile_pic')
     setUser(null)
     setProfile(null)
     setIsAuthenticated(false)
+    
+    // Real Supabase logout:
+    // await supabase.auth.signOut()
   }
 
   // UPDATE PROFILE

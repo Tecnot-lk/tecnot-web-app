@@ -1,15 +1,31 @@
-import google.generativeai as genai
+from groq import Groq
 import os
 
 async def transcribe_audio(audio_file_path: str, api_key: str) -> str:
-    """Transcribe audio with Gemini"""
-    genai.configure(api_key=api_key)
-    
-    audio_file = genai.upload_file(audio_file_path)
-    model = genai.GenerativeModel("gemini-2.5-flash")
-    
-    prompt = "Transcribe this medical consultation. Format as 'Doctor: ... Patient: ...'"
-    response = model.generate_content([prompt, audio_file])
-    
-    genai.delete_file(audio_file.name)
-    return response.text
+    """
+    Transcribe audio using Groq Whisper
+    """
+    try:
+        client = Groq(api_key=api_key)
+        
+        print(f"📁 Audio file: {audio_file_path}")
+        print(f"📊 File size: {os.path.getsize(audio_file_path)} bytes")
+        
+        print("🎤 Transcribing with Groq Whisper...")
+        
+        # Open and transcribe audio file
+        with open(audio_file_path, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+                file=audio_file,
+                model="whisper-large-v3",
+                language="en"  # Change to "si" for Sinhala
+            )
+        
+        transcript_text = transcription.text
+        print(f"✅ Transcription: {transcript_text[:100]}...")
+        
+        return transcript_text
+        
+    except Exception as e:
+        print(f"❌ Transcription error: {str(e)}")
+        raise Exception(f"Transcription failed: {str(e)}")
