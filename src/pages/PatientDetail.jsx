@@ -85,19 +85,63 @@ function PatientDetail() {
   return email.includes('@')
   }
 
-  const handleSavePatient = async () => {
-    if (!editedPatient.first_name || !editedPatient.last_name) {
-      alert('Please fill in patient name')
-      return
-    }
+  const formatMobileNumber = (value) => {
+  if (!value) return ''
 
-    if (!isValidNIC(editedPatient.national_id)) {
-      alert('Invalid National ID. Must be 12 digits OR 9 digits followed by V')
-      return
-    }
+  // Keep only digits and +
+  let cleaned = value.replace(/[^\d+]/g, '')
+
+  // Allow + only at the beginning
+  if (cleaned.includes('+')) {
+    cleaned = '+' + cleaned.replace(/\+/g, '').replace(/^\+/, '')
+  }
+
+  // Format: +94 77 123 4567
+  if (cleaned.startsWith('+94')) {
+    const digits = cleaned.slice(3).replace(/\D/g, '').slice(0, 9)
+    let formatted = '+94'
+
+    if (digits.length > 0) formatted += ' ' + digits.slice(0, 2)
+    if (digits.length > 2) formatted += ' ' + digits.slice(2, 5)
+    if (digits.length > 5) formatted += ' ' + digits.slice(5, 9)
+
+    return formatted
+  }
+
+  // Format: 077 123 4567
+  const digits = cleaned.replace(/\D/g, '').slice(0, 10)
+  let formatted = ''
+
+  if (digits.length > 0) formatted += digits.slice(0, 3)
+  if (digits.length > 3) formatted += ' ' + digits.slice(3, 6)
+  if (digits.length > 6) formatted += ' ' + digits.slice(6, 10)
+
+  return formatted
+  }
+
+  const isValidMobileNumber = (mobile) => {
+    if (!mobile) return true // allow empty if optional
+    return /^(0\d{2} \d{3} \d{4}|\+94 \d{2} \d{3} \d{4})$/.test(mobile)
+  }
+
+    const handleSavePatient = async () => {
+      if (!editedPatient.first_name || !editedPatient.last_name) {
+        alert('Please fill in patient name')
+        return
+      }
+
+      if (!isValidNIC(editedPatient.national_id)) {
+        alert('Invalid National ID. Must be 12 digits OR 9 digits followed by V')
+        return
+      }
 
     if (!isValidEmail(editedPatient.email)) {
       alert('Email must contain @')
+      return
+    }
+
+    if (!isValidMobileNumber(editedPatient.mobile_number)) {
+      alert('Invalide mobile number.')
       return
     }
 
@@ -432,9 +476,20 @@ function PatientDetail() {
               <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile Number</label>
-                  <input type="tel" placeholder="+94 77 123 4567" value={editedPatient.mobile_number}
-                    onChange={(e) => setEditedPatient({ ...editedPatient, mobile_number: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="077 123 4567 or +94 77 123 4567"
+                  value={editedPatient.mobile_number}
+                  onChange={(e) =>
+                    setEditedPatient({
+                      ...editedPatient,
+                      mobile_number: formatMobileNumber(e.target.value)
+                    })
+                  }
+                  maxLength={15}
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all text-sm xs:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
