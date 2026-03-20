@@ -25,9 +25,6 @@ function AddPatientModal({ onClose, onSuccess }) {
     mrn: ''
   })
 
-  // ==========================================================================
-  // FUNCTION: CALCULATE AGE FROM DOB
-  // ==========================================================================
   const calculateAge = (dob) => {
     if (!dob) return ''
     const birth = new Date(dob)
@@ -38,9 +35,6 @@ function AddPatientModal({ onClose, onSuccess }) {
     return age < 0 ? '' : String(age)
   }
 
-  // ==========================================================================
-  // FUNCTION: VALIDATE MOBILE NUMBER
-  // ==========================================================================
   const validateMobileNumber = (number) => {
     const cleaned = number.replace(/\s+/g, '')
     const localPattern = /^0\d{9}$/
@@ -48,11 +42,9 @@ function AddPatientModal({ onClose, onSuccess }) {
     return localPattern.test(cleaned) || intlPattern.test(cleaned)
   }
 
-  // ==========================================================================
-  // FUNCTION: FORMAT MOBILE NUMBER WITH SPACES
-  // ==========================================================================
   const formatMobileNumber = (value) => {
     const cleaned = value.replace(/\s+/g, '')
+
     if (cleaned.startsWith('+94')) {
       const part1 = cleaned.slice(0, 3)
       const part2 = cleaned.slice(3, 5)
@@ -60,27 +52,28 @@ function AddPatientModal({ onClose, onSuccess }) {
       const part4 = cleaned.slice(8, 12)
       return [part1, part2, part3, part4].filter(Boolean).join(' ')
     }
+
     if (cleaned.startsWith('0')) {
       const part1 = cleaned.slice(0, 3)
       const part2 = cleaned.slice(3, 6)
       const part3 = cleaned.slice(6, 10)
       return [part1, part2, part3].filter(Boolean).join(' ')
     }
+
     return cleaned
   }
 
-  // ==========================================================================
-  // FUNCTION: HANDLE DOB CHANGE
-  // ==========================================================================
+  const validateEmail = (email) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailPattern.test(email)
+  }
+
   const handleDobChange = (date) => {
     setSelectedDate(date)
     const computedAge = calculateAge(date)
     setNewPatient((prev) => ({ ...prev, age: computedAge }))
   }
 
-  // ==========================================================================
-  // FUNCTION: SAVE NEW PATIENT
-  // ==========================================================================
   const handleSavePatient = async () => {
     if (!newPatient.first_name || !newPatient.last_name) {
       alert('Please fill in patient name')
@@ -92,53 +85,54 @@ function AddPatientModal({ onClose, onSuccess }) {
       return
     }
 
+    if (newPatient.email && !validateEmail(newPatient.email.trim())) {
+      alert('Please enter a valid email address (must include @)')
+      return
+    }
+
     try {
       const patientData = {
-        first_name:          newPatient.first_name.trim(),
-        last_name:           newPatient.last_name.trim(),
-        age:                 newPatient.age ? parseInt(newPatient.age, 10) : null,
-        gender:              newPatient.gender || null,
-        nationality:         newPatient.nationality.trim() || null,
-        national_id:         newPatient.national_id.trim() || null,
-        mobile_number:       newPatient.mobile_number.replace(/\s/g, '') || null,
-        email:               newPatient.email.trim() || null,
-        preferred_language:  newPatient.preferred_language || 'English',
-        blood_type:          newPatient.blood_type || null,
-        chronics:            newPatient.chronics.trim() || null,
-        allergies:           newPatient.allergies.trim() || null,
-        drug_precautions:    newPatient.drug_precautions.trim() || null,
-        mrn:                 null,
-        date_of_birth:       selectedDate ? selectedDate.toISOString().split('T')[0] : null,
+        first_name: newPatient.first_name.trim(),
+        last_name: newPatient.last_name.trim(),
+        age: newPatient.age ? parseInt(newPatient.age, 10) : null,
+        gender: newPatient.gender || null,
+        nationality: newPatient.nationality.trim() || null,
+        national_id: newPatient.national_id.trim() || null,
+        mobile_number: newPatient.mobile_number.replace(/\s/g, '') || null,
+        email: newPatient.email.trim() || null,
+        preferred_language: newPatient.preferred_language || 'English',
+        blood_type: newPatient.blood_type || null,
+        chronics: newPatient.chronics.trim() || null,
+        allergies: newPatient.allergies.trim() || null,
+        drug_precautions: newPatient.drug_precautions.trim() || null,
+        mrn: null,
+        date_of_birth: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
       }
 
-      // Save patient to Supabase via patientService
       const createdPatient = await patientService.createPatient(patientData)
 
-      // Insert a notification row so it appears in the Notifications page
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
+
       if (user) {
         await supabase.from('notifications').insert({
           doctor_id: user.id,
-          type:      'patient',
-          title:     'New patient added',
-          message:   `${createdPatient.first_name} ${createdPatient.last_name} (MRN: ${createdPatient.mrn}) has been added to your patient list.`,
-          read:      false,
+          type: 'patient',
+          title: 'New patient added',
+          message: `${createdPatient.first_name} ${createdPatient.last_name} (MRN: ${createdPatient.mrn}) has been added to your patient list.`,
+          read: false,
         })
       }
 
       resetForm()
-      // Pass the full created patient back to Patients.jsx to trigger the toast
       onSuccess(createdPatient)
-
     } catch (error) {
       console.error('Error adding patient:', error)
       alert(`Failed to add patient: ${error.message}`)
     }
   }
 
-  // ==========================================================================
-  // FUNCTION: RESET FORM
-  // ==========================================================================
   const resetForm = () => {
     setNewPatient({
       first_name: '',
@@ -185,7 +179,9 @@ function AddPatientModal({ onClose, onSuccess }) {
         <div className="space-y-4">
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                First Name *
+              </label>
               <input
                 type="text"
                 placeholder="Enter first name"
@@ -198,7 +194,9 @@ function AddPatientModal({ onClose, onSuccess }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Last Name *
+              </label>
               <input
                 type="text"
                 placeholder="Enter last name"
@@ -213,7 +211,9 @@ function AddPatientModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Date of Birth
+            </label>
             <DatePicker
               selected={selectedDate}
               onChange={handleDobChange}
@@ -233,7 +233,9 @@ function AddPatientModal({ onClose, onSuccess }) {
 
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Age
+              </label>
               <input
                 type="number"
                 placeholder="Auto-calculated from DOB"
@@ -246,7 +248,9 @@ function AddPatientModal({ onClose, onSuccess }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Gender
+              </label>
               <select
                 value={newPatient.gender}
                 onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
@@ -264,7 +268,9 @@ function AddPatientModal({ onClose, onSuccess }) {
 
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nationality</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Nationality
+              </label>
               <input
                 type="text"
                 placeholder="Enter nationality"
@@ -277,7 +283,9 @@ function AddPatientModal({ onClose, onSuccess }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">National ID</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                National ID
+              </label>
               <input
                 type="text"
                 placeholder="e.g., 851234567V"
@@ -293,7 +301,9 @@ function AddPatientModal({ onClose, onSuccess }) {
 
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mobile Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Mobile Number
+              </label>
               <input
                 type="tel"
                 placeholder="077 004 9469 or +94 77 004 9469"
@@ -317,23 +327,28 @@ function AddPatientModal({ onClose, onSuccess }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email
+              </label>
               <input
                 type="email"
-                placeholder="patient@example.com"
+                placeholder="Enter email (e.g., patient@example.com)"
                 value={newPatient.email}
                 onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none
                             focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
                             transition-all text-sm xs:text-base
-                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                            placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred Language</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Preferred Language
+              </label>
               <select
                 value={newPatient.preferred_language}
                 onChange={(e) => setNewPatient({ ...newPatient, preferred_language: e.target.value })}
@@ -347,7 +362,9 @@ function AddPatientModal({ onClose, onSuccess }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Blood Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Blood Type
+              </label>
               <select
                 value={newPatient.blood_type}
                 onChange={(e) => setNewPatient({ ...newPatient, blood_type: e.target.value })}
@@ -369,7 +386,9 @@ function AddPatientModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chronic Conditions</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Chronic Conditions
+            </label>
             <input
               type="text"
               placeholder="e.g., Diabetes Type 2, Hypertension"
@@ -383,7 +402,9 @@ function AddPatientModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allergies</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Allergies
+            </label>
             <input
               type="text"
               placeholder="e.g., Penicillin, Peanuts"
@@ -397,7 +418,9 @@ function AddPatientModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Drug Precautions</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Drug Precautions
+            </label>
             <input
               type="text"
               placeholder="e.g., Avoid NSAIDs"
@@ -411,7 +434,9 @@ function AddPatientModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Patient MRN</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Patient MRN
+            </label>
             <input
               type="text"
               placeholder="Auto-generated by backend"
