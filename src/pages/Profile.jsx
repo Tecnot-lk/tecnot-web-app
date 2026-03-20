@@ -116,8 +116,8 @@ function Profile() {
       setErrorMsg('Please enter a new password.')
       return
     }
-    if (passwordData.new_password.length < 6) {
-      setErrorMsg('New password must be at least 6 characters.')
+    if (passwordData.new_password.length < 8) {
+      setErrorMsg('New password must be at least 8 characters.')
       return
     }
     if (!/[A-Z]/.test(passwordData.new_password)) {
