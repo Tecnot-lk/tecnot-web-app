@@ -92,12 +92,44 @@ function SoapNote() {
     fetchSessionData()
   }, [id])
 
-  const fetchSessionData = async () => {
+ const fetchSessionData = async () => {
     try {
       setLoading(true)
       
       console.log('Loading session ID:', id)
       
+      // Check if this is a NEW AI-generated session (coming from NewSession page)
+      if (id === 'new') {
+        console.log('📝 Loading AI-generated SOAP note from navigation state')
+        
+        // Get data from navigate state (passed from NewSession)
+        const navigationState = window.history.state?.usr
+        
+        if (navigationState) {
+          // Use data passed from NewSession page
+          setPatient(navigationState.patient)
+          setSession({ vitals: navigationState.vitals })
+          setSoapData({
+            chief_complaint: navigationState.soap?.chief_complaint || '',
+            history_present_illness: navigationState.soap?.history_present_illness || '',
+            subjective: navigationState.soap?.subjective || '',
+            objective: navigationState.soap?.objective || '',
+            assessment: navigationState.soap?.assessment || '',
+            plan: navigationState.soap?.plan || '',
+            lab_orders: navigationState.soap?.lab_orders || '',
+            radiology_orders: navigationState.soap?.radiology_orders || '',
+            medication_orders: navigationState.soap?.medication_orders || '',
+            procedure_orders: navigationState.soap?.procedure_orders || '',
+            nursing_instructions: navigationState.soap?.nursing_instructions || ''
+          })
+          
+          setHistoricalNotes([]) // New session has no history yet
+          setLoading(false)
+          return
+        }
+      }
+      
+      // ELSE: Load existing dummy data (for demo purposes)
       // Get patient MRN for this session
       const patientMRN = sessionPatientMapping[id] || 'MRN001234'
       console.log('Patient MRN for this session:', patientMRN)

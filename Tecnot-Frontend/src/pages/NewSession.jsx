@@ -38,6 +38,7 @@ import { Search, Mic, Square, Loader2, Plus, X, FileText, Wand2 } from 'lucide-r
 import Header from '../components/Header'
 import PatientBanner from '../components/PatientBanner'
 import * as patientService from '../services/patientService'
+import * as sessionService from '../services/sessionService'
 import AddPatientModal from '../components/AddPatientModal'
 
 function NewSession() {
@@ -267,7 +268,25 @@ function NewSession() {
       streamRef.current = stream
 
       // Create MediaRecorder
-      const recorder = new MediaRecorder(stream)
+      // Create MediaRecorder with specific format
+const options = {
+  mimeType: 'audio/webm;codecs=opus'
+}
+
+// Try different formats if not supported
+if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+  options.mimeType = 'audio/webm'
+}
+if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+  options.mimeType = 'audio/ogg;codecs=opus'
+}
+if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+  options.mimeType = '' // Use default
+}
+
+const recorder = new MediaRecorder(stream, options)
+console.log('🎤 Recording with format:', recorder.mimeType)
+
       mediaRecorderRef.current = recorder
       chunksRef.current = []
 
@@ -280,21 +299,16 @@ function NewSession() {
 
       // Event: Recording stopped
       recorder.onstop = () => {
-        // Create blob from chunks
-        const blob = new Blob(chunksRef.current, { 
-          type: recorder.mimeType || 'audio/webm' 
-        })
-        setAudioBlob(blob)
+  // Create blob from chunks
+  const blob = new Blob(chunksRef.current, { 
+    type: recorder.mimeType || 'audio/webm' 
+  })
+  setAudioBlob(blob)
 
-        // TODO BACKEND: This is demo transcript
-        // In production, this will be filled after Whisper transcription
-        setTranscriptText(
-          `Doctor: Hi ${selectedPatient.first_name}, what brings you in today?\n` +
-          `Patient: I've been having discomfort and would like to check.\n` +
-          `Doctor: Okay, we'll go through symptoms and history, then plan next steps.`
-        )
-      }
-
+  // Transcript will be filled after AI processing
+  setTranscriptText('Processing...')
+}
+      
       // Start recording
       recorder.start()
       setIsRecording(true)
@@ -376,62 +390,56 @@ function NewSession() {
    * 
    * TODO: Replace setTimeout with actual API call
    */
-  const handleGenerateSOAP = () => {
-    if (!audioBlob) {
-      alert('No recording found!')
-      return
-    }
-
-    setProcessing(true)
-
-    // TODO BACKEND: Replace this with actual API call
-    // Example implementation:
-    /*
-    const formData = new FormData()
-    formData.append('audio', audioBlob, 'recording.webm')
-    formData.append('patient_id', selectedPatient.id)
-    formData.append('vitals', JSON.stringify(vitals))
-    
-    try {
-      const response = await fetch('/api/sessions/generate-soap', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      })
-      const data = await response.json()
-      
-      // Navigate to SOAP note page with generated data
-      navigate(`/soap-note/${data.session_id}`, {
-        state: {
-          patient: selectedPatient,
-          vitals,
-          transcript: data.transcript,
-          soap: data.soap
-        }
-      })
-    } catch (error) {
-      console.error('SOAP generation failed:', error)
-      alert('Failed to generate SOAP note. Please try again.')
-    } finally {
-      setProcessing(false)
-    }
-    */
-
-    // DEMO: Simulate API call
-    setTimeout(() => {
-      setProcessing(false)
-      navigate('/soap-note/new', {
-        state: {
-          patient: selectedPatient,
-          vitals,
-          transcript: transcriptText
-        }
-      })
-    }, 2000)
+   const handleGenerateSOAP = async () => {
+  if (!audioBlob) {
+    alert('No recording found!')
+    return
   }
 
+  setProcessing(true)
+
+  try {
+    console.log('🎤 Sending audio to AI backend...')
+    
+    // Call real AI backend
+    const result = await sessionService.generateSOAPFromAudio(
+      audioBlob,
+      selectedPatient.id,
+      vitals
+    )
+    
+    console.log('✅ SOAP Generated:', result)
+    console.log('📝 Transcript:', result.transcript)
+    
+    // Update transcript with real data from AI
+    if (result.transcript) {
+      setTranscriptText(result.transcript)
+      console.log('✅ Transcript updated!')
+      
+      // Store result for View SOAP button
+      window.soapResult = {
+        patient: selectedPatient,
+        vitals,
+        transcript: result.transcript,
+        soap: result.soap,
+        sessionId: result.session_id
+      }
+      
+      // Show success message
+      alert('✅ Transcription complete! Review the transcript below, then click "View SOAP Note".')
+      
+    } else {
+      console.error('❌ No transcript in result!')
+      setTranscriptText('Error: No transcript received')
+    }
+    
+  } catch (error) {
+    console.error('❌ SOAP generation failed:', error)
+    alert(`Failed to generate SOAP note: ${error.message}\n\nPlease check:\n1. Backend is running on port 8000\n2. API keys are set in .env\n3. Check browser console for details`)
+  } finally {
+    setProcessing(false)
+  }
+}
   // ==========================================================================
   // FUNCTION: FORMAT TIME
   // ==========================================================================
@@ -720,28 +728,43 @@ function NewSession() {
                 </div>
 
                 {/* Generate SOAP Button */}
-                <div className="mt-5 flex justify-end">
-                  <button
-                    onClick={handleGenerateSOAP}
-                    disabled={processing}
-                    className="px-5 xs:px-6 py-3 rounded-lg font-semibold text-white
-                             bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-95
-                             transition-all shadow-lg flex items-center gap-2
-                             disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {processing ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Generating SOAP Note...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="w-5 h-5" />
-                        Generate SOAP Note
-                      </>
-                    )}
-                  </button>
-                </div>
+<div className="mt-5 flex justify-end gap-3">
+  <button
+    onClick={handleGenerateSOAP}
+    disabled={processing || (transcriptText !== 'Processing...' && window.soapResult)}
+    className="px-5 xs:px-6 py-3 rounded-lg font-semibold text-white
+             bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-95
+             transition-all shadow-lg flex items-center gap-2
+             disabled:opacity-60 disabled:cursor-not-allowed"
+  >
+    {processing ? (
+      <>
+        <Loader2 className="w-5 h-5 animate-spin" />
+        Generating SOAP Note...
+      </>
+    ) : (
+      <>
+        <Wand2 className="w-5 h-5" />
+        Generate Transcription
+      </>
+    )}
+  </button>
+  
+  {/* View SOAP Note button - shows after generation */}
+  {window.soapResult && transcriptText !== 'Processing...' && (
+    <button
+      onClick={() => {
+        navigate('/soap-note/new', { state: window.soapResult })
+      }}
+      className="px-5 xs:px-6 py-3 rounded-lg font-semibold text-white
+               bg-green-600 hover:bg-green-700
+               transition-all shadow-lg flex items-center gap-2"
+    >
+      <FileText className="w-5 h-5" />
+      View SOAP Note
+    </button>
+  )}
+</div>
               </div>
             )}
           </div>
