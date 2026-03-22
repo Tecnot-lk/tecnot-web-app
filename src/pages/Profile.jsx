@@ -1,5 +1,5 @@
 // PROFILE PAGE - FULLY SUPABASE INTEGRATED
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { User, Mail, Phone, Stethoscope, Save, Camera, Loader2, Lock, Eye, EyeOff } from 'lucide-react'
 import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
@@ -15,6 +15,12 @@ function Profile() {
   const [activeTab, setActiveTab] = useState('info')
   const [successMsg, setSuccessMsg] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+
+  const specialtyOptions = useMemo(() => [
+    'General Physician', 'Cardiology', 'Dermatology', 'ENT',
+    'Gastroenterology', 'Gynecology', 'Neurology', 'Oncology',
+    'Orthopedics', 'Pediatrics', 'Psychiatry', 'Radiology', 'Surgery', 'Other',
+  ], [])
 
   // Password visibility state for each field
   const [showPasswords, setShowPasswords] = useState({
@@ -172,6 +178,15 @@ function Profile() {
     { label: 'Confirm New Password', key: 'confirm_password' },
   ]
 
+  const textFields = [
+    { label: 'First Name', key: 'first_name', icon: User, placeholder: 'e.g. John' },
+    { label: 'Last Name', key: 'last_name', icon: User, placeholder: 'e.g. Smith' },
+    { label: 'Email', key: 'email', icon: Mail, placeholder: 'e.g. john@example.com', disabled: true },
+    { label: 'Phone', key: 'phone', icon: Phone, placeholder: 'e.g. +1 234 567 8900' },
+    { label: 'License Number', key: 'license_number', icon: User, placeholder: 'e.g. LIC-123456' },
+    { label: 'Clinic Name', key: 'clinic_name', icon: User, placeholder: 'e.g. City Health Clinic' },
+  ]
+
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="My Profile" subtitle="Manage your account settings" />
@@ -236,15 +251,9 @@ function Profile() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Personal Information</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { label: 'First Name', key: 'first_name', icon: User, placeholder: 'e.g. John' },
-                { label: 'Last Name', key: 'last_name', icon: User, placeholder: 'e.g. Smith' },
-                { label: 'Email', key: 'email', icon: Mail, placeholder: 'e.g. john@example.com', disabled: true },
-                { label: 'Phone', key: 'phone', icon: Phone, placeholder: 'e.g. +1 234 567 8900' },
-                { label: 'Specialty', key: 'specialty', icon: Stethoscope, placeholder: 'e.g. Cardiology' },
-                { label: 'License Number', key: 'license_number', icon: User, placeholder: 'e.g. LIC-123456' },
-                { label: 'Clinic Name', key: 'clinic_name', icon: User, placeholder: 'e.g. City Health Clinic' },
-              ].map(({ label, key, icon: Icon, placeholder, disabled }) => (
+
+              {/* Text fields (excluding specialty) */}
+              {textFields.map(({ label, key, icon: Icon, placeholder, disabled }) => (
                 <div key={key}>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{label}</label>
                   <div className="relative">
@@ -264,6 +273,34 @@ function Profile() {
                   </div>
                 </div>
               ))}
+
+              {/* Specialty Dropdown */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Specialty</label>
+                <div className="relative">
+                  <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  <select
+                    value={profileData.specialty}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, specialty: e.target.value }))}
+                    className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
+                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none
+                               focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all
+                               appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled>Select specialty</option>
+                    {specialtyOptions.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  {/* Custom chevron */}
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
             </div>
             <button
               onClick={handleSaveProfile}
@@ -283,7 +320,6 @@ function Profile() {
             <div className="space-y-4 max-w-md">
               {passwordFields.map(({ label, key }, index) => (
                 <React.Fragment key={key}>
-                  {/* Divider between current password and new password fields */}
                   {index === 1 && (
                     <div className="border-t border-gray-100 dark:border-gray-700 pt-2" />
                   )}
