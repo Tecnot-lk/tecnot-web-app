@@ -285,9 +285,10 @@ function Profile() {
                     className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600
                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none
                                focus:border-tecnot-primary dark:focus:border-tecnot-light transition-all
-                               appearance-none cursor-pointer"
+                               appearance-none cursor-pointer
+                               [&>option]:text-gray-900 [&>option]:dark:text-white"
                   >
-                    <option value="" disabled>Select specialty</option>
+                    <option value="" disabled className="text-gray-400">e.g. General Physician</option>
                     {specialtyOptions.map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
