@@ -25,7 +25,7 @@ async def test_ai():
     openai_key = os.getenv("OPENAI_API_KEY")
     
     if google_key:
-        print(f"✅Google API Key found (starts with: {google_key[:10]}...)")
+        print(f"Google API Key found (starts with: {google_key[:10]}...)")
     else:
         print(" Google API Key NOT found in .env")
     

@@ -8,7 +8,7 @@ async def generate_soap(transcript: str, api_key: str) -> dict:
     try:
         client = Groq(api_key=api_key)
         
-        print("📝 Generating SOAP note with Groq...")
+        print(" Generating SOAP note with Groq...")
         
         prompt = f"""
 You are a medical AI assistant. Generate a complete SOAP note from this consultation transcript.
@@ -58,10 +58,10 @@ Return ONLY a JSON object with these exact keys (no markdown, no extra text):
             soap_text = soap_text.strip()
         
         soap_note = json.loads(soap_text)
-        print("✅ SOAP note generated!")
+        print(" SOAP note generated!")
         
         return soap_note
         
     except Exception as e:
-        print(f"❌ SOAP generation error: {str(e)}")
+        print(f" SOAP generation error: {str(e)}")
         raise Exception(f"SOAP generation failed: {str(e)}")

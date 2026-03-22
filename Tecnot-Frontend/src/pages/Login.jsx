@@ -24,7 +24,7 @@ function Login() {
     setLoading(true)
     try {
       await login(formData)
-      navigate('/', { replace: true })
+      navigate('/patients', { replace: true })
     } catch (err) {
       setError(err?.message || 'Login failed. Please check your email and password.')
     } finally {
@@ -36,15 +36,18 @@ function Login() {
     setError('')
     setGoogleLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`, // redirects back to your app after Google login
-        },
+          redirectTo: `${window.location.origin}/patients`
+        }
       })
+      
       if (error) throw error
-      // Supabase will redirect the browser to Google — no further action needed here
+      
+      // Supabase will redirect to Google automatically
     } catch (err) {
+      console.error('Google login error:', err)
       setError(err?.message || 'Google sign-in failed. Please try again.')
       setGoogleLoading(false)
     }
@@ -78,7 +81,6 @@ function Login() {
               {googleLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                // Google "G" SVG logo
                 <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -113,10 +115,15 @@ function Login() {
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input type="email" name="email" value={formData.email} onChange={handleChange}
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={formData.email} 
+                    onChange={handleChange}
                     placeholder="doctor@hospital.lk"
                     className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:border-tecnot-primary transition-smooth"
-                    required />
+                    required 
+                  />
                 </div>
               </div>
 
@@ -124,28 +131,52 @@ function Login() {
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input type={showPw ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange}
+                  <input 
+                    type={showPw ? 'text' : 'password'} 
+                    name="password" 
+                    value={formData.password} 
+                    onChange={handleChange}
                     placeholder="••••••••"
                     className="w-full pl-10 pr-12 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:border-tecnot-primary transition-smooth"
-                    required />
-                  <button type="button" onClick={() => setShowPw((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    required 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPw((s) => !s)} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
                     {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
 
-              <button type="submit" disabled={loading || googleLoading}
-                className="w-full py-3 rounded-xl font-semibold bg-tecnot-primary text-white hover:bg-tecnot-dark transition-smooth shadow-lg flex items-center justify-center gap-2 disabled:opacity-60">
-                {loading ? <><Loader2 className="w-5 h-5 animate-spin" />Signing in...</> : 'Sign in'}
+              <button 
+                type="submit" 
+                disabled={loading || googleLoading}
+                className="w-full py-3 rounded-xl font-semibold bg-tecnot-primary text-white hover:bg-tecnot-dark transition-smooth shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
               </button>
 
               <p className="text-center text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account?{' '}
-                <Link to="/signup" className="font-semibold text-tecnot-primary hover:underline">Create one</Link>
+                <Link to="/signup" className="font-semibold text-tecnot-primary hover:underline">
+                  Create one
+                </Link>
               </p>
             </form>
           </div>
-          <p className="text-center text-xs text-gray-500 mt-6">© {new Date().getFullYear()} Tecnot • AI Clinical Scribe</p>
+          
+          <p className="text-center text-xs text-gray-500 mt-6">
+            © {new Date().getFullYear()} Tecnot • AI Clinical Scribe
+          </p>
         </div>
       </div>
     </div>

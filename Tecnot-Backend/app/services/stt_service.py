@@ -8,10 +8,10 @@ async def transcribe_audio(audio_file_path: str, api_key: str) -> str:
     try:
         client = Groq(api_key=api_key)
         
-        print(f"📁 Audio file: {audio_file_path}")
-        print(f"📊 File size: {os.path.getsize(audio_file_path)} bytes")
+        print(f" Audio file: {audio_file_path}")
+        print(f" File size: {os.path.getsize(audio_file_path)} bytes")
         
-        print("🎤 Transcribing with Groq Whisper...")
+        print(" Transcribing with Groq Whisper...")
         
         # Open and transcribe audio file
         with open(audio_file_path, "rb") as audio_file:
@@ -22,10 +22,10 @@ async def transcribe_audio(audio_file_path: str, api_key: str) -> str:
             )
         
         transcript_text = transcription.text
-        print(f"✅ Transcription: {transcript_text[:100]}...")
+        print(f" Transcription: {transcript_text[:100]}...")
         
         return transcript_text
         
     except Exception as e:
-        print(f"❌ Transcription error: {str(e)}")
+        print(f" Transcription error: {str(e)}")
         raise Exception(f"Transcription failed: {str(e)}")

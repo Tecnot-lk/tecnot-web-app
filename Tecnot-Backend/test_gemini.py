@@ -15,4 +15,4 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": "Say 'Hello, this is a test!'"}]
 )
 
-print(f"✅ OpenAI response: {response.choices[0].message.content}")
+print(f"OpenAI response: {response.choices[0].message.content}")

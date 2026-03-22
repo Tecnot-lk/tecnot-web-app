@@ -1,11 +1,7 @@
 // src/contexts/AuthContext.jsx
-//FULLY INTEGRATED WITH SUPABASE AUTH
+// FULLY INTEGRATED WITH SUPABASE AUTH
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../services/supabaseClient'
-
-//Set true to skip email verification (testing)
-//Set false for production
-const SKIP_EMAIL_VERIFICATION = false
 
 const AuthContext = createContext(null)
 
@@ -29,38 +25,42 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('tecnot_theme', theme)
   }, [theme])
 
- // Listen to Supabase auth state changes
+  // Listen to Supabase auth state changes
   useEffect(() => {
-    // TEMPORARY: Mock auth for AI integration testing
-    // Load mock user from localStorage
-    const storedUser = localStorage.getItem('tecnot_user')
-    const storedToken = localStorage.getItem('tecnot_token')
-    
-    if (storedUser && storedToken) {
-      const mockUser = JSON.parse(storedUser)
-      setUser(mockUser)
-      setProfile(mockUser)
-      setIsAuthenticated(true)
-    }
-    
-    setLoading(false)
-    
-    // Real Supabase auth will be re-enabled later:
-    /*
+    // Get initial session (handles OAuth callback)
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('📱 Initial session check:', session ? 'Found' : 'None')
+      
       if (session?.user) {
         setUser(session.user)
         setIsAuthenticated(true)
         fetchProfile(session.user.id)
+        
+        // If we just logged in via OAuth and we're on login page, redirect
+        if (window.location.pathname === '/login' || window.location.pathname === '/') {
+          console.log('🔄 Redirecting to /patients after OAuth login')
+          window.location.href = '/patients'
+        }
       }
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔐 Auth event:', event, 'Session:', session ? 'Present' : 'None')
+      
       if (session?.user) {
         setUser(session.user)
         setIsAuthenticated(true)
         fetchProfile(session.user.id)
+        
+        // Redirect after successful OAuth sign-in
+        if (event === 'SIGNED_IN' && (window.location.pathname === '/login' || window.location.pathname === '/')) {
+          console.log('🔄 Redirecting to /patients after sign-in event')
+          setTimeout(() => {
+            window.location.href = '/patients'
+          }, 100)
+        }
       } else {
         setUser(null)
         setProfile(null)
@@ -69,50 +69,48 @@ export const AuthProvider = ({ children }) => {
     })
 
     return () => subscription.unsubscribe()
-    */
   }, [])
 
   // Fetch doctor profile from profiles table
   const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-    if (!error && data) {
-      setProfile(data)
+      if (!error && data) {
+        setProfile(data)
+      } else if (error) {
+        console.log('ℹ️ No profile found in profiles table (this is OK for new OAuth users)')
+        // Create a basic profile from user metadata
+        const user = await supabase.auth.getUser()
+        if (user.data.user) {
+          const metadata = user.data.user.user_metadata
+          setProfile({
+            id: userId,
+            email: user.data.user.email,
+            first_name: metadata.full_name?.split(' ')[0] || metadata.name?.split(' ')[0] || 'Doctor',
+            last_name: metadata.full_name?.split(' ').slice(1).join(' ') || metadata.name?.split(' ').slice(1).join(' ') || '',
+            specialty: 'General Physician',
+            clinic_name: 'TECNOT Clinic'
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
     }
   }
 
-  // SUPABASE LOGIN (temporarily mocked)
+  // Login with email/password
   const login = async ({ email, password }) => {
-    // Mock login for AI testing
-    const mockUser = {
-      id: '1',
-      email: email,
-      first_name: 'Dr. Ibrahim',
-      last_name: 'Malik',
-      specialty: 'General Physician',
-      clinic_name: 'TECNOT Clinic'
-    }
-    
-    localStorage.setItem('tecnot_token', 'mock-token-12345')
-    localStorage.setItem('tecnot_user', JSON.stringify(mockUser))
-    
-    setUser(mockUser)
-    setProfile(mockUser)
-    setIsAuthenticated(true)
-    
-    return { user: mockUser }
-    
-    // Real Supabase login:
-    // const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    // if (error) throw new Error(error.message)
-    // return data
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
+    return data
   }
 
-  // SUPABASE SIGNUP - creates auth user + inserts profile row
+  // Signup
   const signup = async ({
     first_name,
     last_name,
@@ -128,26 +126,17 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
       options: {
-        emailRedirectTo: SKIP_EMAIL_VERIFICATION ? null : window.location.origin,
-          data: {
-            first_name,
-            last_name,
-            phone,
-            specialty,
-            license_number,
-            clinic_name,
-          }
+        data: {
+          first_name,
+          last_name,
+          phone,
+          specialty,
+          license_number,
+          clinic_name,
+        }
       },
     })
     if (error) throw new Error(error.message)
-
-    // Send OTP to email for verification
-    if (!SKIP_EMAIL_VERIFICATION) {
-      await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false }
-      })
-    }
 
     // 2. Insert into profiles table
     if (data.user) {
@@ -167,21 +156,16 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
- // SUPABASE LOGOUT (temporarily mocked)
+  // Logout
   const logout = async () => {
-    // Mock logout
-    localStorage.removeItem('tecnot_token')
-    localStorage.removeItem('tecnot_user')
+    await supabase.auth.signOut()
     localStorage.removeItem('doctor_profile_pic')
     setUser(null)
     setProfile(null)
     setIsAuthenticated(false)
-    
-    // Real Supabase logout:
-    // await supabase.auth.signOut()
   }
 
-  // UPDATE PROFILE
+  // Update profile
   const updateProfile = async (updates) => {
     if (!user) throw new Error('Not authenticated')
     const { data, error } = await supabase
@@ -195,7 +179,7 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  // CHANGE PASSWORD
+  // Change password
   const changePassword = async (newPassword) => {
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw new Error(error.message)
