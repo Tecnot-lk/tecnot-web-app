@@ -91,7 +91,7 @@ export const deleteSession = async (sessionId) => {
   export const generateSOAPFromAudio = async (audioBlob, patientId, vitals) => {
   try {
     // Get API URL from environment variable
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+    const API_URL = 'https://tecnot-backend.onrender.com/api/v1'
     
     // Create FormData for file upload
     const formData = new FormData()
