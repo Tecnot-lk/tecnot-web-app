@@ -1,119 +1,240 @@
 // =============================================================================
 // PATIENTS PAGE - PATIENT LIST & SEARCH
 // =============================================================================
-//
-// PURPOSE:
-// - Display all patients in a searchable grid
-// - Add new patients
-// - Navigate to individual patient details
-//
-// BACKEND INTEGRATION POINTS:
-// - Line 65: fetchPatients() - GET /api/patients
-// - Line 145: handleSavePatient() - POST /api/patients
-//
-// FEATURES:
-// - Real-time search (filters as you type)
-// - Add patient modal with form validation
-// - Responsive grid layout
-// - Auto-calculate age from DOB
-//
-// =============================================================================
 
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Search, User, Plus, Loader2 } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Search, User, Plus, Loader2, CheckCircle2, X } from 'lucide-react'
 import Header from '../components/Header'
 import AddPatientModal from '../components/AddPatientModal'
 import 'react-datepicker/dist/react-datepicker.css'
 import * as patientService from '../services/patientService'
+import { supabase } from '../services/supabaseClient'
 
-function Patients() {
-  // ==========================================================================
-  // STATE MANAGEMENT
-  // ==========================================================================
-  
-  // List of all patients
-  const [patients, setPatients] = useState([])
-  
-  // Loading state
-  const [loading, setLoading] = useState(true)
-  
-  // Search query
-  const [searchQuery, setSearchQuery] = useState('')
-  
-  // Add patient modal visibility
-  const [showAddModal, setShowAddModal] = useState(false)
-  
+// =============================================================================
+// TOAST COMPONENT — bottom banner, auto-dismisses after 5s, clickable
+// =============================================================================
+function PatientToast({ patient, onClose, onNavigate }) {
+  const [visible, setVisible] = useState(true)
+  const [progress, setProgress] = useState(100)
+  const timerRef = useRef(null)
+  const intervalRef = useRef(null)
 
-  // ==========================================================================
-  // EFFECT: FETCH PATIENTS ON MOUNT
-  // ==========================================================================
   useEffect(() => {
-    fetchPatients()
-  }, [])
+    intervalRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p <= 0) return 0
+        return p - 1
+      })
+    }, 50)
 
-  // ==========================================================================
-  // FUNCTION: FETCH PATIENTS FROM BACKEND
-  // ==========================================================================
-  /**
-   * Fetches all patients from backend
-   * 
-   * BACKEND INTEGRATION:
-   * - Endpoint: GET /api/patients
-   * - Expected response: { results: Array, total: number }
-   * 
-   * ERROR HANDLING:
-   * - Falls back to dummy data if backend fails
-   * - In production, show error message instead
-   */
-  const fetchPatients = async () => {
+    timerRef.current = setTimeout(() => {
+      setVisible(false)
+      setTimeout(onClose, 300)
+    }, 5000)
+
+    return () => {
+      clearInterval(intervalRef.current)
+      clearTimeout(timerRef.current)
+    }
+  }, [onClose])
+
+  const handleClick = () => {
+    clearInterval(intervalRef.current)
+    clearTimeout(timerRef.current)
+    setVisible(false)
+    setTimeout(() => {
+      onClose()
+      onNavigate()
+    }, 200)
+  }
+
+  const handleDismiss = (e) => {
+    e.stopPropagation()
+    clearInterval(intervalRef.current)
+    clearTimeout(timerRef.current)
+    setVisible(false)
+    setTimeout(onClose, 300)
+  }
+
+  return (
+    <div
+      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-md
+                  transition-all duration-300
+                  ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+    >
+      <div
+        onClick={handleClick}
+        className="relative overflow-hidden cursor-pointer
+                   bg-white dark:bg-gray-800
+                   border border-gray-200 dark:border-gray-600
+                   rounded-2xl shadow-2xl shadow-black/10"
+      >
+        <div className="flex items-center gap-3 px-4 py-3.5">
+          <div className="flex-shrink-0 w-9 h-9 rounded-full bg-green-100 dark:bg-green-900/30
+                          flex items-center justify-center">
+            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
+              Patient added successfully
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+              <span className="font-medium text-tecnot-primary dark:text-tecnot-light">
+                {patient.first_name} {patient.last_name}
+              </span>
+              {' '}· MRN: {patient.mrn} · Tap to view
+            </p>
+          </div>
+          <button
+            onClick={handleDismiss}
+            className="flex-shrink-0 p-1 rounded-md text-gray-400
+                       hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100 dark:bg-gray-700">
+          <div
+            className="h-full bg-tecnot-primary dark:bg-tecnot-light transition-none"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// =============================================================================
+// ACTIVE FILTER PILLS — shown below search bar when filters are active
+// =============================================================================
+function FilterPills({ filters, onRemove, onClearAll }) {
+  const labels = {
+    gender:      'Gender',
+    dob:         'DOB',
+    age:         'Age',
+    nationality: 'Nationality',
+    patientId:   'MRN',
+    clinic:      'Clinic',
+  }
+
+  const active = Object.entries(filters).filter(([, v]) => v !== '')
+  if (!active.length) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-4">
+      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Filtered by:</span>
+      {active.map(([key, value]) => (
+        <span
+          key={key}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium
+                     bg-tecnot-primary/10 dark:bg-tecnot-light/10
+                     text-tecnot-primary dark:text-tecnot-light
+                     border border-tecnot-primary/20 dark:border-tecnot-light/20"
+        >
+          {labels[key]}: {value}
+          <button onClick={() => onRemove(key)} className="hover:opacity-70 transition-opacity">
+            <X className="w-3 h-3" />
+          </button>
+        </span>
+      ))}
+      <button
+        onClick={onClearAll}
+        className="text-xs text-gray-400 dark:text-gray-500 hover:text-red-500
+                   dark:hover:text-red-400 transition-colors underline underline-offset-2"
+      >
+        Clear all
+      </button>
+    </div>
+  )
+}
+
+// =============================================================================
+// PATIENTS PAGE
+// =============================================================================
+function Patients() {
+  const navigate  = useNavigate()
+  const location  = useLocation()
+
+  const [patients, setPatients]           = useState([])
+  const [loading, setLoading]             = useState(true)
+  const [searchQuery, setSearchQuery]     = useState('')
+  const [showAddModal, setShowAddModal]   = useState(false)
+  const [toastPatient, setToastPatient]   = useState(null)
+
+  // Pre-populate filters if navigated from Home with state
+  const [activeFilters, setActiveFilters] = useState(
+    location.state?.filters || {
+      gender: '', dob: '', age: '', nationality: '', patientId: '', clinic: '',
+    }
+  )
+
+  // ── Fetch patients with active filters applied via Supabase ────────────────
+  const fetchPatients = async (filtersToApply = activeFilters) => {
     try {
       setLoading(true)
-      
-      // Call backend API
-      const data = await patientService.getPatients()
-      console.log('API Response:', data)
-      console.log('Patients from API:', data.results)
-      
-      // Update state with results
-      setPatients(data.results || [])
-      
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      let query = supabase
+        .from('patients')
+        .select('*')
+        .eq('doctor_id', user.id)
+        .order('created_at', { ascending: false })
+
+      // Apply each active filter to the query
+      if (filtersToApply.gender)      query = query.eq('gender', filtersToApply.gender)
+      if (filtersToApply.dob)         query = query.eq('date_of_birth', filtersToApply.dob)
+      if (filtersToApply.age)         query = query.eq('age', parseInt(filtersToApply.age, 10))
+      if (filtersToApply.nationality) query = query.ilike('nationality', `%${filtersToApply.nationality}%`)
+      if (filtersToApply.patientId)   query = query.ilike('mrn', `%${filtersToApply.patientId}%`)
+      if (filtersToApply.clinic)      query = query.ilike('clinic_name', `%${filtersToApply.clinic}%`)
+
+      const { data, error } = await query
+      if (error) throw new Error(error.message)
+
+      setPatients(data || [])
     } catch (error) {
       console.error('Error fetching patients:', error)
       setPatients([])
     } finally {
       setLoading(false)
     }
-      
   }
 
-  // ==========================================================================
-  // FILTERED PATIENTS
-  // ==========================================================================
-  /**
-   * Filters patients based on search query
-   * 
-   * SEARCHES:
-   * - First name
-   * - Last name
-   * - MRN
-   * - Mobile number
-   * - National ID
-   * 
-   * NOTE: Search is case-insensitive and searches all fields
-   */
-  const filteredPatients = patients.filter(patient => {
+  // Fetch on mount with any pre-applied filters from Home
+  useEffect(() => {
+    fetchPatients(activeFilters)
+    // Clear route state so refresh doesn't reapply filters
+    window.history.replaceState({}, '')
+  }, [])
+
+  // Re-fetch whenever filters change
+  useEffect(() => {
+    fetchPatients(activeFilters)
+  }, [activeFilters])
+
+  // ── Called by AddPatientModal on success ──────────────────────────────────
+  const handlePatientAdded = (createdPatient) => {
+    fetchPatients(activeFilters)
+    setShowAddModal(false)
+    setToastPatient(createdPatient)
+  }
+
+  // ── Remove a single filter pill ───────────────────────────────────────────
+  const handleRemoveFilter = (key) => {
+    setActiveFilters((prev) => ({ ...prev, [key]: '' }))
+  }
+
+  // ── Clear all filters ─────────────────────────────────────────────────────
+  const handleClearAllFilters = () => {
+    setActiveFilters({ gender: '', dob: '', age: '', nationality: '', patientId: '', clinic: '' })
+  }
+
+  // ── Client-side search on top of Supabase results ─────────────────────────
+  const filteredPatients = patients.filter((patient) => {
     const query = searchQuery.toLowerCase()
-    
-    // Debug logging for first patient only (avoid spam)
-    if (searchQuery && patient.id === patients[0]?.id) {
-      console.log('=== SEARCH DEBUG ===')
-      console.log('Search query:', query)
-      console.log('Patient national_id:', patient.national_id)
-      console.log('National ID match:', patient.national_id?.toLowerCase().includes(query))
-      console.log('==================')
-    }
-    
     return (
       patient.first_name?.toLowerCase().includes(query) ||
       patient.last_name?.toLowerCase().includes(query) ||
@@ -123,21 +244,23 @@ function Patients() {
     )
   })
 
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
+  const hasActiveFilters = Object.values(activeFilters).some((v) => v !== '')
+
   return (
     <div className="animate-fadeIn w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Header title="Patient Records" subtitle="Manage your patients" />
-      
+      <Header
+        title="Patient Records"
+        subtitle={
+          hasActiveFilters
+            ? `Showing filtered results · ${filteredPatients.length} patient${filteredPatients.length !== 1 ? 's' : ''}`
+            : 'Manage your patients'
+        }
+      />
+
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1600px] mx-auto">
-        
-        {/* ====================================================================
-            SEARCH BAR + ADD PATIENT BUTTON
-            ==================================================================== */}
+
+        {/* Search Bar + Add Button */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-          
-          {/* Search Bar */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -145,63 +268,71 @@ function Patients() {
               placeholder="Search patients by name, MRN, or mobile number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none 
-                       focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
-                       transition-all text-sm xs:text-base
-                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                       placeholder-gray-400 dark:placeholder-gray-500"
+              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg outline-none
+                         focus:border-tecnot-primary dark:focus:border-tecnot-light focus:ring-4 focus:ring-tecnot-primary/20 dark:focus:ring-tecnot-light/20
+                         transition-all text-sm xs:text-base
+                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                         placeholder-gray-400 dark:placeholder-gray-500"
             />
           </div>
 
-          {/* Add Patient Button */}
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center justify-center gap-2 bg-tecnot-primary dark:bg-tecnot-light text-white dark:text-gray-900
-                     px-4 xs:px-6 py-3 rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
-                     transition-smooth shadow-lg text-sm xs:text-base whitespace-nowrap"
+                       px-4 xs:px-6 py-3 rounded-lg font-medium hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
+                       transition-smooth shadow-lg text-sm xs:text-base whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
             Add Patient
           </button>
         </div>
 
-        {/* ====================================================================
-            PATIENT GRID
-            ==================================================================== */}
+        {/* Active filter pills */}
+        <FilterPills
+          filters={activeFilters}
+          onRemove={handleRemoveFilter}
+          onClearAll={handleClearAllFilters}
+        />
+
+        {/* Patient Grid */}
         {loading ? (
-          // Loading Spinner
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-tecnot-primary dark:text-tecnot-light" />
           </div>
         ) : filteredPatients.length === 0 ? (
-          // Empty State
           <div className="text-center py-12">
             <User className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <p className="text-gray-500 dark:text-gray-400 text-sm xs:text-base">
-              {searchQuery ? 'No patients found matching your search.' : 'No patients yet. Add your first patient to get started.'}
+              {searchQuery || hasActiveFilters
+                ? 'No patients found matching your search or filters.'
+                : 'No patients yet. Add your first patient to get started.'}
             </p>
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearAllFilters}
+                className="mt-3 text-xs text-tecnot-primary dark:text-tecnot-light
+                           hover:underline font-medium"
+              >
+                Clear filters to see all patients
+              </button>
+            )}
           </div>
         ) : (
-          // Patient Cards Grid
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredPatients.map((patient) => (
               <Link
                 key={patient.id}
                 to={`/patient/${patient.mrn}`}
-                className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm 
-                         border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200
-                         card-hover"
+                className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 xs:p-5 sm:p-6 shadow-sm
+                           border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200
+                           card-hover"
               >
                 <div className="flex items-start gap-3 xs:gap-4 mb-3">
-                  
-                  {/* Avatar - Color based on gender */}
-                  <div className={`w-12 h-12 xs:w-14 xs:h-14 rounded-full flex items-center justify-center 
-                                text-white font-bold text-lg xs:text-xl flex-shrink-0
-                                ${patient.gender === 'Female' ? 'bg-pink-500' : patient.gender === 'Male' ? 'bg-blue-500' : 'bg-gray-500'}`}>
+                  <div className={`w-12 h-12 xs:w-14 xs:h-14 rounded-full flex items-center justify-center
+                                   text-white font-bold text-lg xs:text-xl flex-shrink-0
+                                   ${patient.gender === 'Female' ? 'bg-pink-500' : patient.gender === 'Male' ? 'bg-blue-500' : 'bg-gray-500'}`}>
                     {patient.first_name?.charAt(0)}
                   </div>
-                  
-                  {/* Patient Info */}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 dark:text-white text-base xs:text-lg truncate">
                       {patient.first_name} {patient.last_name}
@@ -212,7 +343,6 @@ function Patients() {
                   </div>
                 </div>
 
-                {/* Patient Details */}
                 <div className="space-y-1.5 text-xs xs:text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex justify-between">
                     <span>Age:</span>
@@ -228,7 +358,6 @@ function Patients() {
                   </div>
                 </div>
 
-                {/* View Details Link */}
                 <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <span className="text-xs xs:text-sm text-tecnot-primary dark:text-tecnot-light font-medium">
                     View Details →
@@ -240,18 +369,22 @@ function Patients() {
         )}
       </div>
 
-      {/* ====================================================================
-          ADD PATIENT MODAL
-          ==================================================================== */}
+      {/* Add Patient Modal */}
       {showAddModal && (
-          <AddPatientModal
-            onClose={() => setShowAddModal(false)}
-            onSuccess={() => {
-              fetchPatients()
-              setShowAddModal(false)
-            }}
-          />
-        )}
+        <AddPatientModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={handlePatientAdded}
+        />
+      )}
+
+      {/* Toast Banner */}
+      {toastPatient && (
+        <PatientToast
+          patient={toastPatient}
+          onClose={() => setToastPatient(null)}
+          onNavigate={() => navigate(`/patient/${toastPatient.mrn}`)}
+        />
+      )}
     </div>
   )
 }

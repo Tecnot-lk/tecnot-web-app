@@ -1,46 +1,154 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Calendar, Users, FileText, Filter, X } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Calendar, Users, FileText, Filter, X, ClipboardList, ChevronRight, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../services/supabaseClient'
 
- 
+// ── Map session status → human-readable action label ─────────────────────────
+function getActivityLabel(session) {
+  // If soap fields are filled → SOAP note was generated
+  if (session.soap_subjective || session.soap_objective || session.soap_assessment || session.soap_plan) {
+    return 'SOAP note generated'
+  }
+  // Use status field
+  switch (session.status) {
+    case 'completed':   return 'Consultation completed'
+    case 'in_progress': return 'Session in progress'
+    case 'draft':       return 'Session started'
+    default:            return 'Session started'
+  }
+}
+
+// ── Friendly relative time ────────────────────────────────────────────────────
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+  if (diff < 60)         return 'Just now'
+  if (diff < 3600)       return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400)      return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 86400 * 7)  return `${Math.floor(diff / 86400)}d ago`
+  return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+}
+
 function Home() {
   const { user } = useAuth()
+  const navigate = useNavigate()
 
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters]           = useState(false)
+  const [showProfileBanner, setShowProfileBanner] = useState(false)
+  const [recentActivities, setRecentActivities] = useState([])
+  const [activitiesLoading, setActivitiesLoading] = useState(true)
+
   const [filters, setFilters] = useState({
-    gender: '',
-    dob: '',
-    age: '',
-    nationality: '',
-    patientId: '',
-    clinic: '',
-    doctorName: '',
+    gender: '', dob: '', age: '', nationality: '', patientId: '', clinic: '',
   })
 
-  const recentActivities = [
-    { patient: 'Malik / 001', action: 'Consultation completed', time: '2 hours ago' },
-    { patient: 'Shiman / 021', action: 'SOAP note generated', time: '4 hours ago' },
-    { patient: 'Ibrahim / 022', action: 'Session started', time: '6 hours ago' },
-  ]
+  // ── Profile completion check ──────────────────────────────────────────────
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      if (!user?.id) return
+      if (sessionStorage.getItem(`profile_banner_dismissed_${user.id}`)) return
+
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, phone, specialty, license_number, clinic_name')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        const isIncomplete =
+          !data || !data.first_name || !data.license_number ||
+          !data.clinic_name || !data.specialty
+
+        setShowProfileBanner(isIncomplete)
+      } catch {
+        setShowProfileBanner(true)
+      }
+    }
+
+    checkProfileCompletion()
+  }, [user?.id])
+
+  // ── Fetch recent activity from sessions joined with patients ──────────────
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      if (!user?.id) return
+      setActivitiesLoading(true)
+
+      try {
+        // Fetch the 5 most recently updated sessions for this doctor
+        // joining patient name + mrn via patient_id
+        const { data, error } = await supabase
+          .from('sessions')
+          .select(`
+            id,
+            status,
+            created_at,
+            updated_at,
+            soap_subjective,
+            soap_objective,
+            soap_assessment,
+            soap_plan,
+            patients (
+              first_name,
+              last_name,
+              mrn
+            )
+          `)
+          .eq('doctor_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(5)
+
+        if (error) throw new Error(error.message)
+
+        const activities = (data || []).map((session) => ({
+          id:        session.id,
+          patient:   session.patients
+            ? `${session.patients.first_name} ${session.patients.last_name} / ${session.patients.mrn}`
+            : 'Unknown Patient',
+          mrn:       session.patients?.mrn || null,
+          action:    getActivityLabel(session),
+          time:      timeAgo(session.updated_at || session.created_at),
+        }))
+
+        setRecentActivities(activities)
+      } catch (err) {
+        console.error('Failed to fetch recent activity:', err)
+        setRecentActivities([])
+      } finally {
+        setActivitiesLoading(false)
+      }
+    }
+
+    fetchRecentActivity()
+
+    // Realtime — refresh activity whenever a session is inserted or updated
+    const channel = supabase
+      .channel('home-sessions-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sessions', filter: `doctor_id=eq.${user?.id}` },
+        () => fetchRecentActivity()   // re-fetch on any change
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user?.id])
+
+  const handleDismissBanner = () => {
+    sessionStorage.setItem(`profile_banner_dismissed_${user?.id}`, 'true')
+    setShowProfileBanner(false)
+  }
+
+  const hasActiveFilters = Object.values(filters).some((v) => v !== '')
 
   const handleResetFilters = () => {
-    setFilters({
-      gender: '',
-      dob: '',
-      age: '',
-      nationality: '',
-      patientId: '',
-      clinic: '',
-      doctorName: '',
-    })
+    setFilters({ gender: '', dob: '', age: '', nationality: '', patientId: '', clinic: '' })
   }
 
   const handleApplyFilters = () => {
-    console.log('Applying filters:', filters)
-    alert('Filters applied! (Backend integration pending)')
     setShowFilters(false)
+    navigate('/patients', { state: { filters } })
   }
 
   const doctorName = user?.first_name ? `Dr. ${user.first_name}` : 'Doctor'
@@ -54,37 +162,79 @@ function Home() {
 
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-[1200px] mx-auto">
         <div className="space-y-4 sm:space-y-6">
-          {/* Quick Actions Section */}
+
+          {/* ── Complete Profile Banner ── */}
+          {showProfileBanner && (
+            <div className="flex items-center gap-3 sm:gap-4
+                            bg-amber-50 dark:bg-amber-900/20
+                            border border-amber-300 dark:border-amber-700
+                            rounded-xl px-4 py-3 shadow-sm">
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-800/50
+                              flex items-center justify-center">
+                <ClipboardList className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-3">
+                <p className="text-sm text-amber-900 dark:text-amber-200 flex-1">
+                  Your doctor profile is incomplete.{' '}
+                  <button
+                    onClick={() => navigate('/complete-profile')}
+                    className="font-bold underline underline-offset-2 hover:text-amber-700
+                               dark:hover:text-amber-300 transition-colors"
+                  >
+                    Complete Signup
+                  </button>
+                  {' '}to set up your clinical details.
+                </p>
+                <button
+                  onClick={() => navigate('/complete-profile')}
+                  className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5
+                             bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500
+                             text-white text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                >
+                  Complete now <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+              <button
+                onClick={handleDismissBanner}
+                className="flex-shrink-0 text-amber-400 hover:text-amber-600
+                           dark:hover:text-amber-300 transition-colors"
+                title="Dismiss for this session"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* ── Quick Actions ── */}
           <div>
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-3 sm:mb-4">
               <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                 Quick Actions
               </h2>
-
-              {/* Filter Button */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center justify-center gap-2 px-3 xs:px-4 py-2 
-                         bg-white dark:bg-gray-800 border-2 border-tecnot-primary dark:border-tecnot-light
-                         text-tecnot-primary dark:text-tecnot-light rounded-lg font-medium 
-                         hover:bg-tecnot-light dark:hover:bg-gray-700 transition-smooth
-                         text-xs xs:text-sm w-full xs:w-auto"
+                className="relative flex items-center justify-center gap-2 px-3 xs:px-4 py-2
+                           bg-white dark:bg-gray-800 border-2 border-tecnot-primary dark:border-tecnot-light
+                           text-tecnot-primary dark:text-tecnot-light rounded-lg font-medium
+                           hover:bg-tecnot-light dark:hover:bg-gray-700 transition-smooth
+                           text-xs xs:text-sm w-full xs:w-auto"
               >
                 <Filter className="w-4 h-4" />
                 Filters
+                {hasActiveFilters && (
+                  <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-tecnot-primary
+                                   dark:bg-tecnot-light rounded-full border-2 border-white dark:border-gray-900" />
+                )}
               </button>
             </div>
 
-            {/* Compact Filter Panel */}
+            {/* Filter Panel */}
             {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg 
-                             p-4 shadow-sm border border-gray-200 dark:border-gray-700 
+              <div className="bg-white dark:bg-gray-800 rounded-lg
+                             p-4 shadow-sm border border-gray-200 dark:border-gray-700
                              mb-4 transition-colors">
-                {/* Header */}
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                    Filter Patients
-                  </h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Filter Patients</h3>
                   <button
                     onClick={() => setShowFilters(false)}
                     className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-smooth"
@@ -93,19 +243,14 @@ function Home() {
                   </button>
                 </div>
 
-                {/* Compact Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  {/* Gender */}
                   <div>
-                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
-                      Gender
-                    </label>
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">Gender</label>
                     <select
                       value={filters.gender}
                       onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
-                               rounded-md bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white text-xs"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600
+                                 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     >
                       <option value="">All</option>
                       <option value="Male">Male</option>
@@ -113,196 +258,220 @@ function Home() {
                       <option value="Other">Other</option>
                     </select>
                   </div>
-
-                  {/* DOB */}
                   <div>
-                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
-                      DOB
-                    </label>
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">Date of Birth</label>
                     <input
                       type="date"
                       value={filters.dob}
                       onChange={(e) => setFilters({ ...filters, dob: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
-                               rounded-md bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white text-xs"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600
+                                 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Age */}
                   <div>
-                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
-                      Age
-                    </label>
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">Age</label>
                     <input
-                      type="text"
-                      placeholder="25Y"
+                      type="number"
+                      placeholder="e.g. 35"
                       value={filters.age}
                       onChange={(e) => setFilters({ ...filters, age: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
-                               rounded-md bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white text-xs"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600
+                                 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Nationality */}
                   <div>
-                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
-                      Nationality
-                    </label>
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">Nationality</label>
                     <input
                       type="text"
+                      placeholder="e.g. Sri Lankan"
                       value={filters.nationality}
                       onChange={(e) => setFilters({ ...filters, nationality: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
-                               rounded-md bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white text-xs"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600
+                                 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Patient ID */}
                   <div>
-                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
-                      Patient ID
-                    </label>
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">Patient MRN</label>
                     <input
                       type="text"
+                      placeholder="e.g. MRN123456"
                       value={filters.patientId}
                       onChange={(e) => setFilters({ ...filters, patientId: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
-                               rounded-md bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white text-xs"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600
+                                 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
-
-                  {/* Clinic */}
                   <div>
-                    <label className="block text-gray-600 dark:text-gray-400 mb-1">
-                      Clinic
-                    </label>
+                    <label className="block text-gray-600 dark:text-gray-400 mb-1">Clinic</label>
                     <input
                       type="text"
+                      placeholder="e.g. City Medical"
                       value={filters.clinic}
                       onChange={(e) => setFilters({ ...filters, clinic: e.target.value })}
-                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 
-                               rounded-md bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white text-xs"
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600
+                                 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
                     />
                   </div>
                 </div>
 
-                {/* Buttons */}
                 <div className="flex justify-end gap-2 mt-4">
                   <button
                     onClick={handleResetFilters}
-                    className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 
-                             rounded-md text-gray-700 dark:text-gray-300"
+                    className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600
+                               rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50
+                               dark:hover:bg-gray-700 transition-smooth"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleApplyFilters}
-                    className="px-4 py-1.5 text-xs bg-tecnot-primary dark:bg-tecnot-light 
-                             text-white dark:text-gray-900 rounded-md"
+                    disabled={!hasActiveFilters}
+                    className="px-4 py-1.5 text-xs bg-tecnot-primary dark:bg-tecnot-light
+                               text-white dark:text-gray-900 rounded-md
+                               hover:bg-tecnot-dark dark:hover:bg-tecnot-primary
+                               transition-smooth disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Apply
+                    Apply Filters
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Action Cards Grid */}
+            {/* Action Cards */}
             <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {/* Start New Session */}
               <Link
                 to="/new-session"
-                className="bg-gradient-to-br from-tecnot-primary to-tecnot-dark 
-                         dark:from-tecnot-light dark:to-tecnot-primary
-                         p-4 xs:p-5 sm:p-6 rounded-lg 
-                         text-white dark:text-gray-900 card-hover group
-                         min-h-[140px] xs:min-h-[160px]
-                         flex flex-col justify-between transition-colors"
+                className="bg-gradient-to-br from-tecnot-primary to-tecnot-dark
+                           dark:from-tecnot-light dark:to-tecnot-primary
+                           p-4 xs:p-5 sm:p-6 rounded-lg
+                           text-white dark:text-gray-900 card-hover group
+                           min-h-[140px] xs:min-h-[160px]
+                           flex flex-col justify-between transition-colors"
               >
                 <Calendar className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 mb-3 xs:mb-4 group-hover:scale-110 transition-smooth" />
                 <div>
                   <h3 className="text-base xs:text-lg sm:text-xl font-bold mb-1">Start New Session</h3>
-                  <p className="text-xs xs:text-sm text-tecnot-light dark:text-gray-700">
-                    Begin a new patient consultation
-                  </p>
+                  <p className="text-xs xs:text-sm text-tecnot-light dark:text-gray-700">Begin a new patient consultation</p>
                 </div>
               </Link>
 
-              {/* View Patients */}
               <Link
                 to="/patients"
                 className="bg-white dark:bg-gray-800 border-2 border-tecnot-primary dark:border-tecnot-light
-                         p-4 xs:p-5 sm:p-6 rounded-lg card-hover group
-                         min-h-[140px] xs:min-h-[160px]
-                         flex flex-col justify-between transition-colors"
+                           p-4 xs:p-5 sm:p-6 rounded-lg card-hover group
+                           min-h-[140px] xs:min-h-[160px]
+                           flex flex-col justify-between transition-colors"
               >
                 <Users className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 mb-3 xs:mb-4 text-tecnot-primary dark:text-tecnot-light group-hover:scale-110 transition-smooth" />
                 <div>
-                  <h3 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1">
-                    View Patients
-                  </h3>
-                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">
-                    Manage patient records
-                  </p>
+                  <h3 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1">View Patients</h3>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Manage patient records</p>
                 </div>
               </Link>
 
-              {/* SOAP Notes */}
               <Link
                 to="/patients"
                 className="bg-white dark:bg-gray-800 border-2 border-purple-200 dark:border-purple-600
-                         p-4 xs:p-5 sm:p-6 rounded-lg card-hover group
-                         min-h-[140px] xs:min-h-[160px]
-                         flex flex-col justify-between
-                         xs:col-span-2 lg:col-span-1 transition-colors"
+                           p-4 xs:p-5 sm:p-6 rounded-lg card-hover group
+                           min-h-[140px] xs:min-h-[160px]
+                           flex flex-col justify-between
+                           xs:col-span-2 lg:col-span-1 transition-colors"
               >
                 <FileText className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 mb-3 xs:mb-4 text-purple-500 dark:text-purple-400 group-hover:scale-110 transition-smooth" />
                 <div>
-                  <h3 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1">
-                    Recent SOAP Notes
-                  </h3>
-                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">
-                    Review generated notes
-                  </p>
+                  <h3 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1">Recent SOAP Notes</h3>
+                  <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400">Review generated notes</p>
                 </div>
               </Link>
             </div>
           </div>
 
-          {/* Recent Activity Section */}
+          {/* ── Recent Activity ── */}
           <div>
             <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
               Recent Activity
             </h2>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-100 dark:border-gray-700
-                         p-4 xs:p-5 sm:p-6 space-y-3 sm:space-y-4 transition-colors">
-              {recentActivities.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0"
-                >
-                  <div className="w-2 h-2 bg-tecnot-primary dark:bg-tecnot-light rounded-full mt-2 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base truncate">
-                      {activity.patient}
-                    </p>
-                    <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {activity.action}
-                    </p>
-                    <p className="text-[10px] xs:text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm
+                            border border-gray-100 dark:border-gray-700
+                            p-4 xs:p-5 sm:p-6 transition-colors">
 
+              {/* Loading skeleton */}
+              {activitiesLoading && (
+                <div className="space-y-4 animate-pulse">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700 mt-2 flex-shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/5" />
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/5" />
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!activitiesLoading && recentActivities.length === 0 && (
+                <div className="text-center py-6">
+                  <Calendar className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                    No recent activity yet. Start a session to see it here.
+                  </p>
+                </div>
+              )}
+
+              {/* Activity rows */}
+              {!activitiesLoading && recentActivities.length > 0 && (
+                <div className="space-y-3 sm:space-y-4">
+                  {recentActivities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="flex items-start gap-3 pb-3 sm:pb-4
+                                 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0"
+                    >
+                      {/* Dot — colour based on action type */}
+                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0
+                        ${activity.action === 'SOAP note generated'
+                          ? 'bg-purple-500'
+                          : activity.action === 'Consultation completed'
+                          ? 'bg-green-500'
+                          : 'bg-tecnot-primary dark:bg-tecnot-light'
+                        }`}
+                      />
+
+                      <div className="flex-1 min-w-0">
+                        {/* Patient name — clickable if MRN exists */}
+                        {activity.mrn ? (
+                          <Link
+                            to={`/patient/${activity.mrn}`}
+                            className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base
+                                       truncate block hover:text-tecnot-primary dark:hover:text-tecnot-light
+                                       transition-colors"
+                          >
+                            {activity.patient}
+                          </Link>
+                        ) : (
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base truncate">
+                            {activity.patient}
+                          </p>
+                        )}
+                        <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 truncate">
+                          {activity.action}
+                        </p>
+                        <p className="text-[10px] xs:text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          {activity.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
           </div>
+
         </div>
       </div>
     </div>
