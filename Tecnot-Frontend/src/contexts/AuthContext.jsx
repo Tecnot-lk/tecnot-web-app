@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         // If we just logged in via OAuth and we're on login page, redirect
         if (window.location.pathname === '/login' || window.location.pathname === '/') {
           console.log('🔄 Redirecting to /patients after OAuth login')
-          window.location.href = '/patients'
+          window.location.pathname = '/patients'
         }
       }
       setLoading(false)

@@ -86,8 +86,13 @@ export const deleteSession = async (sessionId) => {
  * Generate SOAP note from audio recording
  * Calls backend AI endpoint (Gemini + GPT-4o)
  */
-export const generateSOAPFromAudio = async (audioBlob, patientId, vitals) => {
+
+    
+  export const generateSOAPFromAudio = async (audioBlob, patientId, vitals) => {
   try {
+    // Get API URL from environment variable
+    const API_URL = 'https://tecnot-backend.onrender.com/api/v1'
+    
     // Create FormData for file upload
     const formData = new FormData()
     formData.append('audio', audioBlob, 'recording.webm')
@@ -95,10 +100,9 @@ export const generateSOAPFromAudio = async (audioBlob, patientId, vitals) => {
     formData.append('vitals', JSON.stringify(vitals))
     
     // Call backend API
-    const response = await fetch('http://localhost:8000/api/v1/sessions/generate-soap', {
+    const response = await fetch(`${API_URL}/sessions/generate-soap`, {
       method: 'POST',
       body: formData
-      // Note: Don't set Content-Type header, browser will set it automatically with boundary
     })
     
     if (!response.ok) {
