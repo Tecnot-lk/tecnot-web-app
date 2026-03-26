@@ -5,7 +5,7 @@ import Header from '../components/Header'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../services/supabaseClient'
 
-// ── Map session status → human-readable action label ─────────────────────────
+// ── This is map session status to show human readable action label ─────────────────────────
 function getActivityLabel(session) {
   // If soap fields are filled → SOAP note was generated
   if (session.soap_subjective || session.soap_objective || session.soap_assessment || session.soap_plan) {
